@@ -1,0 +1,270 @@
+{
+    "Print debug": {
+        "prefix": "dg",
+        "body": [
+            "debug($1);"
+        ],
+        "description": "Log output debug"
+    },
+    "Print debug_s": {
+        "prefix": "dg_s",
+        "body": [
+            "debug_s($1);"
+        ],
+        "description": "output debug without admin"
+    },
+    "Print my_debug_universal": {
+        "prefix": "my_debug_universal",
+        "body": [
+            "echo '<div my_debug hidden><pre>';",
+            "print_r(\\$data);",
+            "echo '</pre></div>';",
+        ],
+        "description": "my_debug_universal"
+    },
+    "Print mark": {
+        "prefix": "mark",
+        "body": [
+            "// create_r52"
+        ],
+        "description": "Log output mark"
+    },
+    "Print markq": {
+        "prefix": "markq",
+        "body": [
+            "// create_r52???"
+        ],
+        "description": "Log output create_r52???"
+    },
+    "Print markcur": {
+        "prefix": "markcur",
+        "body": [
+            "// current_r52"
+        ],
+        "description": "Log markcur"
+    },
+    "Print my_propertyGetList": {
+        "prefix": "my_propertyGetList",
+        "body": [
+            "\\$IBLOCK_ID = 13;",
+            "\\$idProp = 60;",
+            "\\$properties = CIBlockProperty::GetList(Array('sort'=>'asc', 'name'=>'asc'), Array('ACTIVE'=>'Y', 'IBLOCK_ID'=>\\$IBLOCK_ID, 'ID' => \\$idProp ));",
+            "\\$prop_fields = \\$properties->Fetch();"
+        ],
+        "description": "my_propertyGetList"
+    },
+    "Print  my_globalFilter": {
+        "prefix": "my_globalFilter",
+        "body": [
+            "global \\$arrFilter;",
+            "\\$find = '%' . \\$_POST['city'] . '%';",
+            "\\$arrFilter = array('NAME' => \\$find);/*параметры для фильтрации*/$1",
+            "\\$arrFilterLast = array('<DATE_ACTIVE_TO' => date(\"d.m.Y\"));"
+        ],
+        "description": "my_globalFilter"
+    },
+    "Print my_SectionGetList": {
+        "prefix": "my_SectionGetList",
+        "body": [
+            "\\$arSectionsIds = \\$arResult['PROPERTIES']['DIRECTIONS']['VALUE'];",
+            "\\$arResult['DIRECTIONS'] = array();",
+            "\\$blockId = 24;",
+            "\\$arLists = CIBlockSection::GetList(",
+            "array('SORT' => 'ASC'),",
+            "array('IBLOCK_ID' => \\$blockId, 'ID' => \\$arSectionsIds),",
+            "false,",
+            "array('NAME','CODE','SECTION_PAGE_URL')",
+            ");",
+            "while (\\$arList = \\$arLists->GetNext()) {",
+            "// debug(\\$arList);",
+            "\\$arResult['DIRECTIONS'][] = \\$arList;",
+            "}",
+        ],
+        "description": "my_SectionGetList"
+    },
+    "Print my_ElementGetList": {
+        "prefix": "my_ElementGetList",
+        "body": [
+            "\\$arSelect = array('ID', 'IBLOCK_ID', 'NAME', 'DATE_ACTIVE_FROM', 'PROPERTY_*');",
+            "\\$arFilter = array('IBLOCK_ID' => \\$IBLOCK_ID, 'SECTION_CODE' => \\$sectionCode, 'ACTIVE' => 'Y');",
+            "\\$res = CIBlockElement::GetList(array(), \\$arFilter, false, array('nPageSize' => 50), \\$arSelect);",
+            "while (\\$ob = \\$res->GetNextElement()) {",
+            "\\$arFields = \\$ob->GetFields();",
+            "\\$arProps = \\$ob->GetProperties();",
+            "foreach (\\$arProps['LINK_STAFF']['VALUE'] as \\$arItem) {",
+            "if (!in_array(\\$arItem, \\$arStaffIds)) {",
+            "\\$arStaffIds[] = \\$arItem;",
+            "}",
+            "}",
+            "}",
+        ],
+        "description": "my_ElementGetList"
+    },
+    "Print my_ResizeImageGet": {
+        "prefix": "my_ResizeImageGet",
+        "body": [
+            "\\$resize_image = CFile::ResizeImageGet(",
+            "\\$arItem['PREVIEW_PICTURE']['ID'],",
+            "array(",
+            "'width' => 326,",
+            "'height' => 500,",
+            "),",
+            "BX_RESIZE_IMAGE_EXACT,",
+            "true",
+            ");",
+        ],
+        "description": "my_ResizeImageGet"
+    },
+    "Print my_addEvent": {
+        "prefix": "my_addEvent",
+        "body": [
+            "AddEventHandler('sale', 'OnBasketAdd', array('R52', 'OnBasketAdd_r52'),10);",
+            "class R52",
+            "{",
+            "public static function OnBasketAdd_r52(\\$ID, \\$arFields)",
+            "{",
+            "\\$file = \\$_SERVER['DOCUMENT_ROOT'] . 'log.txt';",
+            "\\$res = file_put_contents(\\$file, \\$arFields, FILE_APPEND);",
+            "}",
+            "}",
+        ],
+        "description": "my_addEvent"
+    },
+    "Print my_GetUserFields": {
+        "prefix": "my_GetUserFields",
+        "body": [
+            "\\global $USER_FIELD_MANAGER;",
+            "\\$aSection['ID'] = 55;",
+            "\\$aUserField = \\$USER_FIELD_MANAGER->GetUserFields(",
+            "'IBLOCK_22_SECTION', // object's name from table user fields",
+            "\\$aSection['ID']",
+            ");",
+            "debug(\\$aUserField);",
+        ],
+        "description": "my_GetUserFields"
+    },
+    "Print my_CIBlockGetByID": {
+        "prefix": "my_CIBlockGetByID",
+        "body": [
+            "\\$resBlock = CIBlock::GetByID(\\$iblockGroup);",
+            "if(\\$ar_res = \\$resBlock->GetNext()){",
+            "// debug(\\$ar_res);",
+            "\\$arResult['GROUP_URL'] = \\$ar_res['LIST_PAGE_URL'];",
+            "}",
+        ],
+        "description": "my_CIBlockGetByID"
+    },
+    "Print my_debugBackTrace": {
+        "prefix": "my_debugBackTrace",
+        "body": [
+            "function debugBackTrace()",
+            "{",
+            "global \\$USER;",
+            "if (\\$USER->IsAdmin()) {",
+            "echo 'Вы администратор!';",
+            "echo '<pre>' . print_r( debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS),1) . '</pre>';",
+            "}",
+            "}",
+        ],
+        "description": "my_debugBackTrace"
+    },
+    "Print debugBackTrace": {
+        "prefix": "dbt",
+        "body": [
+            "debugBackTrace();",
+        ],
+        "description": "debugBackTrace"
+    },
+    "Print my_userUpdate": {
+        "prefix": "my_userUpdate",
+        "body": [
+            "\\$user = new CUser();",
+            "\\$fields = Array(",
+            "'UF_TYPE_CLIENT' => (\\$_REQUEST['TYPE_CLIENT'] == '200')?'Физическое лицо':'Юридическое лицо',",
+            "'UF_ORG' => \\$_REQUEST['REGISTER']['ORG'],",
+            "'UF_INN_ORG' => \\$_REQUEST['REGISTER']['INN'],",
+            ");",
+            "\\$user->Update(\\$ID, \\$fields);",
+        ],
+        "description": "my_userUpdate"
+    },
+    "Print my_includeFile": {
+        "prefix": "my_includeFile",
+        "body": [
+            "\\$APPLICATION->IncludeFile(",
+            "SITE_DIR . 'include/header-menu__logo.php',",
+            "array(),",
+            "array(",
+            "'MODE' => 'html',",
+            "'NAME' => 'header-menu__logo',",
+            ")",
+            ");",
+        ],
+        "description": "my_includeFile"
+    },
+    "Print my_FileGetArray": {
+        "prefix": "my_FileGetArray",
+        "body": [
+            "\\$arFile = CFile: :GetFileArray(intval(\\$fileId));",
+        ],
+        "description": "my_FileGetArray"
+    },
+    "Print my_FileGetList": {
+        "prefix": "my_FileGetList",
+        "body": [
+            "\\$res = CFile: :GetList(array(\"FILE_SIZE\" => \"desc\"));",
+            "while (\\$res_arr = \\$res->GetNext()){",
+            "R52: :debug(\\$res_arr);",
+            "}",
+        ],
+        "description": "my_FileGetList"
+    },
+    "Print my_SectionGetNavChain": {
+        "prefix": "my_SectionGetNavChain",
+        "body": [
+            "\\$baseLink = \"/catalog/\";",
+            "\\$navChain = CIBlockSection::GetNavChain(\\$arItem[\"IBLOCK_ID\"], \\$arItem[\"IBLOCK_SECTION_ID\"]);",
+            "while (\\$arNav = \\$navChain->GetNext()) {",
+            "// R52::debug(\\$arNav);",
+            "\\$baseLink .= \\$arNav[\"CODE\"] . \"/\";",
+            "}",
+            "\\$arItem[\"ELEMENT_URL\"] = \\$baseLink . \\$arItem[\"CODE\"] . \"/\";",
+        ],
+        "description": "my_SectionGetNavChain"
+    },
+    "Print my_cases": {
+        "prefix": "my_cases",
+        "body": [
+            "//-------------------------------------------------------------",
+            "echo html_entity_decode( \\$arItem[\"arNews\"]->preview_text);",
+            "echo TruncateText(\\$str, 7);",
+            "\\$APPLICATION->AddHeadScript(SITE_TEMPLATE_PATH . '/js/60sec_new.js');",
+            "\\$time_start = microtime(true);",
+            "//---------------------------------------------------------------",
+        ],
+        "description": "my_cases"
+    },
+    "Print my_setViewTarger": {
+        "prefix": "my_setViewTarger",
+        "body": [
+            "if (intval(count(\\$arResult['ITEMS'])) > 0) {",
+            "\\$this->SetViewTarget('title_last_contest');",
+            "?>",
+            "<h2>Прошедшие конкурсы</h2>",
+            "<?",
+            "\\$this->EndViewTarget();",
+            "}",
+            "<? \\$APPLICATION->ShowViewContent('title_last_contest');?>",
+        ],
+        "description": "my_setViewTarger"
+    },
+    "Print my_writeToFile": {
+        "prefix": "my_writeToFile",
+        "body": [
+            "\\$fd = fopen(\"/home/host4404/nicp.ru/log.txt\", 'a') or die(\"не удалось открыть файл\");",
+            "fwrite(\\$fd, \"this->to :\" . \\$this->to . \"\n\");",
+            "fwrite(\\$fd, \"this->subject :\" . \\$this->subject . \"\n\");",
+        ],
+        "description": "my_writeToFile"
+    },
+}
