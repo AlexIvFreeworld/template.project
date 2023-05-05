@@ -1,0 +1,3 @@
+<?php
+$MESS['OLPRIME_SETTINGS_MENU_TEXT'] = 'settings';
+$MESS['OLPRIME_SETTINGS_SUBMENU_TEXT'] = 'Настройки';

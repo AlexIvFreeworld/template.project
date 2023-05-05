@@ -1,0 +1,7 @@
+<?php
+$MESS['OLPRIME_SETTINGS_INSTALL_NAME'] = 'Olprime';
+$MESS['OLPRIME_SETTINGS_INSTALL_DESCRIPTION'] = 'Настройки для сайта';
+$MESS['OLPRIME_SETTINGS_INSTALL_TITLE'] = 'Установка модуля';
+$MESS['OLPRIME_SETTINGS_UNINSTALL_TITLE'] = 'Удаление модуля';
+$MESS['OLPRIME_SETTINGS_SPER_PARTNER'] = 'Веб-студия "OLPRIME"';
+$MESS['OLPRIME_SETTINGS_PARTNER_URI'] = 'https://olprime.ru/';

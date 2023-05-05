@@ -1,0 +1,1 @@
+DROP TABLE if exists `webprostor_smtp_logs`;

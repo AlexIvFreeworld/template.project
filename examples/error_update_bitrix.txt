@@ -1,0 +1,9 @@
+>MySQL Query Error: upd ate b_rest_usage_entity inner join b_rest_app on b_rest_app.CODE = b_rest_usage_entity.ENTITY_CODE se t b_rest_usage_entity.ENTITY_CODE = b_rest_app.CLIENT_ID where b_rest_usage_entity.ENTITY_CODE <> b_rest_app.CLIENT_ID and b_rest_usage_entity.ENTITY_TYPE = 'A' [[1267] Illegal mix of collations (utf8_general_ci,IMPLICIT) and (utf8_unicode_ci,IMPLICIT) for operation '<>']
+
+
+
+Исправьте, пожалуйста, ошибки в тестах базы данных в тестировании конфигурации на странице Настройки > Инструменты > Проверка системы: https://arma-nnov.ru/bitrix/admin/site_checker.php
+
+Для исправления нажмите, пожалуйста, в тексте ошибки ссылку "Исправить". После этого запустите тестирование повторно и проверьте, что тесты базы данных проходят корректно.
+
+Когда это будет сделано, запустите обновление повторно.

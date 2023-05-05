@@ -1,0 +1,29 @@
+
+/* GLOBAL MENU */
+#global_menu_olprime_settings .adm-main-menu-item-icon {background: transparent/*url("../../images/olprime.asp/logo.png") no-repeat center*/;
+	opacity: .9;
+}
+#global_menu_olprime_settings.adm-main-menu-item-active .adm-main-menu-item-icon,
+#global_menu_olprime_settings:hover .adm-main-menu-item-icon {opacity: 1;}
+
+
+
+/* BLOCK ORDER */
+.sortOrder td {position: relative; padding: 8px 5px;}
+
+	.sortOrder .no_drag .drag {display: none;}
+	.sortOrder .drag {opacity: 1; position: absolute; left: 20px; top: 50%; margin-top: -10px; width: 20px;
+		height: 20px; background: url("../../images/olprime.asp/dragarrow_admin.svg") no-repeat center;
+		cursor: -webkit-grabbing; background-size: 7px;
+	}
+	.sortOrder .drag:hover, .wrapper-sort-block .block.sortable-fallback .drag {opacity: .4;}
+
+	.sortOrder .block.sortable-fallback {display: table !important; opacity: 1 !important;}
+	.sortOrder .block.sortable-ghost {opacity: 0;}
+	
+	
+/* OTHER */
+.divFile {align-items: center; display: flex;}
+	.divFile img {max-width: 200px; max-height: 75px; margin: 0 0 0 25px;}
+
+#bx-admin-prefix label.adm-designed-checkbox-label {height: 16px;}
