@@ -1,0 +1,3 @@
+git config --global user.name "alex"
+git config --global user.email alex.iv.freeworld@gmail.com
+git clone https://github.com/AlexIvFreeworld/template.project.git
