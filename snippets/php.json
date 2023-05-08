@@ -205,16 +205,16 @@
     "Print my_FileGetArray": {
         "prefix": "my_FileGetArray",
         "body": [
-            "\\$arFile = CFile: :GetFileArray(intval(\\$fileId));",
+            "\\$arFile = CFile::GetFileArray(intval(\\$fileId));",
         ],
         "description": "my_FileGetArray"
     },
     "Print my_FileGetList": {
         "prefix": "my_FileGetList",
         "body": [
-            "\\$res = CFile: :GetList(array(\"FILE_SIZE\" => \"desc\"));",
+            "\\$res = CFile::GetList(array(\"FILE_SIZE\" => \"desc\"));",
             "while (\\$res_arr = \\$res->GetNext()){",
-            "R52: :debug(\\$res_arr);",
+            "R52::debug(\\$res_arr);",
             "}",
         ],
         "description": "my_FileGetList"
