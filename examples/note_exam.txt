@@ -1,0 +1,181 @@
+1. Инструменты текстового редактора
+- форматирование текста Edit/line/Reindent
+- обновление папок Project/Refresh Folders
+- поиск и замена Find/Replace...
+
+2. Использование документации
+api_d7.chm
+- Asset
+- Loc
+
+bsm_api.chm
+- CMain::IncludeFile
+- CFile::GetFileArray
+- CFile::ResizeImageGet
+- TruncateText
+
+php_enhanced_ru.chm
+- date
+
+3. План решения задач
+
+ex1-1
+- чз админку публичная часть
+- левое меню в редакторе
+
+ex1-2
+- чз св-ва раздела, для отдельных страниц св-ва страницы публичная часть
+
+ex1-4
+- создать шаблон в админке
+- перенести в local чз Файлы
+- скопировать в шаблон папки css, js, fonts, img
+- скопировать в header из верстки inner.html до тега <div class="cnt"> включительно
+- скопировать в footer из верстки inner.html после закрывающего тега <div class="cnt"> включительно
+- скопировать из демошаблона папку lang, убрать лишние картинки
+- в lang/ru/footer.php занести нужную фразу
+- подключить в футере из d7 класс Loc и вывести фразу чз метод этого класса
+- в headere использовать php function date("G") для отображения mail or phone
+- в footer заменить src картинок на относительный с SITE_TEMPLATE_PATH
+- перенести контент из верстки main.html находящийся в <div class="cnt"> в этот же блок в header
+- в header заменить src картинок на относительный с SITE_TEMPLATE_PATH
+- из верстки inner.html взять блок   <header> <h1> и разместить в header начало  <div class="cnt">
+  заменить статичный заголовок на переменную <?= $APPLICATION->ShowTitle() ?> и добавить условие вывода
+  <?if($APPLICATION->GetCurPage() != "/"):?> 
+
+ex1-5
+- в админке Настройки - Список сайтов - Редактирование сайта установить нужный шаблон для раздела /services/
+
+ex1-6
+- создать в папке local/templates/exam1 папки components/bitrix
+- скопировать components/menu и components/system.auth.form из верстки в local/templates/exam1/components/bitrix/
+- скопировать вызов компонента "bitrix:menu","left" из header demo
+  и заменить в footer блок <div class="side-block side-menu"> 
+- скопировать шаблон bitrix/components/bitrix/menu/templates/horizontal_multilevel/ в local
+- скопировать вызов компонента ("bitrix:menu", "horizontal_multilevel" из header demo
+  и заменить в header в блоке <div class="menu popup-block"> блок <ul class="">
+  и проставить MAX_LEVEL" => "3" 
+- в шаблоне horizontal_multilevel убрать id from ul, class from a у всех элементов
+- в публичной части в свойствах страницы закрываем доступ для всех групп пользовтелей
+- в админке Файлы и папки - "нужный раздел" - Меню типа left редактируем в расширенном режиме
+  устанавливаем группу которой будет доступен просмотр
+- для демонстрации дополнительного текста в раздел Компания чз публичную часть добавляем подраздел Пункт 1 
+  с подразделами Пункт 1, Пункт 2
+- в top меню в админке в расширенном режиме редактирования для раздела Компания устанавливаем параметр
+  TEXT_EXT => текст для пункта Компания  
+- в left меню в админке раздела Компания в расширенном режиме редактирования для раздела Пункт 1
+  устанавливаем параметр  TEXT_EXT => текст для пункта Пункт 1
+- в шаблон horizontal_multilevel для элементов <?if ($arItem["IS_PARENT"]):?> перел <?else:?> добавляем   
+  условие проверки наличия параметра дополнительного текста <? if($arItem["PARAMS"]["TEXT_EXT"]):?>
+  с выводом верстки из main_text_menu.html
+
+ex1-42
+- в top меню в коде для раздела Компания устанавливаем параметр  COLOR_STYLE" => "color-red" 
+- в шаблон horizontal_multilevel для ссылок с условием нахождения в <?if ($arItem["DEPTH_LEVEL"] == 1):?>
+  устанавливаем class="<?=$arItem["PARAMS"]["COLOR_STYLE"]?>"
+
+ex1-7
+- на какой нибудь странице в публичной части добавить компонент Навигационная цепочка, код разместить
+  в header заменив содержимое блока <div class="inner-wrap">
+
+ex1-8
+- создать в корне .bottom-custom.menu.php с нужными ссылками
+- скопировать чз Файлы шаблон menu left, переименовать в bottom, убрать из template теги <div>
+- вызвать в footer компонент $APPLICATION->IncludeComponent("bitrix:menu", "bottom"...) вместо контента
+  блока <div class="title-block">О магазине</div> 
+- в админке в управлении структурой добавить тип меню bottom-custom - Нижнее меню 1
+
+ex1-9
+- заменить в footer блок <div class="phone"> на подключаемый файл с этим блоком из include
+
+ex1-10
+- скопировать /bitrix/templates/.default/page_templates/ в /local/templates/exam1/page_templates/
+- в файле /local/templates/exam1/page_templates/standart.php вставить контент из верстки inner.html
+  содержимое блока <div class="cnt"> за исключением блока <header>
+- заменить название файла /local/templates/exam1/page_templates/standart.php на new.php
+- заменить в файле /local/templates/exam1/page_templates/new.php src=". на src="<?=SITE_TEMPLATE_PATH?>  
+- установить в файле new.php $APPLICATION->SetTitle("Заголовок страницы");  
+- добавить в файле  /local/templates/exam1/page_templates/.content.php
+  $TEMPLATE["new.php"] = Array("name"=>GetMessage("new"), "sort"=>2);
+- скопировать /bitrix/templates/.default/lang/en/page_templates/ в аналогичную local 
+- скопировать /bitrix/templates/.default/lang/ru/page_templates/ в аналогичную local
+- установить в /local/templates/exam1/lang/en/page_templates/.content.php 
+  $MESS['new'] = "Standard page inner";
+- установить в /local/templates/exam1/lang/ru/page_templates/.content.php 
+  $MESS['new'] = "Стандартная страница inner";
+
+ex1-11
+- на тестовой странице вывести компонент "вставка включаемой области" 
+- скопировать в local из битрикс шаблон .default сомпонента bitrix:main.include переименовать его в exam
+- перенести в шаблон exam блок <div class="side-block side-anonse"> с условием вывода
+  <?if($arResult["FILE"] <> '' && $text <> ''):?> где $text = ile_get_contents($arResult["FILE"]);
+- код вывода компонента разместить в footer вместо блока <div class="side-block side-anonse">
+- разместить в корне файл sect_inc.php с содержимым Лучший выбор мебели в нашей компании!
+- разместить в корне папки /company/ файл sect_inc.php с содержимым Надежный поставщик на все времена.
+- разместить в корне папки /products/ файл sect_inc.php без содержимого
+
+ex1-12
+- создать в разделе Компания / Пункт 1 страницу Сниппет
+- перенести в нее контент с inner.html из блока <div class="cnt"> за исключением <header>, 
+  <h2>Выставка новых образцов</h2> и <div class="article-text-block">
+- установить $APPLICATION->SetTitle("Заголовок страницы");
+- открыть редактирование страницы Сниппет в публичной части в визуальном редакторе в визуальном режиме
+- в правой области добавить сниппет название Выставка новых образцов код из inner.html 
+  из блока <div class="cnt"> блоки <h2>Выставка новых образцов</h2> и <div class="article-text-block">
+- заменить в <div class="article-text-block"> src=". на src="<?=SITE_TEMPLATE_PATH?>
+- перенести сниппет в левую часть визуального редактора в конец страницы
+
+ex1-13
+- скопировать /demo-content-block/new_files в /upload/
+- скопировать /demo-content-block/new.xml в /upload/
+- создать тип инфоблока Контент (сontent)
+- импортировать содержимое /upload/new.xml into content (проверить привязку картинок)
+- в настройках инфоблока установить транслитерацию и проверку на уникальность
+  для свойств установить для списка элементов (админка) фильтрацию по этому свойству
+  в журнале событий установить запись изменений для элементов
+- в списке элементов выбрать нужные свойства для отображения
+- добавить в фильтр нужное свойство
+- настроить отображение по вкладкам (Первая, Вторая)
+
+ex1-14
+- в публичной части создать раздел Отзывы /rew/ разместить на странице компонент news с нужными настройками
+  "LIST_PROPERTY_CODE" => array("POSITION","COMPANY"),
+  "DETAIL_PROPERTY_CODE" => array("POSITION","COMPANY"),
+  PAGER_TITLE" => "Отзывы",
+  SEF_FOLDER" => "/rew/",
+- в /local/templates/exam1/components/bitrix/ создать папку /news/ 
+  скопировать в эту папку дефолтный шаблон и переименовать его в exam
+- натянуть верстку из компонента на листинг и деталку
+- настроить пути в инфоблоке в админке и странице вывода компонента
+- добавить свойство DOCS для файлов установить ограничение формат pdf
+- чз свойства инфоблока настроить seo
+- установить false в header <h1><?= $APPLICATION->ShowTitle(false) ?></h1>
+
+ex1-15
+- создать раздел /news.list/ in /local/templates/exam1/components/bitrix/
+- скопировать в /news.list/ дефолтный шаблон, переименовать в rew_slider
+- на тестовой странице в публичной части вывести компонент "список новостей", настроить параметры
+- заменить в footer блок между маркерами  <!-- footer rew slider box --> на вызов компонента
+  "bitrix:news.list","rew_slider"
+- натянуть верстку в шаблоне rew_slider из main.html <!-- footer rew slider box -->
+
+ex1-16
+- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
