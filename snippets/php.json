@@ -267,4 +267,40 @@
         ],
         "description": "my_writeToFile"
     },
+    "Print my_sectionUpdate": {
+        "prefix": "my_sectionUpdate",
+        "body": [
+            "\\$bs = new CIBlockSection;",
+            "\\$arFields = array(",
+            "'UF_DESC' => \\$arItem[\"DESCRIPTION\"],",
+            ");",
+            "\\$bs->Update(\\$arItem[\"ID\"], \\$arFields);",
+        ],
+        "description": "my_sectionUpdate"
+    },
+    "Print my_elementAdd": {
+        "prefix": "my_elementAdd",
+        "body": [
+            "\\$PROP = array();",
+            "\\$PROP[\"PRICE\"] = intval(\\$price);",
+            "\\$el = new CIBlockElement;",
+            "\\$arLoadProductArray = array(",
+            "//\"MODIFIED_BY\"    => \\$USER->GetID(), // элемент изменен текущим пользователем",
+            "\"IBLOCK_SECTION_ID\" => \\$IBLOCK_SECTION_ID_TO,",
+            "\"IBLOCK_ID\"      => \\$ID_IBLOCK_TO,",
+            "\"PROPERTY_VALUES\" => \\$PROP,",
+            "\"NAME\"           => \\$arFields[\"NAME\"],",
+            "\"CODE\"           => \\$arFields[\"CODE\"],",
+            "\"ACTIVE\"         => \"Y\",",
+            "'PREVIEW_TEXT' => \\$arFields[\"PREVIEW_TEXT\"],",
+            ");",
+            "\\$PRODUCT_ID = \\$el->Add(\\$arLoadProductArray);",
+            "if (\\$PRODUCT_ID > 0) {",
+            "echo \"New ID: \" . \\$PRODUCT_ID;",
+            "} else {",
+            "print_r(\\$el->LAST_ERROR);",
+            "}",
+        ],
+        "description": "my_elementAdd"
+    },
 }

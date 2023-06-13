@@ -40,10 +40,10 @@ use Bitrix\Sale;
 		"USE_SUGGEST" => "N",
 		"USE_TITLE_RANK" => "Y",
 		"arrFILTER" => array(
-			0 => "iblock_content",
+			0 => "iblock_content", // select by type infoblock
 		),
 		"arrFILTER_iblock_content" => array(
-			0 => "4",
+			0 => "4", // select by id infoblock
 			1 => "all",
 		),
 		"arrWHERE" => "",
