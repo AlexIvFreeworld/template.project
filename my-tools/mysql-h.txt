@@ -1,0 +1,948 @@
+mysql
+pass 910130
+sudo systemctl start mysql
+sudo systemctl restart mysql
+sudo systemctl stop mysql
+sudo systemctl reload mysql
+mysql -u root -p
+
+/* ALTER TABLE customers_5 ADD BirthDate date NOT NULL; */
+
+/* ALTER TABLE customers_5 
+ADD CHECK (Age > 20); */
+
+
+-- не срабатывает потому что поля пока равны NULL
+/* ALTER TABLE customers_5 
+ADD CHECK (BirthDate > '1990-01-01'); */
+
+-- почемуто не работает так
+/* ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds
+to your MySQL server version for the right syntax to use near 'CONSTRAINT customers_5_chk_1' at line 2 */
+/* ALTER TABLE customers_5
+DROP CONSTRAINT customers_5_chk_1; */
+
+/* ALTER TABLE customers_4
+DROP COLUMN City; */
+
+/* DROP TABLE customers_4; */
+
+/* ALTER TABLE customers_3
+CHANGE Name FirstName nvarchar(100) NOT NULL; */
+
+/* ALTER TABLE customers_3
+ADD UNIQUE(City);   */
+
+/* RENAME TABLE customers_3 TO cust; */
+
+/* CREATE VIEW List AS
+SELECT FirstName, Age
+FROM cust; */
+
+/* CREATE OR REPLACE VIEW list AS
+SELECT *
+FROM cust; */
+
+DROP VIEW list;/* SELECT vend_name, prod_name, prod_price
+FROM vendors, products
+WHERE vendors.vend_id = products.vend_id; */
+
+/* выдает все несовпадающие пары
+SELECT vend_name, prod_name, prod_price
+FROM vendors, products
+WHERE vendors.vend_id != products.vend_id; */
+
+/* аналог первого запроса 
+SELECT vend_name, prod_name, prod_price
+FROM vendors INNER JOIN products
+ON vendors.vend_id = products.vend_id; */
+
+/* SELECT prod_name, vend_name, prod_price, quantity
+FROM orderitems, products, vendors
+WHERE products.vend_id = vendors.vend_id 
+AND orderitems.prod_id = products.prod_id
+AND order_num = 20007;  */
+
+SELECT cust_name, cust_contact
+FROM customers, orders, orderitems
+WHERE orders.order_num = orderitems.order_num
+AND customers.cust_id = orders.cust_id
+AND prod_id = 'RGAN01';Connect
+C:\mysql\bin\mysql -u root -p
+
+//mysql -u имя_пользователя -p пароль_пользователя -h хост_или_IP_сервера_MySQL
+
+\. E:\MyEducation\SQL\where.txt //подключение файла со скриптом запроса в консоль
+
+SHOW DATABASES; - список баз данных
+SHOW TABLES [FROM db_name]; -  список таблиц в базе 
+SHOW COLUMNS FROM таблица [FROM db_name]; - список столбцов в таблице
+SHOW CREATE TABLE table_name; - показать структуру таблицы в формате "CREATE TABLE" //показывает инф об ограничениях
+SHOW INDEX FROM tbl_name; - список индексов
+SHOW GRANTS FOR user [FROM db_name]; - привилегии для пользователя.
+
+
+SHOW VARIABLES; - значения системных переменных
+SHOW [FULL] PROCESSLIST; - статистика по mysqld процессам
+SHOW STATUS; - общая статистика
+SHOW TABLE STATUS [FROM db_name]; - статистика по всем таблицам в базе
+
+Как сделать дамп базы в MySQL:
+# mysqldump --user=user_name --password=user_password db_name > /path_to_dump/dump.sql;
+
+it worked
+C:\mysql\bin>mysqldump -uroot -p db_test results_games > E:\MyEducation\MySQL\dunp.sql
+
+Как залить данные из дампа в MySQL:
+# mysql -u user_name -puser_password -f db_name < /path_to_dump/dump.sql
+
+Как скопировать данные из одной таблицы в другую в MySQL:
+mysql> INSERT INTO `table_one` (id, parent_id, text) SELECT id, parent_id, option FROM `table_two`;
+
+Как задать пароль MySQL:
+# mysqladmin -u root password 'passwd'
+ 
+Как установить новый пароль для пользователя root:
+mysql> UPDATE user SET Password=PASSWORD ('НОВЫЙ_ПАРОЛЬ') WHERE user='root';
+
+Просмотр прав доступа в MySQL:
+mysql> use mysql;
+Database changed
+mysql> select user,host,password from user;
+
+Как создать нового пользователя и дать ему доступ к базе данных:
+mysql> GRANT ALL PRIVILEGES ON `ИМЯ_БАЗЫ`.* TO 'ИМЯ_ПОЛЬЗОВАТЕЛЯ'@'localhost' IDENTIFIED BY 'user_password';
+
+Для получения списка хранимых процедур:
+> SHOW PROCEDURE STATUS;
+
+Список функций:
+> SHOW FUNCTION STATUS;
+
+Получить синтаксис (объявление) существующей процедуры:
+> SHOW CREATE PROCEDURE myproc;
+
+покажет вам все доступные опции для команды show.
+help show;
+
+help contents;
+
+Просмотр информации о функциях
+help functions;
+
+Просмотр информации о функциях Даты и Времени
+help Date and Time Functions;SHOW DATABASES;
+
+SHOW TABLES; - сначала нужно выбрать нужную базу USE name_database;
+SHOW COLUMNS FROM name_table;
+SELECT column_list FROM table_name;
+SELECT DISTINCT column_name1, column_name2 FROM table_name; //отбирает только уникальные записи по выбранным колонкам
+SELECT column list FROM table_name LIMIT [number of records]; //ограничивает количество строк в выборке
+SELECT ID, FirstName, LastName, City  FROM customers LIMIT 3, 4; //ограничивает количество строк в выборке с заданной позиции
+
+INSERT INTO table_name VALUES (value1, value2, value3,...);
+INSERT INTO table_name (column1, column2, column3, ...,columnN) VALUES (value1, value2, value3,...valueN);
+
+SELECT * FROM customers ORDER BY FirstName; // сортировка выбранной колонки по умолчанию по возрастанию
+SELECT * FROM customers ORDER BY LastName, Age; //сортировка сначала по LastName, затем по Age
+
+SELECT column_list FROM table_name WHERE condition;
+SELECT column_name(s) FROM table_name WHERE column_name BETWEEN value1 AND value2;// условие между двумя значениями по выбранной колонке
+SELECT ID, FirstName, LastName, City FROM customers WHERE City = 'New York';
+SELECT ID, FirstName, LastName, Age FROM customers WHERE Age >= 30 AND Age <= 40; //несколько условий
+SELECT * FROM customers WHERE City IN ('New York', 'Los Angeles', 'Chicago'); //заменяет несколько ИЛИ выбрать если в списке
+SELECT * FROM customers WHERE City NOT IN ('New York', 'Los Angeles', 'Chicago');//заменяет несколько ИЛИ НЕ выбирать если в списке
+
+SELECT CONCAT(FirstName, ', ' , City) FROM customers; // объединяет выбранные колонки в одну с именем CONCAT(FirstName, ', ' , City)
+SELECT CONCAT(FirstName,', ', City) AS new_column FROM customers; // объединяет выбранные колонки в одну с именем new_column (название без пробелов)
+SELECT Firstname AS name FROM users; // меняет название колонки
+SELECT ID, FirstName, LastName, Salary+500 AS Salary FROM employees; //можно прямо в запросе делать арифметику с числами
+SELECT FirstName, UPPER(LastName) AS LastName FROM employees; //функция переводит в верхний регистр
+SELECT Salary, SQRT(Salary) FROM employees; //функция считает корни в новую колонку
+SELECT AVG(Salary) FROM employees; //функция считает среднее по колонке
+SELECT SUM(Salary) FROM employees; //функция считает сумму по колонке
+/------------------------------------------------------/
+SELECT FirstName, Salary FROM employees 
+WHERE  Salary > (SELECT AVG(Salary) FROM employees) //в условии сразу считается среднее
+ORDER BY Salary DESC; // DESC сортирует по убыванию
+/------------------------------------------------------/
+SELECT * FROM employees WHERE FirstName LIKE 'A%'; // выбирает если FirstName начинается на A
+SELECT MIN(Salary) AS Salary FROM employees; //функция считает минимум по колонке
+
+
+
+
+/* */ комментарии
+/* SELECT CONCAT (Name, ' (', City, ')')
+FROM customers; */
+
+/* SELECT CONCAT (Name, ' (', City, ')') AS Name
+FROM customers; */
+
+/* SELECT UPPER(City) AS City_up
+FROM customers; */
+
+-- функция преобразование в верхний регистр
+/* SELECT ID, Name, City, Age, UPPER(City) AS City_up
+FROM customers; */
+
+-- функция подсчета длинны строки
+/* SELECT ID, Name, City, Age, LENGTH(City) AS City_length
+FROM customers; */
+
+/* SELECT ID, Name, City, Age, YEAR(BirthDate) AS YY_Date
+FROM customers_5; */
+
+/* SELECT ID, Name, City, Age, MONTH(BirthDate) AS MM_Date
+FROM customers_5;  */
+
+/* SELECT ID, Name, City, Age, LOCALTIME() AS now
+FROM customers_5; */
+
+/* SELECT COUNT(*) AS num_count
+FROM customers;  */
+
+/* SELECT COUNT(Name) AS num_count
+FROM customers;  */
+
+-- SELECT MAX(Age) AS max_age
+-- FROM customers; 
+
+SELECT * 
+FROM customers
+WHERE Age > (SELECT AVG(Age) FROM customers);CREATE TABLE Customers
+(
+  cust_id      char(10)  NOT NULL ,
+  cust_name    char(50)  NOT NULL ,
+  cust_address char(50)  NULL ,
+  cust_city    char(50)  NULL ,
+  cust_state   char(5)   NULL ,
+  cust_zip     char(10)  NULL ,
+  cust_country char(50)  NULL ,
+  cust_contact char(50)  NULL ,
+  cust_email   char(255) NULL 
+);
+
+CREATE TABLE OrderItems
+(
+  order_num  int          NOT NULL ,
+  order_item int          NOT NULL ,
+  prod_id    char(10)     NOT NULL ,
+  quantity   int          NOT NULL ,
+  item_price decimal(8,2) NOT NULL 
+);
+
+
+CREATE TABLE Orders
+(
+  order_num  int      NOT NULL ,
+  order_date datetime NOT NULL ,
+  cust_id    char(10) NOT NULL 
+);
+
+
+CREATE TABLE Products
+(
+  prod_id    char(10)      NOT NULL ,
+  vend_id    char(10)      NOT NULL ,
+  prod_name  char(255)     NOT NULL ,
+  prod_price decimal(8,2)  NOT NULL ,
+  prod_desc  text          NULL 
+);
+
+
+CREATE TABLE Vendors
+(
+  vend_id      char(10) NOT NULL ,
+  vend_name    char(50) NOT NULL ,
+  vend_address char(50) NULL ,
+  vend_city    char(50) NULL ,
+  vend_state   char(5)  NULL ,
+  vend_zip     char(10) NULL ,
+  vend_country char(50) NULL 
+);
+
+
+ALTER TABLE Customers ADD PRIMARY KEY (cust_id);
+ALTER TABLE OrderItems ADD PRIMARY KEY (order_num, order_item);
+ALTER TABLE Orders ADD PRIMARY KEY (order_num);
+ALTER TABLE Products ADD PRIMARY KEY (prod_id);
+ALTER TABLE Vendors ADD PRIMARY KEY (vend_id);
+
+
+ALTER TABLE OrderItems ADD CONSTRAINT FK_OrderItems_Orders FOREIGN KEY (order_num) REFERENCES Orders (order_num);
+ALTER TABLE OrderItems ADD CONSTRAINT FK_OrderItems_Products FOREIGN KEY (prod_id) REFERENCES Products (prod_id);
+ALTER TABLE Orders ADD CONSTRAINT FK_Orders_Customers FOREIGN KEY (cust_id) REFERENCES Customers (cust_id);
+ALTER TABLE Products ADD CONSTRAINT FK_Products_Vendors FOREIGN KEY (vend_id) REFERENCES Vendors (vend_id);/* SELECT Firstname AS name FROM users;  */
+
+/* CREATE TABLE customers 
+(
+ID int,
+Name nvarchar(50),
+City nvarchar(50),
+Age int
+); */
+
+/* CREATE TABLE orders
+(
+ID int,
+Name nvarchar(50),
+Customers_ID int,
+Amount int
+
+); */
+
+/* INSERT INTO customers 
+VALUES
+(
+1,
+'John',
+'New York',
+35
+);
+
+INSERT INTO customers 
+VALUES
+(
+2,
+'David',
+'Los Angeles',
+23
+);
+
+INSERT INTO customers 
+VALUES
+(
+3,
+'Chloe',
+'Chicago',
+27
+);
+
+INSERT INTO customers 
+VALUES
+(
+4,
+'Emily',
+'Houston',
+34
+);
+
+INSERT INTO customers 
+VALUES
+(
+5,
+'james',
+'Philadelphia',
+31
+); */
+
+/* INSERT INTO orders
+VALUES
+(
+1,
+'Book',
+3,
+5000
+);
+
+INSERT INTO orders
+VALUES
+(
+2,
+'Box',
+5,
+3000
+);
+
+INSERT INTO orders
+VALUES
+(
+3,
+'Toy',
+2,
+4500
+);
+
+INSERT INTO orders
+VALUES
+(
+4,
+'Flowers',
+4,
+1800
+);
+
+INSERT INTO orders
+VALUES
+(
+5,
+'Cake',
+1,
+6700
+);
+ */
+
+/* CREATE TABLE customers_2 
+(
+ID int,
+Name nvarchar(50),
+City nvarchar(50),
+Age int
+);
+
+INSERT INTO customers_2 
+VALUES
+(
+1,
+'John',
+'New York',
+35
+);
+
+INSERT INTO customers_2 
+VALUES
+(
+2,
+'David',
+'Los Angeles',
+23
+);
+
+INSERT INTO customers_2
+VALUES
+(
+3,
+'Alex',
+'NN',
+47
+); */
+
+/* CREATE TABLE customers_4 
+(
+ID int,
+Name nvarchar(50),
+City nvarchar(50),
+Age int,
+PRIMARY KEY(ID)
+);
+
+INSERT INTO customers_4 
+VALUES
+(
+1,
+'John',
+'New York',
+35
+);
+
+INSERT INTO customers_4 
+VALUES
+(
+2,
+'David',
+'Los Angeles',
+23
+);
+
+INSERT INTO customers_4
+VALUES
+(
+2,
+'Alex',
+'NN',
+47
+); */
+
+/* CREATE TABLE customers_5
+(
+ID int NOT NULL AUTO_INCREMENT,
+Name nvarchar(50) NOT NULL,
+City nvarchar(50) NOT NULL,
+Age int NOT NULL,
+Nickname nvarchar(10) NOT NULL, 
+About nvarchar(50) DEFAULT 'something',
+PRIMARY KEY(ID),
+UNIQUE(Nickname),
+CHECK (Age > 15)
+); */
+
+/* INSERT INTO customers_5
+(
+Name,
+City,
+Age,
+Nickname
+)
+VALUES
+(
+'John',
+'New York',
+35,
+'Joo'
+);
+
+INSERT INTO customers_5 
+(
+Name,
+City,
+Age,
+Nickname,
+About
+)
+VALUES
+(
+'David',
+'Los Angeles',
+23,
+'Dav',
+'This is the best'
+);
+
+INSERT INTO customers_5
+(
+Name,
+City,
+Age,
+Nickname
+)
+VALUES
+(
+'Alex',
+'NN',
+47,
+'Dav'
+);
+ */
+
+INSERT INTO customers_5
+(
+Name,
+City,
+Age,
+Nickname
+)
+VALUES
+(
+'Alex',
+'NN',
+47,
+'Al'
+);
+
+
+
+
+
+
+
+CREATE TABLE Users
+(
+   UserID int,
+   FirstName varchar(100), 
+   LastName varchar(100),
+   City varchar(100)
+); /* -- отбор колонки Name создание поля nu_books
+-- куда считаются количество строк = 'Book' */
+/* SELECT Name, COUNT(*) AS num_books
+FROM orders
+WHERE Name = 'Book'; */
+
+/* SELECT Name, COUNT(*) AS num_books
+FROM orders
+WHERE Name = 'Box'; */
+
+/* --создание колонки num_boxes подсчет строк 
+-- по полю Name = 'Box' */
+/* SELECT COUNT(Name) AS num_boxes
+FROM orders
+WHERE Name = 'Box'; */
+
+/* SELECT Name, COUNT(*) AS num_position
+FROM orders
+GROUP BY Name; */
+
+/* после группировки фильтруем итоговые результаты с HAVING*/
+/* SELECT Name, COUNT(*) AS num_position
+FROM orders
+GROUP BY Name
+HAVING COUNT(*) > 1; */
+
+/* перед группировкой предварительно отфильтруем строки */ 
+/* SELECT Name, COUNT(*) AS num_position
+FROM orders
+WHERE Name LIKE '%k'
+GROUP BY Name
+HAVING COUNT(*) > 1; */
+
+/* после группировки отсортируем итоги по убыванию */ 
+SELECT Name, COUNT(*) AS num_position
+FROM orders
+GROUP BY Name
+ORDER BY num_position DESC;//почему то не открылся файл, а потому что не надо заканчивать эту команду кавычками ;
+INSERT INTO users VALUE (1, "Ivan", "Ivanov", "NN");
+INSERT INTO users VALUE (2, "Petr", "Petrov", "Moskow");
+INSERT INTO users VALUE (3, "Alex", "Alexeev", "NN");
+INSERT INTO users VALUE (4, "Fedor", "Fedorov", "Moskow");
+INSERT INTO users VALUE (5, "Vasiliy", "Vasiliev", "NN");
+/* INSERT INTO customers 
+VALUES
+(
+6,
+'Andrew',
+'New York',
+55
+);
+
+INSERT INTO customers 
+VALUES
+(
+7,
+'Daniel',
+'New York',
+44
+);
+
+INSERT INTO orders
+VALUES
+(
+6,
+'Book',
+1,
+4500
+);
+
+INSERT INTO orders
+VALUES
+(
+7,
+'Book',
+2,
+5500
+);
+
+INSERT INTO orders
+VALUES
+(
+8,
+'Box',
+2,
+3100
+);
+
+INSERT INTO orders
+VALUES
+(
+9,
+'Box',
+3,
+3200
+);
+ */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* SELECT customers.ID, customers.Name, orders.Name, orders.Amount
+FROM customers, orders
+WHERE customers.ID = orders.Customers_ID
+ORDER BY customers.ID;  */
+
+-- можно сократить названия таблиц в запросе пример ниже
+/* SELECT cu.ID, cu.Name, o.Name, o.Amount
+FROM customers AS cu, orders AS o
+WHERE cu.ID = o.Customers_ID
+ORDER BY cu.ID;  */
+
+-- данные есть в обеих таблицах
+SELECT customers.ID, customers.Name, orders.Name, orders.Amount
+FROM customers INNER JOIN orders
+ON customers.ID = orders.Customers_ID;
+-- полностью выводится левая таблица
+SELECT customers.ID, customers.Name, orders.Name, orders.Amount
+FROM customers LEFT OUTER JOIN orders
+ON customers.ID = orders.Customers_ID;
+-- полностью выводится правая таблица
+SELECT customers.ID, customers.Name, orders.Name, orders.Amount
+FROM customers RIGHT OUTER JOIN orders
+ON customers.ID = orders.Customers_ID;
+
+
+
+
+
+
+
+
+
+
+/* SELECT *
+FROM customers
+ORDER BY ID ASC; сортирока по возрастанию*/
+
+/* SELECT *
+FROM customers
+ORDER BY ID DESC; по убыванию*/
+
+/* SELECT *
+FROM customers
+ORDER BY 3,4 ASC; сортировка сначала по 3 колонке, потом по 4*/
+
+/* SELECT *
+FROM customers
+ORDER BY 3 DESC, 4 DESC; направление сортировки нужно указывать для каждого поля
+по умолчанию будет по возрастанию*/----------------------------------------------
+-- Sams Teach Yourself SQL in 10 Minutes
+-- http://www.forta.com/books/0672325675/
+-- Example table population scripts for MySQL.
+----------------------------------------------
+
+
+---------------------------
+-- Populate Customers table
+---------------------------
+INSERT INTO Customers(cust_id, cust_name, cust_address, cust_city, cust_state, cust_zip, cust_country, cust_contact, cust_email)
+VALUES('1000000001', 'Village Toys', '200 Maple Lane', 'Detroit', 'MI', '44444', 'USA', 'John Smith', 'sales@villagetoys.com');
+INSERT INTO Customers(cust_id, cust_name, cust_address, cust_city, cust_state, cust_zip, cust_country, cust_contact)
+VALUES('1000000002', 'Kids Place', '333 South Lake Drive', 'Columbus', 'OH', '43333', 'USA', 'Michelle Green');
+INSERT INTO Customers(cust_id, cust_name, cust_address, cust_city, cust_state, cust_zip, cust_country, cust_contact, cust_email)
+VALUES('1000000003', 'Fun4All', '1 Sunny Place', 'Muncie', 'IN', '42222', 'USA', 'Jim Jones', 'jjones@fun4all.com');
+INSERT INTO Customers(cust_id, cust_name, cust_address, cust_city, cust_state, cust_zip, cust_country, cust_contact, cust_email)
+VALUES('1000000004', 'Fun4All', '829 Riverside Drive', 'Phoenix', 'AZ', '88888', 'USA', 'Denise L. Stephens', 'dstephens@fun4all.com');
+INSERT INTO Customers(cust_id, cust_name, cust_address, cust_city, cust_state, cust_zip, cust_country, cust_contact)
+VALUES('1000000005', 'The Toy Store', '4545 53rd Street', 'Chicago', 'IL', '54545', 'USA', 'Kim Howard');
+
+-------------------------
+-- Populate Vendors table
+-------------------------
+INSERT INTO Vendors(vend_id, vend_name, vend_address, vend_city, vend_state, vend_zip, vend_country)
+VALUES('BRS01','Bears R Us','123 Main Street','Bear Town','MI','44444', 'USA');
+INSERT INTO Vendors(vend_id, vend_name, vend_address, vend_city, vend_state, vend_zip, vend_country)
+VALUES('BRE02','Bear Emporium','500 Park Street','Anytown','OH','44333', 'USA');
+INSERT INTO Vendors(vend_id, vend_name, vend_address, vend_city, vend_state, vend_zip, vend_country)
+VALUES('DLL01','Doll House Inc.','555 High Street','Dollsville','CA','99999', 'USA');
+INSERT INTO Vendors(vend_id, vend_name, vend_address, vend_city, vend_state, vend_zip, vend_country)
+VALUES('FRB01','Furball Inc.','1000 5th Avenue','New York','NY','11111', 'USA');
+INSERT INTO Vendors(vend_id, vend_name, vend_address, vend_city, vend_state, vend_zip, vend_country)
+VALUES('FNG01','Fun and Games','42 Galaxy Road','London', NULL,'N16 6PS', 'England');
+INSERT INTO Vendors(vend_id, vend_name, vend_address, vend_city, vend_state, vend_zip, vend_country)
+VALUES('JTS01','Jouets et ours','1 Rue Amusement','Paris', NULL,'45678', 'France');
+
+--------------------------
+-- Populate Products table
+--------------------------
+INSERT INTO Products(prod_id, vend_id, prod_name, prod_price, prod_desc)
+VALUES('BR01', 'BRS01', '8 inch teddy bear', 5.99, '8 inch teddy bear, comes with cap and jacket');
+INSERT INTO Products(prod_id, vend_id, prod_name, prod_price, prod_desc)
+VALUES('BR02', 'BRS01', '12 inch teddy bear', 8.99, '12 inch teddy bear, comes with cap and jacket');
+INSERT INTO Products(prod_id, vend_id, prod_name, prod_price, prod_desc)
+VALUES('BR03', 'BRS01', '18 inch teddy bear', 11.99, '18 inch teddy bear, comes with cap and jacket');
+INSERT INTO Products(prod_id, vend_id, prod_name, prod_price, prod_desc)
+VALUES('BNBG01', 'DLL01', 'Fish bean bag toy', 3.49, 'Fish bean bag toy, complete with bean bag worms with which to feed it');
+INSERT INTO Products(prod_id, vend_id, prod_name, prod_price, prod_desc)
+VALUES('BNBG02', 'DLL01', 'Bird bean bag toy', 3.49, 'Bird bean bag toy, eggs are not included');
+INSERT INTO Products(prod_id, vend_id, prod_name, prod_price, prod_desc)
+VALUES('BNBG03', 'DLL01', 'Rabbit bean bag toy', 3.49, 'Rabbit bean bag toy, comes with bean bag carrots');
+INSERT INTO Products(prod_id, vend_id, prod_name, prod_price, prod_desc)
+VALUES('RGAN01', 'DLL01', 'Raggedy Ann', 4.99, '18 inch Raggedy Ann doll');
+INSERT INTO Products(prod_id, vend_id, prod_name, prod_price, prod_desc)
+VALUES('RYL01', 'FNG01', 'King doll', 9.49, '12 inch king doll with royal garments and crown');
+INSERT INTO Products(prod_id, vend_id, prod_name, prod_price, prod_desc)
+VALUES('RYL02', 'FNG01', 'Queen doll', 9.49, '12 inch queen doll with royal garments and crown');
+
+------------------------
+-- Populate Orders table
+------------------------
+INSERT INTO Orders(order_num, order_date, cust_id)
+VALUES(20005, '2004-05-01', '1000000001');
+INSERT INTO Orders(order_num, order_date, cust_id)
+VALUES(20006, '2004-01-12', '1000000003');
+INSERT INTO Orders(order_num, order_date, cust_id)
+VALUES(20007, '2004-01-30', '1000000004');
+INSERT INTO Orders(order_num, order_date, cust_id)
+VALUES(20008, '2004-02-03', '1000000005');
+INSERT INTO Orders(order_num, order_date, cust_id)
+VALUES(20009, '2004-02-08', '1000000001');
+
+----------------------------
+-- Populate OrderItems table
+----------------------------
+INSERT INTO OrderItems(order_num, order_item, prod_id, quantity, item_price)
+VALUES(20005, 1, 'BR01', 100, 5.49);
+INSERT INTO OrderItems(order_num, order_item, prod_id, quantity, item_price)
+VALUES(20005, 2, 'BR03', 100, 10.99);
+INSERT INTO OrderItems(order_num, order_item, prod_id, quantity, item_price)
+VALUES(20006, 1, 'BR01', 20, 5.99);
+INSERT INTO OrderItems(order_num, order_item, prod_id, quantity, item_price)
+VALUES(20006, 2, 'BR02', 10, 8.99);
+INSERT INTO OrderItems(order_num, order_item, prod_id, quantity, item_price)
+VALUES(20006, 3, 'BR03', 10, 11.99);
+INSERT INTO OrderItems(order_num, order_item, prod_id, quantity, item_price)
+VALUES(20007, 1, 'BR03', 50, 11.49);
+INSERT INTO OrderItems(order_num, order_item, prod_id, quantity, item_price)
+VALUES(20007, 2, 'BNBG01', 100, 2.99);
+INSERT INTO OrderItems(order_num, order_item, prod_id, quantity, item_price)
+VALUES(20007, 3, 'BNBG02', 100, 2.99);
+INSERT INTO OrderItems(order_num, order_item, prod_id, quantity, item_price)
+VALUES(20007, 4, 'BNBG03', 100, 2.99);
+INSERT INTO OrderItems(order_num, order_item, prod_id, quantity, item_price)
+VALUES(20007, 5, 'RGAN01', 50, 4.49);
+INSERT INTO OrderItems(order_num, order_item, prod_id, quantity, item_price)
+VALUES(20008, 1, 'RGAN01', 5, 4.99);
+INSERT INTO OrderItems(order_num, order_item, prod_id, quantity, item_price)
+VALUES(20008, 2, 'BR03', 5, 11.99);
+INSERT INTO OrderItems(order_num, order_item, prod_id, quantity, item_price)
+VALUES(20008, 3, 'BNBG01', 10, 3.49);
+INSERT INTO OrderItems(order_num, order_item, prod_id, quantity, item_price)
+VALUES(20008, 4, 'BNBG02', 10, 3.49);
+INSERT INTO OrderItems(order_num, order_item, prod_id, quantity, item_price)
+VALUES(20008, 5, 'BNBG03', 10, 3.49);
+INSERT INTO OrderItems(order_num, order_item, prod_id, quantity, item_price)
+VALUES(20009, 1, 'BNBG01', 250, 2.49);
+INSERT INTO OrderItems(order_num, order_item, prod_id, quantity, item_price)
+VALUES(20009, 2, 'BNBG02', 250, 2.49);
+INSERT INTO OrderItems(order_num, order_item, prod_id, quantity, item_price)
+VALUES(20009, 3, 'BNBG03', 250, 2.49);
+SELECT MAX(s_1.Sum_Lectures)
+FROM (SELECT Subjects.[Name], COUNT(Lectures.id) AS Sum_Lectures
+FROM AC_3.dbo.Lectures, AC_3.dbo.Subjects
+WHERE Lectures.SubjectId = Subjects.id
+GROUP BY Subjects.[Name]
+) s_1
+
+SELECT s_0.Subj_name, s_0.Fullname, s_0.Sum_Lectures
+FROM (SELECT Subjects.[Name] AS Subj_name, Teachers.[Name] + ' ' + Teachers.Surname AS Fullname, COUNT(Lectures.id) AS Sum_Lectures
+FROM AC_3.dbo.Lectures, AC_3.dbo.Teachers, AC_3.dbo.Subjects
+WHERE Lectures.TeacherId = Teachers.id
+AND Lectures.SubjectId = Subjects.id
+GROUP BY Subjects.[Name], Teachers.[Name] + ' ' + Teachers.Surname) s_0, 
+(SELECT s_1.Subj_Name, MAX(s_1.Sum_Lectures) AS Sum_Lect_in_s1
+FROM (SELECT Subjects.[Name] AS Subj_Name, Teachers.[Name] + ' ' + Teachers.Surname AS Fullname, COUNT(Lectures.id) AS Sum_Lectures
+FROM AC_3.dbo.Lectures, AC_3.dbo.Teachers, AC_3.dbo.Subjects
+WHERE Lectures.TeacherId = Teachers.id
+AND Lectures.SubjectId = Subjects.id
+GROUP BY Subjects.[Name], Teachers.[Name] + ' ' + Teachers.Surname
+) s_1
+GROUP BY s_1.Subj_Name) s_2
+WHERE s_0.Sum_Lectures = s_2.Sum_Lect_in_s1
+AND s_0.Subj_name = s_2.Subj_Name/*SELECT * FROM users WHERE UserID > 3;
+SELECT * FROM users WHERE UserID = 5;
+SELECT * FROM users WHERE UserID BETWEEN 2 AND 4;
+SELECT * FROM users WHERE City = "NN";
+SELECT * FROM users WHERE City = "NN" && UserID > 3;
+SELECT * FROM users WHERE FirstName IN ("Ivan", "Alex");
+SELECT * FROM users WHERE FirstName NOT IN ("Ivan", "Alex");
+SELECT CONCAT (UserID, ", ", City) FROM users;
+SELECT CONCAT (UserID, ", ", City) AS my_new_column FROM users;
+SELECT FirstName, City, UserID + 10 AS UserID FROM users;
+SELECT UserID + 10 AS UserID, FirstName, City FROM users;
+SELECT FirstName, UPPER(LastName) AS LastName FROM users;
+SELECT FirstName, City, SQRT(UserID) FROM users;
+SELECT AVG(UserID) FROM users;
+SELECT UserID, AVG(UserID) FROM users; // выдает только одну первую строку, так как результат одно значение
+SELECT SUM(UserID) AS sum_user_id FROM users;
+
+SELECT * 
+FROM users
+WHERE UserID > (SELECT AVG(UserID) FROM users)
+ORDER BY UserID DESC;
+
+
+SELECT * FROM users WHERE FirstName LIKE "I%";
+SELECT * FROM users WHERE FirstName LIKE "%a%"; // выборка если 'a' в любом месте слова */
+SELECT MIN(UserID) FROM users; 
+SELECT MAX(UserID) FROM users; /* SELECT ID, Name, City
+FROM customers
+WHERE ID IN (SELECT Cust_ID FROM orders WHERE Name = 'Book');  */
+
+/* SELECT cust_name, cust_address, cust_contact 
+FROM customers
+WHERE cust_id IN (SELECT cust_id FROM orders
+WHERE order_num IN (SELECT order_num FROM orderitems
+WHERE prod_id = 'RGAN01')); */
+
+SELECT cust_name, cust_contact, (SELECT COUNT(*) FROM orders WHERE orders.cust_id = customers.cust_id) AS num_orders
+FROM customers
+ORDER BY cust_name;-- можно выбрать данные из двух таблиц с одинаковыми полями и типом данных
+-- выбираются только уникальные
+SELECT * FROM customers
+UNION
+SELECT * FROM customers_2;
+-- если какого то поля в одной табл нет, можно заменить на NULL
+/* SELECT Name, City, Age FROM customers
+UNION
+SELECT Name, City, NULL FROM customers_2; */
+-- выбираются все уникальные
+SELECT * FROM customers
+UNION ALL
+SELECT * FROM customers_2;/* UPDATE orders
+SET Name = 'Book_2'
+WHERE ID = 6; */
+
+/* DELETE FROM orders
+WHERE ID = 7; */
+
+UPDATE customers_5
+SET BirthDate = '2003-01-01';/* SELECT *
+FROM customers
+WHERE NOT ID BETWEEN 1 AND 4; */
+
+/* SELECT *
+FROM customers
+WHERE ID IN (1,3,5); */
+
+/* SELECT *
+FROM customers
+WHERE City LIKE 'P%a'; */
+
+/* SELECT *
+FROM customers
+WHERE Name LIKE '___es'; */
+
+/* SELECT *
+FROM customers
+WHERE Name LIKE '[JD]%';  наборы не поддерживаются MySQL*/
+Внешние ключи FOREIGN KEY
+CREATE TABLE Customers
+(
+    Id INT PRIMARY KEY AUTO_INCREMENT,
+    Age INT, 
+    FirstName VARCHAR(20) NOT NULL,
+    LastName VARCHAR(20) NOT NULL,
+    Phone VARCHAR(20) NOT NULL UNIQUE
+);
+
+CREATE TABLE Orders
+(
+    Id INT PRIMARY KEY AUTO_INCREMENT,
+    CustomerId INT,
+    CreatedAt Date,
+    FOREIGN KEY (CustomerId)  REFERENCES Customers (Id)
+);
+С помощью оператора CONSTRAINT можно задать имя для ограничения внешнего ключа:
+CREATE TABLE Orders
+(
+    Id INT PRIMARY KEY AUTO_INCREMENT,
+    CustomerId INT,
+    CreatedAt Date,
+    CONSTRAINT orders_custonmers_fk 
+    FOREIGN KEY (CustomerId)  REFERENCES Customers (Id)
+);
+source /home/alexey-ivanov/shestakov.test/web/create_db.sql // подключение скрипта

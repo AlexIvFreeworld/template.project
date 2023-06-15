@@ -1,0 +1,8 @@
+https://ruward.ru/web/region-nizhny-novgorod/ // Рейтинг лучших агентств
+https://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=48&LESSON_ID=3642 // Настройка интеграции веб-формы и CRM
+https://www.hostcms.ru/forums/2/10356/ // Грамотное подключение CSS и Javascript
+https://www.hostcms.ru/documentation/step-by-step/templates/template/ // Создание макета и структура макетов
+https://trustland.ru/selection/frilans-birzhi-dlya-programmistov/ // Фриланс биржи для программистов
+https://www.hostcms.ru/documentation/ // Документация HostCMS
+https://www.hostcms.ru/documentation/step-by-step/samples/bootstrap-template/ // Интеграция bootstrap-макета
+https://dev.1c-bitrix.ru/learning/course/index.php?COURSE_ID=48&LESSON_ID=3642 // Настройка интеграции веб-формы и CRM references.txt

@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Выбор элементов часть 1</title>
+    <style>
+        div {
+            width: 150px;
+            height: 50px;
+        }
+    </style>
+</head>
+
+<body>
+    <ul>
+        <li></li>
+        <li></li>
+    </ul>
+    <p></p>
+    <div><span></span></div>
+    <div class="myDiv"></div>
+    <div></div>
+    <div id="myDiv"></div>
+    <div><span></span></div>
+    <div id="otherDiv"></div>
+    <div></div>
+    <div id="my.Div"></div>
+    <div><span></span></div>
+    <div id="my[Div]"></div>
+    <div>div</div>
+    <p class="test">p class="test"</p>
+    <ul class="test">
+        <li>li списка ul class="test"</li>
+        <li>li списка ul class="test"</li>
+    </ul>
+    <p>p</p>
+    <div class="test">div class="test"</div>
+    <div class="oneTest">div class="oneTest"</div>
+    <div class="twoTest">div class="twoTest"</div>
+    <div class="oneTest twoTest">div class="oneTest twoTest"</div>
+    <form>
+        <div>Форма заключена в зеленую рамку</div>
+        <label>Ребенок:</label>
+        <input type="text" name="name" />
+        <fieldset>
+            <label>Внук:</label>
+            <input type="text" name="newsletter" />
+        </fieldset>
+    </form>
+    Сестринский элемент по отношению к форме:
+    <input type="text" name="none" />
+
+
+
+    <script src="jquery-3.4.1.min.js"></script>
+    <script>
+        /* Выбор всех объектов на странице и подсчет количества*/
+        $(function () {
+            console.log($("*").length);
+        })
+        /* Выбор всех объектов на странице */
+        $(function () {
+            console.log($("*"));
+        })
+        /* Выбор объектов body и подсчет количества*/
+        $(function () {
+            console.log($("*", document.body).length);
+        })
+        /* Выбор объектов body*/
+        $(function () {
+            console.log($("*", document.body));
+        })
+        /* Выбираем элемент по id и задаем css свойство */
+        $(function () {
+            $("#myDiv").css("border", "1px solid #f00");
+        })
+        /* выбор элемент по значению атрибута id, в который входят
+        специфические символы, такие как точка или квадратные скобки */
+        $(function () {
+            $("#my\\.Div").css("border", "1px solid #F00");
+            $("#my\\[Div\\]").css("border", "1px solid #0f0");
+        })
+        /* выбор всех элементов определенного типа, например, все эле-
+        менты div*/
+        $(function () {
+            console.log($("div"));
+            $("div").css("background", "grey");
+        })
+        /* выбор элементов по имени класса */
+        $(function () {
+            console.log($(".test"));
+        })
+
+        /* выбор элементов, которые имеют сразу несколько имен класов */
+
+        $(function () {
+            console.log($(".oneTest.twoTest"));
+        })
+
+        /*элементы, являющиеся потомками какого-либо эле-
+        мента.*/
+        $(function () {
+            console.log($("form input"));
+            $("form input").css("border", "2px dotted brown");
+        })
+        /* элементы, являющиеся прямыми потомками какого-
+        либо элемента. */
+        $(function () {
+            console.log($("form > input"));
+        })
+        /* элементы, следующие непосредственно за известным
+        элементом. */
+        $(function () {
+            console.log($("label + input"));
+        })
+
+    </script>
+</body>
+
+</html><!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Выбор элементов часть 2</title>
+    <style>
+        form {
+            border: 2px green solid;
+            padding: 2px;
+            margin: 0;
+            background: #efe;
+        }
+
+       form > div {
+            color: red;
+        }
+
+        fieldset {
+            margin: 1px;
+            padding: 3px;
+        }
+
+        .block {
+            width: 150px;
+            height: 30px;
+            border: 1px solid grey;
+        }
+        .test{ border: 3px inset #f00; }
+        table.tab_2 td{ background-color:#393; }
+    </style>
+</head>
+
+<body>
+    <form>
+        <div>Форма заключена в зеленую рамку</div>
+        <label>Ребенок:</label>
+        <input type="text" name="name" />
+        <fieldset>
+            <label>Внук:</label>
+            <input type="text" name="newsletter" />
+        </fieldset>
+    </form>
+    Сестринский элемент по отношению к форме:
+    <input type="text" name="none" />
+    <fieldset>
+        <input type="text" name="email" />
+    </fieldset>
+
+    <div class="block div_1"></div>
+    <div class="block div_2"></div>
+    <div class="block div_3"></div>
+    <div class="block div_4"></div>
+    <div class="block div_5"></div>
+    <table class="tab_0">
+        <tr>
+            <td>1-1</td>
+            <td>1-2</td>
+            <td>1-3</td>
+            <td>1-4</td>
+        </tr>
+        <tr>
+            <td>2-1</td>
+            <td>2-2</td>
+            <td>2-3</td>
+            <td>2-4</td>
+        </tr>
+        <tr>
+            <td>3-1</td>
+            <td>3-2</td>
+            <td>3-3</td>
+            <td>3-4</td>
+        </tr>
+        <tr>
+            <td>4-1</td>
+            <td>4-2</td>
+            <td>4-3</td>
+            <td>4-4</td>
+        </tr>
+    </table>
+    <h1>Заголовок h1</h1>
+    <p>Некоторый текст в элементе p</p>
+    <h3>Заголовок h3</h3>
+    <ul>
+    <li>Список: пункт 1</li>
+    <li>Список: пункт 2</li>
+    <li>Список: пункт 3</li>
+    </ul>
+    <div>John Resig</div>
+    <div>George Martin</div>
+    <div>Malcom John Sinclair</div>
+    <div>J. Ohn</div>
+    <div>b byJohns a</div>
+
+    <table class="tab_1" style="width:200px;border:1px solid #000;">
+        <tr><td>1-1</td><td><span></span></td></tr>
+        <tr><td>2-1</td><td></td></tr>
+        <tr><td></td><td>3-2</td></tr>
+        <tr><td></td><td>4-2</td></tr>
+        </table>
+        <div><p>Текст внутри p, который внутри div</p></div>
+        <div>Это просто текст внутри div</div>
+        <table class="tab_2" style="width:200px;border:1px solid #000;">
+            <tr><td>1-1</td><td><span></span></td></tr>
+            <tr><td>2-1</td><td></td></tr>
+            <tr><td></td><td>3-2</td></tr>
+            <tr><td></td><td>4-2</td></tr>
+            </table>
+    <script src="jquery-3.4.1.min.js"></script>
+    <script>
+        /* выбрать элементы, располагающиеся на одном уровне
+        (сестринские элементы по отношению друг к другу), следующие непосредст-
+        венно за известным элементом, который располагается на том же уровне*/
+
+        $(function () {
+            console.log($("label ~ fieldset"));
+            $("label ~ fieldset").css("border", "dotted 2px brown");
+        })
+        $(function () {
+            $(".div_3 ~ div.block").css("border", "2px solid red");
+        })
+        /* установить серый цвет фона только для первой строки в таб-
+        лице.*/
+        $(function () {
+            $(".tab_0 tr:first").css("background", "grey");
+        })
+
+        /*установить серый цвет фона только для последней строки в таб-
+        лице.*/
+        $(function () {
+            $(".tab_0 tr:last").css("background", "green");
+        })
+        /* установить серый цвет фона только для четных строк в таблице.*/
+
+        $(function () {
+            $(".tab_0 tr:even").css("background", "blue");
+        })
+        /*установить серый цвет фона только для нечетных строк в таб-
+        лице.*/
+        $(function () {
+            $(".tab_0 tr:odd").css("color", "red");
+        })
+        /* отыскать шестую по счету ячейку таблицы.*/
+        $(function () {
+            $(".tab_0 td:eq(5)").css("background", "black");
+        })
+        /* отыскать все ячейки таблицы, которые следуют после шестой по
+        счету (иначе говоря — с индексом, более пяти).*/
+        $(function () {
+            $(".tab_0 td:gt(5)").css("background", "#abc");
+        })
+        /* отыскать все ячейки таблицы, которые следуют перед шестой по
+        счету (иначе говоря — с индексом, менее пяти).*/
+        $(function () {
+            $(".tab_0 td:lt(5)").css("background", "#cba");
+        })
+        /* отыскать на веб-странице все элементы, являющиеся заголовка-
+ми, например, h1, h2, h3 и т. д.*/
+$(function(){
+    $(":header").css("background-color", "#ccc");
+})
+/*отыскать все элементы, внутри которых находится текст, содер-
+жащий подстроку 'John'.*/
+
+$(function(){
+    $("div:contains('John')").css("text-decoration","underline");
+})
+/*необходимо отыскать только те ячейки, которые не содержат эле-
+ментов-потомков, включая и текст.*/
+$(function(){
+    $(".tab_1 td:empty").css("background-color", "rgb(255,204,153)");
+})
+/*необходимо отыскать все элементы div, внутри которых на-
+ходится как минимум один элемент p.*/
+$(function(){
+    $("div:has(p)").addClass("test");
+})
+/* необходимо отыскать только те ячейки, которые содержат элемен-
+ты-потомки, включая и текст.*/
+$(function(){
+    $(".tab_2 td:parent").fadeTo(3000, 0.3);
+})
+
+    </script>
+</body>
+
+</html><!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Выбор элементов часть 3</title>
+    <style>
+        section {
+            display: flex;
+            border-bottom: 1px solid grey;
+        }
+
+        .sec_1 div {
+            width: 50px;
+            height: 50px;
+            margin: 5px;
+            border: 4px outset #00f;
+            float: left;
+        }
+
+        .sec_1 .starthidden {
+            display: none;
+        }
+
+        .sec_2 div {
+            width: 100px;
+            height: 100px;
+            margin: 5px;
+            padding: 5px;
+            border: 1px solid #00f;
+            float: left;
+        }
+
+        .sec_3 form {
+            width: 450px;
+        }
+
+        .sec_3 input {
+            margin-left: 75px;
+        }
+
+        .sec_3 label {
+            float: right;
+        }
+
+        .sec_4 form {
+            width: 300px;
+        }
+
+        .sec_4 input {
+            float: right;
+            margin-bottom: 2px;
+        }
+
+        .sec_4 br {
+            clear: right;
+        }
+
+        .sec_5 form {
+            width: 100px;
+        }
+
+        .sec_5 input {
+            float: right;
+            margin-bottom: 2px;
+        }
+
+        .sec_5 br {
+            clear: right;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="sec_1">
+        <div></div>
+        <div class="starthidden"></div>
+        <div></div>
+        <div></div>
+        <div style="display:none;"></div>
+        <form>
+            <input type="hidden" />
+            <input type="text" />
+            <input type="hidden" />
+        </form>
+    </section>
+    <section class="sec_2">
+        <div>Элемент div без атрибута id, но с class="example"</div>
+        <div id="test">Элемент div с атрибутом id="test"</div>
+        <div id="pretest" class="example">Элемент div с атрибутами id="pretest" и
+            class="example"</div>
+        <div>Элемент div без атрибута id</div>
+        <div id="testend">Элемент div с атрибутом id="testend"</div>
+        <div id="sometestvalue">Элемент div с атрибутом id="sometestvalue"</div>
+        <div>Элемент div без атрибута id</div>
+        <div id="somevalue">Элемент div с атрибутом id="somevalue"</div>
+    </section>
+    <section class="sec_3">
+        <form>
+            <label>элемент type="checkbox"</label> <input type="checkbox" /><br />
+            <label>элемент type="file"</label> <input type="file" /><br />
+            <label>элемент type="image"</label> <input type="image" /><br />
+            <label>элемент type="password"</label> <input type="password" /><br />
+            <label>элемент type="radio"</label> <input type="radio" /><br />
+            <label>элемент type="reset"</label> <input type="reset" /><br />
+            <label>элемент type="submit"</label> <input type="submit" /><br />
+            <label>элемент type="text"</label> <input type="text" /><br />
+            <label>элемент type="button"</label> <input type="button" value="Button" />
+        </form>
+    </section>
+    <section class="sec_4">
+        <form>
+            <input type="text" /><label>Имя</label><br />
+            <input type="text" /><label>Фамилия</label><br />
+            <input type="text" disabled="disabled" /><label>Серия
+                паспорта</label><br />
+            <input type="text" disabled="disabled" /><label>Номер
+                паспорта</label><br />
+            <input type="text" /><label>E-mail адрес</label><br />
+        </form>
+    </section>
+    <section class="sec_5">
+        <form>
+            <div></div>
+            <hr />
+            <input type="checkbox" /><label>Секунда</label><br />
+            <input type="checkbox" /><label>Минута</label><br />
+            <input type="checkbox" /><label>Час</label><br />
+            <input type="checkbox" /><label>День</label><br />
+            <input type="checkbox" /><label>Неделя</label><br />
+            <input type="checkbox" checked="checked" /><label>Месяц</label><br />
+            <input type="checkbox" checked="checked" /><label>Год</label><br />
+        </form>
+    </section>
+    <section class="sec_6">
+        <select name="colors" multiple="multiple">
+            <option>Красный</option>
+            <option selected="selected">Оранжевый</option>
+            <option>Желтый</option>
+            <option selected="selected">Зеленый</option>
+            <option>Голубой</option>
+            <option>Синий</option>
+            <option>Фиолетовый</option>
+            </select>
+            <div></div>
+    </section>
+    <script src="jquery-3.4.1.min.js"></script>
+    <script>
+        /* подсчитать число видимых и невидимых эле-
+ментов и вывести эти значения */
+        console.log($(".sec_1 :visible", document.body));
+        console.log($(".sec_1 :hidden", document.body));
+        /*необходимо отыскать элементы div, у которых присутствует
+атрибут id.*/
+        console.log($(".sec_2 div[id]"));
+        /* необходимо отыскать элемент div, у которого атрибут id
+соответствует определенному значению*/
+        console.log($(".sec_2 div[id=somevalue]"));
+        /* отыскать элементы div, у которых атрибут id не
+        соответствует определенному значению.*/
+        console.log($(".sec_2 div[id!=somevalue]"));
+        /* необходимо отыскать элементы div, у которых значение
+        атрибута id начинается с определенной последовательности символов.*/
+        console.log($(".sec_2 div[id^=test]"));
+        /* отыскать элементы div, у которых значение
+        атрибута id заканчивается определенной последовательностью символов.*/
+        console.log($(".sec_2 div[id$=test]"));
+        /*необходимо отыскать элементы div, у которых значение
+        атрибута id содержит определенную последовательность символов*/
+        console.log($(".sec_2 div[id*=test]"));
+        /*отыскать элементы div, у которых значение ат-
+        рибута id содержит определенную последовательность символов и к тому же
+        присутствует атрибут class с заданным значением.*/
+        console.log($(".sec_2 div[id*=test][class=example]"));
+        /*найти все элементы input независимо от их
+        типа.*/
+        $(function () {
+            $(".sec_3 :input").prev("label").css("color", "#c33");
+        })
+        /*отыскать все элементы input, атрибут type ко-
+торых содержит значение text.*/
+        $(function () {
+            $(".sec_3 :text").prev("label").css("color", "green");
+        })
+        /*найти все элементы input, атрибут type которых
+        содержит значение password.
+        наряду с фильтрами :input, :text и :password, существуют еще :radio,
+        :checkbox, :submit, :image, :reset, :button и :file.*/
+        $(function () {
+            $(".sec_3 :password").prev("label").css("color", "blue");
+        })
+        /*существует форма, в которой необходимо отыскать все поля,
+        доступные для заполнения, и отметить их. То же самое необходимо сделать
+        с теми полями, которые для заполнения недоступны.*/
+        $(function () {
+            $(".sec_4 input:disabled").val("DISABLED");
+            $(".sec_4 input:enabled").val("ENABLED");
+        })
+        /*необходимо отслеживать состояние элементов checkbox*/
+$(function(){
+    function countChecked(){
+        var n = $(".sec_5 input:checked").length;
+        $(".sec_5 div").text("Отмечено - " + n);
+    }
+    countChecked();
+    $(":checkbox").click(countChecked);
+})
+/*есть выпадающий список с возможностью одновре-
+менного выбора нескольких опций. Необходимо отслеживать, какие именно
+опции были выбраны.*/
+$(function(){
+    $(".sec_6 select").change(function(){
+        var str = "";
+        $(".sec_6 option:selected").each(function(){
+            str+= $(this).text() + " ";
+        })
+        $(".sec_6 div").text(str);
+    }).trigger("change");
+})
+    </script>
+</body>
+
+</html><!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Samkov_choice_elem_4</title>
+    <style>
+        section.sec_1 {
+            display: block;
+            min-height: 400px;
+            border-bottom: 1px solid grey;
+        }
+
+        section {
+            display: flex;
+            flex-direction: column;
+            height: max-content;
+            border-bottom: 1px solid grey;
+        }
+       section.sec_3 {
+            display: flex;
+            flex-direction: row;
+            height: max-content;
+            border-bottom: 1px solid grey;
+        }
+        .sec_1 button {
+            width: 100px;
+        }
+
+        .sec_1 span {
+            color: #00f;
+            font-weight: bold;
+        }
+
+        #inner {
+            color: #f00;
+        }
+
+        .sec_1 table {
+            float: left;
+            margin-left: 50px;
+            border: 1px solid #ccc;
+        }
+
+        .sec_1 td {
+            width: 100px;
+            text-align: center;
+            border: 1px dotted #ccc;
+        }
+
+        .sec_2 span {
+            color: #008;
+        }
+
+        .sec_3 div {
+            width: 100px;
+            height: 100px;
+            margin: 5px;
+            padding: 5px;
+            float: left;
+            background-color: #b9e;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="sec_1">
+        <button>:nth-child(even)</button>
+        <button>:nth-child(odd)</button>
+        <button>:nth-child(3n)</button>
+        <button>:nth-child(2)</button>
+        <button>:nth-child(3n+1)</button>
+        <button>:nth-child(3n+2)</button>
+        <button>:even</button>
+        <button>:odd</button>
+        <hr />
+        <span>tr<span id="inner"></span></span>
+        <hr />
+        <table>
+            <tr>
+                <td>Вадим</td>
+            </tr>
+            <tr>
+                <td>Владимир</td>
+            </tr>
+            <tr>
+                <td>Владислав</td>
+            </tr>
+            <tr>
+                <td>Всеволод</td>
+            </tr>
+            <tr>
+                <td>Вячеслав</td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td>Эдуард</td>
+            </tr>
+            <tr>
+                <td>Юрий</td>
+            </tr>
+            <tr>
+                <td>Яков</td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td>Георгий</td>
+            </tr>
+            <tr>
+                <td>Дмитрий</td>
+            </tr>
+            <tr>
+                <td>Евгений</td>
+            </tr>
+            <tr>
+                <td>Игорь</td>
+            </tr>
+            <tr>
+                <td>Константин</td>
+            </tr>
+            <tr>
+                <td>Леонид</td>
+            </tr>
+            <tr>
+                <td>Михаил</td>
+            </tr>
+            <tr>
+                <td>Николай</td>
+            </tr>
+            <tr>
+                <td>Павел</td>
+            </tr>
+            <tr>
+                <td>Роман</td>
+            </tr>
+        </table>
+    </section>
+    <section class="sec_2">
+        <div>
+            <span>Георгий,</span>
+            <span>Дмитрий,</span>
+            <span>Евгений</span>
+        </div>
+        <div>
+            <span>Игорь,</span>
+            <span>Константин,</span>
+            <span>Леонид</span>
+        </div>
+    </section>
+    <section class="sec_3">
+        <div>
+            <button>Кнопка</button>
+            <button>Кнопка</button>
+        </div>
+        <div>
+            <button>Кнопка</button>
+        </div>
+        <div>Это текст</div>
+        <div>
+            <button>Кнопка</button>
+            <button>Кнопка</button>
+            <button>Кнопка</button>
+        </div>
+        <div>
+            <button>Кнопка</button>
+        </div>
+    </section>
+    <script src="jquery-3.4.1.min.js"></script>
+    <script>
+        /*отыскать некоторых потомков указанных элементов, причем зада-
+    ча усложняется тем, что следует отыскать не только четные или нечетные
+    потомки, или найти необходимый элемент-потомок по его индексу, но на-
+    пример, нужно будет отыскать каждый третий элемент-потомок и т. д.*/
+        $(function () {
+            $(".sec_1 button").click(function () {
+                var str = $(this).text();
+                $(".sec_1 tr").css("background-color", "#fff");
+                $(".sec_1 tr" + str).css("background-color", "#f00");
+                $("#inner").text(str);
+            })
+        })
+        /* отыскать только первый и последний элементы-наследники во
+                        всех элементах набора.*/
+        $(function () {
+            $(".sec_2 div span:first-child").css("text-decoration", "underline");
+            $(".sec_2 div span:last-child").css("text-decoration", "line-through");
+        })
+/* отыскать элементы, которые являются единственными наслед-
+        никами своего родителя, причем текстовый узел в качестве наследника не
+        должен обнаруживаться.*/
+$(function(){
+    $(".sec_3 button:only-child").text("only-child").css("border", "1px solid #f00");
+})
+    </script>
+</body>
+
+</html><!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Samkov_control_attributes_1</title>
+    <style>
+        section {
+            display: flex;
+            flex-direction: column;
+            height: max-content;
+            border-bottom: 1px solid grey;
+        }
+
+        .sec_4 p {
+            border: 1px dotted #ccc;
+        }
+
+        .sec_4 .test {
+            background-color: #369;
+            color: #fff;
+        }
+
+        .sec_6 .test {
+            border: 1px dotted #369;
+            padding: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="sec_1">
+        <a class="link" href="http://jquery.com" rel="nofollow">Официальный сайт
+            jQuery</a>
+    </section>
+    <section class="sec_2">
+        <a href="#">Официальный сайт библиотеки jQuery</a>
+    </section>
+    <section class="sec_3">
+        <p>Первый параграф</p>
+        <p>Второй параграф</p>
+        <p>Третий параграф</p>
+        <p>Четвертый параграф</p>
+    </section>
+    <section class="sec_3">
+        <a href="#">Разрешить редактирование</a>
+        <input type="text" disabled="disabled" value="Не редактируется" />
+    </section>
+    <section class="sec_4">
+        <p>Параграф №1</p>
+        <p>Параграф №2</p>
+        <p>Параграф №3</p>
+        <button id="add">Добавить класс</button>
+        <button id="remove">Удалить класс</button>
+        <button id="toggle">Переключить класс</button>
+        <button id="has">Проверить класс</button>
+    </section>
+    <section class="sec_5">
+        <div class="test">
+            <p>Я шел, спускаясь в темные коридоры, и потом опять поднимаясь наверх.
+                Я был один. Я кричал, мне не отвечали — я был один в этом обширном,
+                запутанном, как лабиринт, доме.</p>
+            <p><em>Ги де Мопассан</em></p>
+        </div>
+        <button>Получить как текст</button>
+        <button>Получить как HTML</button>
+    </section>
+    <section class="sec_6">
+        <div>
+            <p>Я шел, спускаясь в темные коридоры, и потом опять поднимаясь наверх.
+                Я был один. Я кричал, мне не отвечали — я был один в этом обширном,
+                запутанном, как лабиринт, доме.</p>
+            <p><em>Ги де Мопассан</em></p>
+        </div>
+        <button>Получить и вставить как текст</button>
+        <button>Получить и вставить как HTML</button>
+        <div class="test">В этот div будет вставлен текст или html</div>
+    </section>
+    <!-- Script -->
+
+    <script src="jquery-3.4.1.min.js"></script>
+    <script>
+        /*получить значение атрибута href элемента a и установить его
+    в качестве значения атрибута title.*/
+        $(function () {
+            var href = $(".sec_1 a").attr("href");
+            $(".sec_1 a").attr("title", href);
+        })
+        /* необходимо установить значения атрибутов alt, title и href,
+    которые отсутствуют в HTML-разметке.*/
+        $(function () {
+            $(".sec_2 a").attr({
+                alt: "Официальный сайт jQuery", title: "jQuery.com",
+                href: "http://jquery.com"
+            }).click(function () {
+                alert($(this).attr("alt"));
+                return false;
+            })
+        })
+        /*Для всех элементов p, обнаруженных на веб-странице, необходимо устано-
+        вить значение атрибута name, вычисленное на основании положения элемента*/
+        $(function () {
+            $(".sec_3 p").attr("name", function (n) {/*n - индекс элемента в наборе, с 0*/
+                return "pName " + n;
+            }).click(function () {
+                alert("name = " + $(this).attr("name"));
+            })
+        })
+        /* разрешить редактирование элемента input, которое было запре-
+                щено с помощью присвоения значения disabled атрибуту disabled.*/
+        $(function () {
+            $(".sec_3 a").click(function () {
+                $(this).next().removeAttr("disabled").focus().val("Редактируется");
+            })
+        })
+        /*Необходимо добавлять, удалять и переключать классы, а
+                также выполнять какие-либо действия в зависимости от того, присутствует
+                ли у элемента определенный класс.*/
+        $(function () {
+            $("#add").click(function () {
+                $(".sec_4 p").addClass("test");
+            })
+            $("#remove").click(function () {
+                $(".sec_4 p").removeClass("test");
+            })
+            $("#toggle").click(function () {
+                $(".sec_4 p").toggleClass("test");
+            })
+            $("#has").click(function () {
+                alert($(".sec_4 p:first").hasClass("test"));
+            })
+        })
+        /*получить внутреннее содержимое какого-либо элемента в виде
+        HTML-кода или текста.*/
+        $(function () {
+            $(".sec_5 button:first").click(function () {
+                console.log($(".sec_5 .test").text());
+            })
+            $(".sec_5 button:last").click(function () {
+                console.log($(".sec_5 .test").html());
+            })
+        })
+        /*В выбранный элемент необходимо вставить либо текст, либо HTML-код.*/
+        $(function () {
+            $(".sec_6 button:first").click(function () {
+                var text = $(".sec_6 div:first").text();
+                $(".sec_6 div.test").text(text);
+            })
+            $(".sec_6 button:last").click(function () {
+                var code = $(".sec_6 div:first").html();
+                $(".sec_6 div.test").html(code);
+            })
+        })
+    </script>
+</body>
+
+</html><!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Samkov_control_attributes_2</title>
+    <style>
+        .sec_1 p {
+            border: 1px dotted #369;
+            padding: 5px;
+            color: #00f;
+        }
+
+        .sec_3 p {
+            border: 1px dotted #369;
+            padding: 5px;
+            color: #00f;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="sec_1">
+        <input type="text" value="какой-то текст" />
+        <p></p>
+    </section>
+    <section class="sec_2">
+        <div>
+            <button>Один</button>
+            <button>Два</button>
+            <button>Три</button>
+        </div>
+        <input type="text" value="Нажимайте кнопки" />
+    </section>
+    <section class="sec_3">
+        <p></p>
+        <select class="single">
+            <option value="s1">Single1</option>
+            <option value="s2">Single2</option>
+            <option value="s3">Single3</option>
+            <option value="s4">Single4</option>
+            <option value="s5">Single5</option>
+        </select>
+        <br>
+        <br>
+        <select class="multiple" multiple="multiple">
+            <option value="m1" selected="selected">Multiple1</option>
+            <option value="m2">Multiple2</option>
+            <option value="m3" selected="selected">Multiple3</option>
+            <option value="m4">Multiple4</option>
+            <option value="m5">Multiple5</option>
+        </select><br />
+        <br>
+        <input type="checkbox" name="c" value="check" checked="checked" /><label>check</label><br />
+        <input type="radio" name="r" value="radio1" /><label>radio1</label>
+        <input type="radio" name="r" value="radio2" /><label>radio2</label>
+        <input type="radio" name="r" value="radio3" checked="checked" /><label>radio3</label>
+        <hr />
+        <button class="getSingle">select #single</button>
+        <button class="getMultiple">select #multiple</button>
+        <button class="getCheckbox">checkbox</button>
+        <button class="getRadio">radio</button>
+    </section>
+<section class="sec_4">
+    <select class="single">
+        <option>Single1</option>
+        <option>Single2</option>
+        <option>Single3</option>
+        <option>Single4</option>
+        <option>Single5</option>
+        </select>
+        <br>
+        <br>
+        <select class="multiple" multiple="multiple">
+        <option selected="selected">Multiple1</option>
+        <option>Multiple2</option>
+        <option selected="selected">Multiple3</option>
+        <option>Multiple4</option>
+        <option>Multiple5</option>
+        </select><br />
+        <input type="checkbox" name="c" value="check" /><label>check</label><br />
+        <input type="radio" name="r" value="radio1" /><label>radio1</label>
+        <input type="radio" name="r" value="radio2" /><label>radio2</label>
+        <input type="radio" name="r" value="radio3" /><label>radio3</label>
+</section>
+    <script src="jquery-3.4.1.min.js"></script>
+    <script>
+        /*По мере набора текста в поле ввода (элемент input) необходимо получать
+        введенное значение и отображать его в другом элементе, например p*/
+        $(function () {
+            $(".sec_1 input").keyup(function () {
+                var value = $(this).val();
+                $(".sec_1 p").text(value);
+            }).keyup(); /*последний keyup() чтобы вставить значение
+атрибута value элемента input в элемент p при загрузке страницы.*/
+        });
+        /*Необходимо изменить значение атрибута value элемента input типа text.*/
+        $(function () {
+            $(".sec_2 button").click(function () {
+                var text = $(this).text();
+                $(".sec_2 input").val(text);
+            });
+        });
+        /*Необходимо получить значения атрибутов value элементов radio, checkbox и
+                select.*/
+        $(function () {
+            $(".sec_3 .getSingle").click(function () {
+                var single = $(".sec_3 .single option:selected").val();
+                $(".sec_3 p").empty().text(single);
+            });
+            $(".sec_3 .getMultiple").click(function () {
+                var multiple = $(".sec_3 .multiple").val();
+                $(".sec_3 p").empty().text(multiple.join(", "));
+            });
+            $(".sec_3 .getCheckbox").click(function () {
+                var checkbox= $(".sec_3 input:checkbox:checked").val();
+                $(".sec_3 p").empty().text(checkbox);
+            });
+            $(".sec_3 .getRadio").click(function () {
+                var radio = $(".sec_3 input:radio[name=r]:checked").val();
+                $(".sec_3 p").empty().text(radio);
+            });
+        });
+        /*При загрузке веб-страницы необходимо установить начальные значения эле-
+ментов select, checkbox и radio.*/
+$(function(){
+$(".sec_4 .single").val("Single5");
+$(".sec_4 .multiple").val(["Multiple2", "Multiple4", "Multiple5"]); /*передается массив
+значений*/
+$(".sec_4 input").val(["check", "radio3"]); /*передается массив
+значений*/
+});
+    </script>
+</body>
+
+</html><!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Samkov_css_1</title>
+    <style>
+        section {
+            display: block;
+            height: 80px;
+            border-bottom: 1px solid grey;
+        }
+
+        .sec_2 {
+            height: 170px;
+        }
+
+        .sec_1 div {
+            width: 60px;
+            height: 60px;
+            margin: 5px;
+            float: left;
+        }
+
+        .sec_2 div {
+            width: 150px;
+            height: 150px;
+            margin: 5px;
+            float: left;
+            border: 1px solid #369;
+        }
+
+        .sec_3 a {
+            color: #000;
+            background-color: #eee;
+        }
+
+        .sec_4 div {
+            width: 120px;
+            height: 110px;
+            margin: 15px;
+            padding: 10px;
+            border: 1px dotted #f00;
+            overflow: hidden;
+        }
+
+        .sec_4 button {
+            width: 170px;
+        }
+
+        .sec_4 {
+            height: 250px;
+        }
+
+        .sec_5 .main {
+            position: relative;
+            top: 20px;
+            left: 40px;
+            width: 200px;
+            height: 200px;
+            border: 1px solid #f00;
+            padding: 10px;
+        }
+
+        .sec_5 .inner {
+            width: 60px;
+            height: 60px;
+            margin: 5px;
+            float: left;
+            border: 1px solid #369;
+        }
+
+        .sec_5 br {
+            clear: left;
+        }
+
+        .sec_5 p {
+            margin-left: 40px;
+        }
+
+        .sec_5 {
+            height: 330px;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="sec_1">
+        <span class="result">&nbsp;</span>
+        <div style="background-color:blue;"></div>
+        <div style="background-color:rgb(15,99,30);"></div>
+        <div style="background-color:#123456;"></div>
+        <div style="background-color:#f11;"></div>
+    </section>
+    <section class="sec_2">
+        <input type="text" />
+        <button>Применить</button>
+        <div></div>
+    </section>
+    <section class="sec_3">
+        <a href="http://jquery.com/">Библиотека jQuery</a><br />
+        <a href="http://jqueryui.com/">UI jQuery</a><br />
+        <a href="http://blog.jqueryui.com/">Блог UI jQuery</a>
+    </section>
+    <section class="sec_4">
+        <button>Получить width</button>
+        <button>Получить height</button>
+        <button>Получить innerWidth</button>
+        <button>Получить innerHeight</button>
+        <button>Получить outerWidth</button>
+        <button>Получить outerHeight</button>
+        <br /><br />
+        <input type="text" />
+        <button>Установить width</button>
+        <button>Установить height</button>
+        <div>Элемент div</div>
+    </section>
+    <section class="sec_5">
+        <div class="main">
+            <div class="inner"></div>
+            <div class="inner"></div>
+            <br />
+            <div class="inner"></div>
+            <div class="inner"></div>
+        </div>
+        <br />
+        <p>Offset — <span>left: ?px, top: ?px</span></p>
+        <p>Position — <span>left: ?px, top: ?px</span></p>
+    </section>
+    <script src="jquery-3.4.1.min.js"></script>
+    <script>
+        /*решить задачу получения цвета фона какого-либо элемента,
+    иными словами, значение CSS-свойства background-color.*/
+        $(function () {
+            $(".sec_1 div").click(function () {
+                var color = $(this).css("background-color");
+                $(".sec_1 .result").text("Background-color = " + color);
+            });
+        });
+        /* установить цвет фона какого-либо элемента.*/
+        $(function () {
+            $(".sec_2 button").click(function () {
+                var color = $(".sec_2 input").val();
+                $(".sec_2 div").css("background-color", color);
+            });
+        });
+        /*установить одновременно некоторые CSS-свойства кого-либо
+                элемента, например, изменить визуальное представление элемента a в момент
+                наведения на него указателя мыши.*/
+        $(function () {
+            $(".sec_3 a").hover(function () {/*аргуметны две функции over, out */
+                $(this).css({
+                    "background-color": "#999",
+                    "color": "#fff",
+                    "font-weight": "bold"
+                });
+            },
+                function () {
+                    $(this).css({
+                        "background-color": "#eee",
+                        "color": "#000",
+                        "font-weight": "normal"
+                    });
+                });
+        });
+        /*Необходимо получать и устанавливать размеры выбранных
+элементов.*/
+        $(function () {
+            $(".sec_4 button:eq(0)").click(function () {
+                $(".sec_4 input").val($(".sec_4 div").width());
+            });
+            $(".sec_4 button:eq(1)").click(function () {
+                $(".sec_4 input").val($(".sec_4 div").height());
+            });
+            $(".sec_4 button:eq(2)").click(function () {
+                $(".sec_4 input").val($(".sec_4 div").innerWidth());
+            });
+            $(".sec_4 button:eq(3)").click(function () {
+                $(".sec_4 input").val($(".sec_4 div").innerHeight());
+            });
+            $(".sec_4 button:eq(4)").click(function () {
+                $(".sec_4 input").val($(".sec_4 div").outerWidth(true));
+            });
+            $(".sec_4 button:eq(5)").click(function () {
+                $(".sec_4 input").val($(".sec_4 div").outerHeight());
+            });
+            $(".sec_4 button:eq(6)").click(function () {
+                $(".sec_4 div").width($(".sec_4 input").val() * 1);
+            });
+            $(".sec_4 button:eq(7)").click(function () {
+                $(".sec_4 div").height($(".sec_4 input").val() * 1);
+            });
+        });
+        /*получить значения CSS-свойств top и left для выбранного эле-
+                мента, причем относительно как документа, так и элемента-родителя.*/
+        $(function () {
+            $(".sec_5 div.inner").click(function () {
+                var o = $(this).offset();
+                $(".sec_5 p:first span").text("left: " + o.left + "px top: " + o.top + "px");
+                var p = $(this).position();
+                $(".sec_5 p:last span").text("left: " + p.left + "px top: " + p.top + "px");
+            });
+        });
+
+    </script>
+</body>
+
+</html><!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Samkov_visual_effects_1</title>
+    <style>
+        .sec_1 div {
+            border: 1px dotted #369;
+            padding: 5px;
+            color: #00f;
+        }
+
+        .sec_2 div {
+            border: 1px dotted #369;
+            padding: 5px;
+            color: #00f;
+        }
+
+        .sec_2 .result {
+            border-bottom: 1px dotted #369;
+        }
+
+        .sec_3 div {
+            border: 1px dotted #369;
+            padding: 5px;
+            color: #00f;
+        }
+
+        .sec_3 .result {
+            border-bottom: 1px dotted #369;
+        }
+
+        .sec_4 div {
+            border: 1px dotted #369;
+            padding: 5px;
+            color: #00f;
+        }
+
+        .sec_4 .result {
+            border-bottom: 1px dotted #369;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="sec_1">
+        <button>Hide</button><button>Show</button><button>Toggle</button>
+        <div class="test">
+            <p>Я шел, спускаясь в темные коридоры, и потом опять поднимаясь наверх.
+                Я был один. Я кричал, мне не отвечали — я был один в этом обширном,
+                запутанном, как лабиринт, доме.</p>
+            <p><em>Ги де Мопассан</em></p>
+        </div>
+    </section>
+    <section class="sec_2">
+        <p class="result">&nbsp;</p>
+        <button>Hide</button><button>Show</button><button>Toggle</button>
+        <div class="test">
+            <p>Я шел, спускаясь в темные коридоры, и потом опять поднимаясь наверх.
+                Я был один. Я кричал, мне не отвечали — я был один в этом обширном,
+                запутанном, как лабиринт, доме.</p>
+            Глава 3. Визуальные эффекты 67
+            <p><em>Ги де Мопассан</em></p>
+        </div>
+    </section>
+    <section class="sec_3">
+        <p class="result">&nbsp;</p>
+        <button>Hide</button><button>Show</button><button>Toggle</button>
+        <div class="test">
+            <p>Я шел, спускаясь в темные коридоры, и потом опять поднимаясь наверх.
+                Я был один. Я кричал, мне не отвечали — я был один в этом обширном,
+                запутанном, как лабиринт, доме.</p>
+            <p><em>Ги де Мопассан</em></p>
+        </div>
+    </section>
+    <section class="sec_4">
+        <p class="result">&nbsp;</p>
+        <button>Hide</button><button>Show</button>
+        <div class="test">
+            70 Часть I. Методы библиотеки jQuery
+            <p>Я шел, спускаясь в темные коридоры, и потом опять поднимаясь наверх.
+                Я был один. Я кричал, мне не отвечали — я был один в этом обширном,
+                запутанном, как лабиринт, доме.</p>
+            <p><em>Ги де Мопассан</em></p>
+        </div>
+    </section>
+    <script src="jquery-3.4.1.min.js"></script>
+    <script>
+        /*Необходимо скрывать, показывать или переключать состояние видимо-
+    сти/невидимости для какого-либо элемента.*/
+        $(function () {
+            $(".sec_1 button:eq(0)").click(function () {
+                $(".sec_1 .test").hide();
+            });
+            $(".sec_1 button:eq(1)").click(function () {
+                $(".sec_1 .test").show();
+            });
+            $(".sec_1 button:eq(2)").click(function () {
+                $(".sec_1 .test").toggle();
+            });
+        });
+        /*Необходимо не только скрывать, показывать или переключать состояние ви-
+димости/невидимости элемента, но и делать это в течение какого-то, заранее
+66 Часть I. Методы библиотеки jQuery
+заданного времени. Кроме того, по истечении этого времени, помимо того,
+что элемент должен быть скрыт/показан, должна быть вызвана какая-либо
+функция.*/
+        $(function () {
+            $(".sec_2 button:eq(0)").click(function () {
+                $(".sec_2 .test").hide(1000, function () {
+                    $(".sec_2 p:first").text("hide");
+                });
+            });
+            $(".sec_2 button:eq(1)").click(function () {
+                $(".sec_2 .test").show(2000, function () {
+                    $(".sec_2 p:first").text("show");
+                });
+            });
+            $(".sec_2 button:eq(2)").click(function () {
+                $(".sec_2 .test").toggle(800, function () {
+                    $(".sec_2 p:first").text("toggle");
+                });
+            });
+
+        });
+        /*Необходимо скрывать или показывать элементы с использованием эффекта
+"скольжения".*/
+        $(function () {
+            $(".sec_3 button:eq(0)").click(function () {
+                $(".sec_3 .test").slideUp(1000, function () {
+                    $(".sec_3 p:first").text("slideUp");
+                });
+            });
+            $(".sec_3 button:eq(1)").click(function () {
+                $(".sec_3 .test").slideDown(2000, function () {
+                    $(".sec_3 p:first").text("slideDown");
+                });
+            });
+            $(".sec_3 button:eq(2)").click(function () {
+                $(".sec_3 .test").slideToggle(800, function () {
+                    $(".sec_3 p:first").text("slideToggle");
+                });
+            });
+
+        });
+        /*Необходимо скрывать и показывать элементы с использованием эффекта "за-
+тухания".*/
+        $(function () {
+            $(".sec_4 button:eq(0)").click(function () {
+                $(".sec_4 .test").fadeOut(1000, function () {
+                    $(".sec_4 p:first").text("fadeOut");
+                });
+            });
+            $(".sec_4 button:eq(1)").click(function () {
+                $(".sec_4 .test").fadeIn(2000, function () {
+                    $(".sec_4 p:first").text("fadeIn");
+                });
+            });
+
+        });
+    </script>
+</body>
+
+</html><!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Samkov_visual_effects_2</title>
+    <style>
+        section {
+            border-bottom: 1px solid grey;
+        }
+
+        .sec_1 div {
+            border: 1px dotted #369;
+            padding: 5px;
+            color: #00f;
+        }
+
+        .sec_1 .result {
+            border-bottom: 1px dotted #369;
+        }
+
+        .sec_2 div {
+            position: absolute;
+            background-color: #369;
+            left: 100px;
+            width: 90px;
+            height: 90px;
+            margin: 5px;
+        }
+
+        .sec_2,
+        .sec_4 {
+            position: relative;
+            min-height: 150px;
+        }
+
+        .sec_5,
+        .sec_6 {
+            position: relative;
+            min-height: 250px;
+        }
+
+        .sec_3 div {
+            width: 100px;
+            border: 1px solid #369;
+            padding: 5px;
+        }
+
+        .sec_4 div {
+            position: absolute;
+            background-color: #69c;
+            left: 100px;
+            width: 90px;
+            height: 90px;
+            margin: 5px;
+            border: 1px solid #369;
+        }
+
+        .sec_5 div {
+            position: absolute;
+            top: 20px;
+            left: 200px;
+            width: 200px;
+            height: 200px;
+            border: 1px solid #369;
+            background-color: #69c;
+        }
+
+        .sec_6 div {
+            position: absolute;
+            top: 20px;
+            left: 200px;
+            width: 200px;
+            height: 200px;
+            border: 1px solid #369;
+            background-color: #69c;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="sec_1">
+        <p>Первый параграф — щелкните левой кнопкой мыши здесь.</p>
+        <p>Второй параграф — для сравнения.</p>
+    </section>
+    <section class="sec_2">
+        <button class="left">влево</button><button class="right">вправо</button>
+        <div class="block"></div>
+    </section>
+    <section class="sec_3">
+        <button class="go">Выполнить</button>
+        <button class="stop">Остановить</button>
+        <div class="block">Hello!</div>
+    </section>
+    <section class="sec_4">
+        <button class="go">Выполнить</button>
+        <div class="block"></div>
+    </section>
+    <section class="sec_5">
+        <div></div>
+    </section>
+    <section class="sec_6">
+        <div></div>
+    </section>
+    <script src="jquery-3.4.1.min.js"></script>
+    <script src="jquery-ui.js"></script>
+    <script>
+        /*При щелчке указателем мыши на каком-либо элементе необходимо плавно
+    изменить его прозрачность к заданному значению, и при его достижении вы-
+    звать функцию, которая выведет сообщение о завершении этого процесса*/
+        $(function () {
+            $(".sec_1 p:first").click(function () {
+                $(this).fadeTo("slow", 0.33, function () {/*slow — строка,
+определяющая продолжительность эффекта (возможны строковые значения
+slow, normal и fast или число миллисекунд*/
+                    alert("Done!");
+                });
+            });
+        });
+        /*анимацию для элемента div — при нажатии
+кнопок элемент должен сдвигаться влево или вправо на 50 пикселов.*/
+        $(function () {
+            $(".sec_2 .left").click(function () {
+                $(".sec_2 .block").animate({ "left": "-=50px" }, "slow");
+            });
+            $(".sec_2 .right").click(function () {
+                $(".sec_2 .block").animate({ "left": "+=50px" }, "slow");
+            });
+        });
+        /*При нажатии кнопки необходимо выполнить анимацию только одного эле-
+мента div, но в процессе анимации должны измениться значения многих его
+CSS-свойств и по завершении анимации необходимо выдать сообщение о ее
+окончании. В процессе выполнения анимации может появиться необходи-
+мость в ее остановке.*/
+        $(function () {
+            $(".sec_3 .go").click(function () {
+                $(".sec_3 .block").animate({
+                    width: "70%",
+                    opacity: 0.3,
+                    marginLeft: "5em",
+                    fontSize: "3em",
+                    borderWidth: "10px"
+                }, 2500, function () {
+                    alert("Done!");
+                });
+            });
+            $(".sec_3 .stop").click(function () {
+                $(".sec_3 .block").stop();
+            });
+        });
+        /*построить относительно сложную анимацию, где некоторые
+свойства элемента будут меняться одновременно с другими, а некоторые —
+в порядке очереди.*/
+        $(function () {
+            $(".sec_4 .go").click(function () {
+                $(".sec_4 div.block").animate({ width: "300px" }, { queue: false, duration: 3000 })
+                    /*опция queue:false исключила эффект из общей очереди, идет параллельно*/
+                    .animate({ height: "400px" }, 1500)
+                    .animate({ borderWidth: "15px" }, 1500);
+            });
+        });
+        /* Нужны более разнообразные эффекты.
+                Таких эффектов всего 14, причем восемь из
+                них (blind, clip, drop, explode, fold, puff, slide и scale) могут быть исполь-
+                зованы (но не обязательно) вместе с методами show(), hide() и toggle(),
+                а шесть остальных (bounce, highlight, pulsate, shake, size и transfer) дейст-
+                вуют сами по себе.
+                */
+        $(function () { /* не работает как надо, просто исчезает*/
+            $(".sec_5 div").click(function () {
+                $(this).hide("explode", { pieces: 4 }, 1200, function () {
+                    alert("Done!");
+                });
+            });
+        });
+/*самостоятельный эффект bounce*/
+        $(function () { /* не работает как надо, просто исчезает*/
+            $(".sec_6 div").click(function () {
+                $(this).effect("bounce", { times: 7, distance:50,
+                direction:"right"}, 300, function () {
+                    alert("Done!");
+                });
+            });
+        });
+
+    </script>
+</body>
+
+</html>

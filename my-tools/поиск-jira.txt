@@ -1,0 +1,1 @@
+status = Open AND component = Веб-мастер AND description ~ beta3 AND assignee in (EMPTY)

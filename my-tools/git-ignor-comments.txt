@@ -1,0 +1,40 @@
+*.rbc - необходимо игнорировать все файлы, которые заканчиваются на .rbc
+capybara-*.html
+.rspec
+/log - необходимо игнорировать директорию log
+/tmp
+/db/*.sqlite3 - все файлы конфигураций баз данных sqlite3
+/public/system
+/coverage/
+/spec/tmp
+**.orig
+rerun.txt
+pickle-email-*.html
+
+# TODO Comment out these rules if you are OK with secrets being uploaded to the repo
+config/initializers/secret_token.rb
+config/secrets.yml
+
+## Environment normalisation:
+/.bundle
+/vendor/bundle
+
+# these should all be checked in to normalise the environment:
+# Gemfile.lock, .ruby-version, .ruby-gemset
+
+# unless supporting rvm < 1.11.0 or doing something fancy, ignore this:
+.rvmrc
+
+# комментарий — эта строка игнорируется
+# не обрабатывать файлы, имя которых заканчивается на .a
+*.a
+# НО отслеживать файл lib.a, несмотря на то, что мы игнорируем все .a файлы с помощью предыдущего правила
+!lib.a
+# игнорировать только файл TODO находящийся в корневом каталоге, не относится к файлам вида subdir/TODO
+/TODO
+# игнорировать все файлы в каталоге build/
+build/
+# игнорировать doc/notes.txt, но не doc/server/arch.txt
+doc/*.txt
+# игнорировать все .txt файлы в каталоге doc/
+doc/**/*.txt
