@@ -240,6 +240,7 @@
             "echo TruncateText(\\$str, 7);",
             "\\$APPLICATION->AddHeadScript(SITE_TEMPLATE_PATH . '/js/60sec_new.js');",
             "\\$time_start = microtime(true);",
+            "error_get_last()",
             "//---------------------------------------------------------------",
         ],
         "description": "my_cases"
@@ -262,8 +263,8 @@
         "prefix": "my_writeToFile",
         "body": [
             "\\$fd = fopen(\"/home/host4404/nicp.ru/log.txt\", 'a') or die(\"не удалось открыть файл\");",
-            "fwrite(\\$fd, \"this->to :\" . \\$this->to . \"\n\");",
-            "fwrite(\\$fd, \"this->subject :\" . \\$this->subject . \"\n\");",
+            "fwrite(\\$fd, \"this->to :\" . \\$this->to . \"\\n\");",
+            "fclose(\\$fd);",
         ],
         "description": "my_writeToFile"
     },
@@ -302,5 +303,14 @@
             "}",
         ],
         "description": "my_elementAdd"
+    },
+    "Print my_Localization": {
+        "prefix": "my_Localization",
+        "body": [
+            "use Bitrix\\Main\\Localization\\Loc;",
+            "Loc::loadMessages(__FILE__);",
+            "<?=Loc::getMessage(\"UP\")?>",
+        ],
+        "description": "my_Localization"
     },
 }
