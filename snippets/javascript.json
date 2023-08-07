@@ -111,7 +111,7 @@
 			"document.querySelector('.container-result').innerHTML = result;",
 			"document.querySelector('.container-main').setAttribute('data-id', result.id);",
 			"let value = $item.getAttribute('data-onevalue');",
-			"window.addEventListener('load', function() {};",
+			"window.addEventListener('load', function() {};)",
 			"var getStatusOptions = function () {",
 			"let url = window.location.pathname + \"?\";",
 			"document.querySelectorAll(\".selection-container select\").forEach(function (el) {",
@@ -130,6 +130,8 @@
 			"});",
 			"document.querySelector('#price-popup .close').click();",
 			"let curLink = window.location.protocol + \"//\" + window.location.hostname + window.location.pathname;",
+			"document.querySelector(\".callback-modal-toggle-f input[data-name='color_accessories']\").value = colorAcessories;",  
+
 			"// ------------------------------------------------------",
 		],
 		"description": "my_cases"
@@ -225,5 +227,23 @@
 			"}",
 		],
 		"description": "my_getJsonAjax"
+	},
+	"Print my_changeTag": {
+		"prefix": "my_changeTag",
+		"body": [
+			"document.querySelectorAll(\"[data-role='item.button']\").forEach(function (event) {",
+				"//console.log(event);",
+				"//console.log(window.innerWidth);",
+				"if (parseInt(window.innerWidth) < 600) {",
+					"let a = document.createElement('a');",
+					"a.className = \"phone-r52\";",
+					"a.innerHTML = \"Запись на прием\";",
+					"a.href = \"tel:+78312142856\";",
+					"event.parentElement.append(a);",
+					"event.remove();",
+				"}",
+			"})",
+		],
+		"description": "my_changeTag"
 	},
 }

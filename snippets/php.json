@@ -241,6 +241,8 @@
             "\\$APPLICATION->AddHeadScript(SITE_TEMPLATE_PATH . '/js/60sec_new.js');",
             "\\$time_start = microtime(true);",
             "error_get_last()",
+            "//$str = html_entity_decode(//$arResult['SECTION']['UF_TOPTEXT']);",
+            "//$arTopText = str_replace('<a','<li><a',//$str);",
             "//---------------------------------------------------------------",
         ],
         "description": "my_cases"
@@ -312,5 +314,20 @@
             "<?=Loc::getMessage(\"UP\")?>",
         ],
         "description": "my_Localization"
+    },
+    "Print my_asort": {
+        "prefix": "my_asort",
+        "body": [
+            "function cmp($a, $b)",
+            "{",
+            "global \\$arSectionIdSort;",
+            "if (intval(\\$arSectionIdSort[\\$a[0][\"SECTION_ID\"]]) == intval(\\$arSectionIdSort[\\$b[0][\"SECTION_ID\"]])) {",
+            "return 0;",
+            "}",
+            "return (intval(\\$arSectionIdSort[\\$a[0][\"SECTION_ID\"]]) < intval(\\$arSectionIdSort[\\$b[0][\"SECTION_ID\"]])) ? -1 : 1;",
+            "}",
+            "uasort(\\$arResult[\"GROUP_ITEMS\"], \"cmp\");",
+        ],
+        "description": "my_asort"
     },
 }
