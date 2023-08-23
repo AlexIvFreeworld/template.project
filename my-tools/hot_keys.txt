@@ -1,0 +1,17 @@
+Chrom
+ctrl + shift + n - window incognita
+
+// delete empty line
+1. Click Ctrl+H (quick replace)
+2. Tick "Use Regular Expressions"
+3. In Find specify "^$\n"
+4. In Replace box delete everything.
+5. Click "Replace All"
+
+// cursor at the end of each line
+Выделите несколько строк, зажав среднюю кнопку мыши. В каждой из выделенных строк появится по курсору.
+or
+1. Select lines
+2. shift + alt + i
+// cursor at the start each line
+Ctrl + alt + arrowDown

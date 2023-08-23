@@ -33,3 +33,17 @@ myFirstPromise.then((successMessage) => {
     // It doesn't have to be a string, but if it is only a succeed message, it probably will be.
     console.log(`Yay! ${successMessage}`);
 });
+
+// To do it yourself
+const mySexoondPromise = new Promise((resolve, reject) => {
+    let res = [1,2,4]; // imitation a result from async code
+    setTimeout(() => { // imitation a process async code
+        resolve(res);
+    }, 2000);
+});
+
+mySexoondPromise.then((res) => {
+    // Code waiting for result from async code
+    console.log(res);
+    window.location.href = "https://bitrix24.r52.ru/company/personal/user/1195/tasks/";
+});

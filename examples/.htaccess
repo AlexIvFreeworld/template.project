@@ -5,6 +5,9 @@ ErrorDocument 404 /404.php
 	Options +FollowSymLinks
 	RewriteEngine On
 
+RewriteRule ^news/(.*)$ /articles/$1 [R=301,NC,L]
+
+
 RewriteCond %{HTTPS} off
 RewriteCond %{HTTP:X-Forwarded-Proto} !https
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]

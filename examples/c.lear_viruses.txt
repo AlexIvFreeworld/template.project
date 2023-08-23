@@ -1,0 +1,11 @@
+index.php   (в начале файла)
+\bitrix\spread.php
+\bitrix\modules\main\include\prolog_after.php
+\bitrix\admin\inputs.phpbitrix\admin\inputs.php  (не должно быть)
+\bitrix\js\main\core\core.js  (в конце файла)
+\bitrix\modules\main\bx_root.php
+в директории >\bitrix\admin\   файлы типа  23534535.php
+в директории >\bitrix\   файлы типа  23534535.php
+
+
+удалить папки cashe и managed_cashe

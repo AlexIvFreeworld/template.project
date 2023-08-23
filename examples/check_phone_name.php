@@ -4,6 +4,8 @@ $APPLICATION->SetPageProperty("description", "Компания \"Золотая 
 $APPLICATION->SetPageProperty("title", "Производство чая в Москве оптом | Золотая долина");
 $APPLICATION->SetTitle("Центр чайных компетенций для вашего бизнеса");
 $regexp = '/^\s?(\+\s?7|8)([- ()]*\d){10}$/';
+$regexp2 = '/[0-9-+\s]{1,30}$/'; // only digits, sign(-) plus, whitespace
+
 // Правильные
 $correctNumbers = [
     '84951234567',  '+74951234567', '8-495-1-234-567',
