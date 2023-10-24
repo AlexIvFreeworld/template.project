@@ -15,3 +15,8 @@ or
 2. shift + alt + i
 // cursor at the start each line
 Ctrl + alt + arrowDown
+
+// delete multiple lines
+Ctrl+F - вводим значение
+Ctrl+Shift+L - выделяем их
+Ctrl+Shift+K (предварительно закрыв окно поиска) - удаляем все выделенные строки
