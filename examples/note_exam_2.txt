@@ -1,0 +1,41 @@
+1. Инструменты текстового редактора
+- форматирование текста Edit/line/Reindent
+- обновление папок Project/Refresh Folders
+- поиск и замена Find/Replace...
+
+2. Использование документации
+api_d7.chm
+bsm_api.chm
+php_enhanced_ru.chm
+
+3. План решения задач
+
+[ex2-34] Установить значение тега meta «specialdate» в компоненте news.list
+bsm_api.chm
+[ShowProperty] (Главный модуль>Классы>CMain>ShowProperty)
+[SetResultCacheKeys] (Главный модуль>Классы>CBitrixComponent>setResultCacheKeys)
+[SetPageProperty] (Главный модуль>Классы>CMain>SetPageProperty)
+
+- прописываем в header meta тег, в content выводим значение с помощью $APPLICATION->ShowProperty("specialdate")
+- в админке "Управление структурой" устанавливаем тип свойства "specialdate" значение "specialdate"
+- в админке "Контент/Структура сайта/Файлы и папки" открываем "Дополнительно/Свойства папки", устанавливаем specialdate = 100
+- проверяем наличие вывода тега specialdate в публичной части
+- копируем /bitrix/components/bitrix/news/templates/.default/.parameters.php в аналогичную /local/    
+- копируем /bitrix/components/bitrix/news/templates/.default/lang/ru/.parameters.php в аналогичную /local/
+- в .parameters.php добавляем копированием параметр "SPECIAL_DATE" с типом "CHECKBOX" значение "DEFAULT" => "Y"
+- в /lang/ru/.parameters.php добавляем фразу название свойства которое будет выведено в параметрах компонента
+- проверяем в публичной части появление этого параметра
+- в файле /local/components/bitrix/news/templates/.default/news.php в вызов "bitrix:news.list" добавляем параметр "SPECIAL_DATE" => $arParams["SPECIAL_DATE"],
+- проверяем наличие $arParams["SPECIAL_DATE"] в /local/components/bitrix/news/templates/.default/bitrix/news.list/.default/template.php через debug()
+- добавляем в /local/components/bitrix/news/templates/.default/bitrix/news.list/.default/ Файлы result_modifier.php и component_epilog.php
+- в result_modifier.php для установленного параметра SPECIAL_DATE, выбираем дату первой новости и отмечаем результат для кеширования, что бы был доступен в component_epilog
+if($arParams["SPECIAL_DATE"] == "Y"){
+	$arResult["DATE_FIRST_NEWS"] = $arResult["ITEMS"][0]["ACTIVE_FROM"];
+	$this->__component->SetResultCacheKeys(array("DATE_FIRST_NEWS"));
+}
+- в component_epilog.php при наличии результата $arResult["DATE_FIRST_NEWS"], устанавливаем значение свойства specialdate 
+if(isset($arResult["DATE_FIRST_NEWS"])){
+	$APPLICATION->SetPageProperty("specialdate",$arResult["DATE_FIRST_NEWS"]);
+}          
+- проверяем наличие значения у свойства specialdate в публичной части с кешированием и без кеширования
+- проверяем результат при выключенном параметре SPECIAL_DATE

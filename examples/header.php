@@ -1,6 +1,7 @@
+<html lang="<?=LANGUAGE_ID?>">
+
 <head>
     <? $APPLICATION->ShowHead(); ?>
-    <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <link rel="icon" href="./favicon.ico" type="image/x-icon">
     <title><? $APPLICATION->ShowTitle() ?></title>

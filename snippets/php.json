@@ -330,4 +330,29 @@
         ],
         "description": "my_asort"
     },
+    "Print my_phpTojs": {
+        "prefix": "my_phpTojs",
+        "body": [
+            "<script>",
+            "var dataValues = <?=CUtil::PhpToJsObject(\\$field[\"DATA\"])?>;",
+            "</script>",
+        ],
+        "description": "my_phpTojs"
+    },
+    "Print my_debug_open": {
+        "prefix": "my_debug_open",
+        "body": [
+            "echo \"<pre>\"; print_r(\\$_REQUEST); echo \"</pre>\";",
+        ],
+        "description": "my_debug_open"
+    },
+    "Print my_bx_check_cur_section": {
+        "prefix": "my_bx_check_cur_section",
+        "body": [
+            "if(CSite::InDir('/raskrytie-informatsii/kommercheskie-uslugi/')) {",
+                "\\$APPLICATION->AddHeadScript('//code.jivo.ru/widget/7xWa7Yk4fa');",	
+            "}"
+        ],
+        "description": "my_bx_check_cur_section"
+    },
 }

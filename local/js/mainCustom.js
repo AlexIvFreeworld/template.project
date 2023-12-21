@@ -56,7 +56,7 @@ var helpR52 = {
         httpRequest.onreadystatechange = function () {
             helpR52.processResponseJson(httpRequest, callback);
         };
-        console.log(data);
+        // console.log(data);
         httpRequest.open("POST", url, true);
         httpRequest.send(data);
 

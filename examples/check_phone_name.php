@@ -5,6 +5,13 @@ $APPLICATION->SetPageProperty("title", "Производство чая в Мо�
 $APPLICATION->SetTitle("Центр чайных компетенций для вашего бизнеса");
 $regexp = '/^\s?(\+\s?7|8)([- ()]*\d){10}$/';
 $regexp2 = '/[0-9-+\s]{1,30}$/'; // only digits, sign(-) plus, whitespace
+$regexp3 = '/^[0-9]{11,11}$/'; // only digits, number digits == 11
+$regexp4 = '/^([a-z0-9_-]+\.)*[a-z0-9_-]+@[a-z0-9_-]+(\.[a-z0-9_-]+)*\.[a-z]{2,6}$/'; // email 
+$regexp5 = '/^[а-яё0-9a-z._-\s]+$/i'; // all 
+$regexp6 = '/^[а-яё0-9a-z.,?\s]+$/i'; // less than all
+$regexp7 = '/^[а-яё\s]+$/i'; // only words
+$regexp8 = '/^(\+7)[0-9]{10}$/'; // start +7 and only digits = 10
+
 
 // Правильные
 $correctNumbers = [
@@ -30,6 +37,7 @@ foreach ($correctNumbers as $key) {
     }
 }
 $regexpMame = '/^[а-яё]{3,30}|[a-z]{3,30}$/iu';
+$regexpMame2 = '/^[а-яё]{2,30}|[a-z]{2,30}$/iu';
 
 $correctNames = ["Иван", "Анна", "Тимур", "Александр", "Max"," dd"," d  "];
 
