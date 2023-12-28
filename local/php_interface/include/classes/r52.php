@@ -134,6 +134,21 @@ class R52
         }
         return $arRes;
     }
+    public static function getArPropAll($blockId, $elemId)
+    {
+        CModule::IncludeModule("iblock");
+        $arRes = array();
+        $arSelect = array('ID', 'IBLOCK_ID', 'NAME', 'DATE_ACTIVE_FROM', 'PROPERTY_*');
+        $arFilter = array('IBLOCK_ID' => $blockId, 'ID' => $elemId, 'ACTIVE' => 'Y');
+        $res = CIBlockElement::GetList(array(), $arFilter, false, array('nPageSize' => 1), $arSelect);
+        while ($ob = $res->GetNextElement()) {
+            $arProps = $ob->GetProperties();
+            foreach ($arProps as $item) {
+                $arRes[$item["CODE"]] = $item;
+            }
+        }
+        return $arRes;
+    }
     public static function getHtmlValue($blockId, $elemId, $propCode)
     {
         CModule::IncludeModule("iblock");

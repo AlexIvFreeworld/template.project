@@ -241,8 +241,9 @@
             "\\$APPLICATION->AddHeadScript(SITE_TEMPLATE_PATH . '/js/60sec_new.js');",
             "\\$time_start = microtime(true);",
             "error_get_last()",
-            "//$str = html_entity_decode(//$arResult['SECTION']['UF_TOPTEXT']);",
-            "//$arTopText = str_replace('<a','<li><a',//$str);",
+            "\\$str = html_entity_decode(\\$arResult['SECTION']['UF_TOPTEXT']);",
+            "\\$arTopText = str_replace('<a','<li><a',\\$str);",
+            "\\$resUrldecode = urldecode(\\$_SERVER[\"HTTP_REFERER\"]);"
             "//---------------------------------------------------------------",
         ],
         "description": "my_cases"
@@ -354,5 +355,26 @@
             "}"
         ],
         "description": "my_bx_check_cur_section"
+    },
+    "Print my_curl_get": {
+        "prefix": "my_curl_get",
+        "body": [
+            "\\$apiId = \"481\";",
+            "\\$apiKey = \"oKU7baNZOgwLuQl9KC3MMxJTE4rDiXxU\";",
+            "\\$eventId = \"2078374\";",
+            "\\$url = 'https://api.radario.ru/events/'.\\$eventId;",
+            "\\$headers = [\"api-id: \".\\$apiId, \"api-key: \".\\$apiKey, \"api-version: 1.1\"];",
+            "\\$curl = curl_init(); // создаем экземпляр curl",
+            "curl_setopt(\\$curl, CURLOPT_HTTPHEADER, \\$headers);",
+            "curl_setopt(\\$curl, CURLOPT_RETURNTRANSFER, 1);",
+            "curl_setopt(\\$curl, CURLOPT_VERBOSE, 1); ",
+            "curl_setopt(\\$curl, CURLOPT_POST, false); // ",
+            "curl_setopt(\\$curl, CURLOPT_URL, \\$url);",
+            "\\$result = curl_exec(\\$curl);",
+            "curl_close(\\$curl);",
+            "\\$result = json_decode(\\$result);",
+            "debug(\\$result);",
+            ],
+        "description": "my_curl_get"
     },
 }
