@@ -43,7 +43,7 @@ function WebprostorCoreGetNewRowId()
 	return Math.floor(Math.random() * (999 - 0 + 1)) + 0;
 }
 
-function WebprostorCoreAddNewCellInput(rowDom, cellAlign, elementType, elementName, defaultValue = false, elementSize = false, elementMaxLength = false)
+function WebprostorCoreAddNewCellInput(rowDom, cellAlign, elementType, elementName, defaultValue = false, elementSize = false, elementMaxLength = false, listID = false)
 {
 	var newCell = rowDom.insertCell(0);
 	if(cellAlign)
@@ -61,6 +61,8 @@ function WebprostorCoreAddNewCellInput(rowDom, cellAlign, elementType, elementNa
 		newCellText.size = elementSize;
 	if(elementMaxLength)
 		newCellText.maxLength = elementMaxLength;
+	if(listID)
+		newCellText.setAttribute('list', listID);
 	newCell.appendChild(newCellText);
 }
 
@@ -75,7 +77,7 @@ function WebprostorCoreAddNewCellText(rowDom, cellAlign, elementType, elemText =
 	newCell.appendChild(newCellText);
 }
 
-function WebprostorCoreAddNewCellSelect(rowDom, cellAlign, elementName, selectValues = false, selectLabels = false, defaultValue = false)
+function WebprostorCoreAddNewCellSelect(rowDom, cellAlign, elementName, selectValues = false, selectLabels = false, defaultValue = false, multiple = false)
 {
 	var newCell = rowDom.insertCell(0);
 	if(cellAlign)
@@ -84,6 +86,8 @@ function WebprostorCoreAddNewCellSelect(rowDom, cellAlign, elementName, selectVa
 	var newCellText = document.createElement('select');
 	if(elementName)
 		newCellText.name = elementName;
+	if(multiple)
+		newCellText.setAttribute('multiple', 'multiple');
 	newCell.appendChild(newCellText);
 	
 	var i = 0;
@@ -102,7 +106,7 @@ function WebprostorCoreAddNewCellSelect(rowDom, cellAlign, elementName, selectVa
 	}
 }
 
-function WebprostorCoreAddNewCellButton(rowDom, cellAlign, elementType, eventOnclick = false, addHtml = '')
+function WebprostorCoreAddNewCellButton(rowDom, cellAlign, elementType, eventOnclick = false, addHtml = '', className = 'adm-btn')
 {
 	var newCell = rowDom.insertCell(0);
 	if(cellAlign)
@@ -115,5 +119,8 @@ function WebprostorCoreAddNewCellButton(rowDom, cellAlign, elementType, eventOnc
 		newCellText.onclick = eventOnclick;
 	if(addHtml)
 		newCellText.innerHTML = addHtml;
+	if(className)
+		newCellText.className = className;
+	
 	newCell.appendChild(newCellText);
 }

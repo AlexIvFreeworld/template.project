@@ -11,11 +11,24 @@ $moduleAccessLevel = $APPLICATION->GetGroupRight($module_id);
 if ($moduleAccessLevel == "D")
     $APPLICATION->AuthForm(GetMessage("WEBPROSTOR_SMTP_ACCESS_DENIED"));
 
-if(isset($_REQUEST["Add"]))
+global $LOG_ID;
+
+if(isset($_REQUEST["Add"]) && $moduleAccessLevel >= 'S')
 {
 	$notAllRequest = false;
 	$send = false;
 	$errorEmail = false;
+	$errorFile = false;
+	$attach = false;
+
+	if(isset($_FILES['file']) && $_FILES['file']['tmp_name'] != '')
+	{
+		$attach[] = 
+		[
+			"PATH" => $_FILES['file']['tmp_name'],
+			"NAME" => $_FILES['file']['name']
+		];
+	}
 	if(empty($_REQUEST["site_id"]) || empty($_REQUEST["to"]) || empty($_REQUEST["subject"]) || empty($_REQUEST["message"]))
 	{
 		$notAllRequest = true;
@@ -24,10 +37,14 @@ if(isset($_REQUEST["Add"]))
 	{
 		$errorEmail = true;
 	}
+	elseif(isset($_FILES['file']) && $attach && $_FILES['file']['error'] != UPLOAD_ERR_OK)
+	{
+		$errorFile = true;
+	}
 	else
 	{
 		$smtp = new CWebprostorSmtp($_REQUEST["site_id"]);
-		$send = $smtp->SendMail($to, $subject, $message, false, false);
+		$send = $smtp->SendMail($to, $subject, $message, false, false, $attach, $message_id);
 	}
 }
 
@@ -59,10 +76,32 @@ if(isset($_REQUEST["Add"]))
 		$showReq = true;
 		echo CAdminMessage::ShowMessage( GetMessage("WEBPROSTOR_SMTP_NOTE_EMAIL_NOT_VALID") );
 	} 
-	elseif(!$send)
+	elseif($errorFile)
 	{
 		$showReq = true;
-		echo CAdminMessage::ShowMessage( GetMessage("WEBPROSTOR_SMTP_NOTE_UNDEFINED_ERROR") );
+		echo CAdminMessage::ShowMessage( GetMessage("WEBPROSTOR_SMTP_NOTE_FILE_UPLOAD_ERROR") );
+	} 
+	elseif(!$send)
+	{
+		if($LOG_ID>0)
+		{
+			$CSMTPLog = new CWebprostorSmtpLogs;
+			
+			$logResNew = $CSMTPLog->GetById($LOG_ID);
+			$messageArrNew = $logResNew->Fetch();
+			
+			if($messageArrNew["ERROR_TEXT"] != '')
+			{
+				$errorText = $messageArrNew["ERROR_TEXT"];
+			}
+			else
+			{
+				$errorText = GetMessage("WEBPROSTOR_SMTP_NOTE_UNDEFINED_ERROR");
+			}
+		}
+		
+		$showReq = true;
+		echo CAdminMessage::ShowMessage($errorText);
 	} 
 	else
 	{
@@ -86,11 +125,11 @@ while ($arSite = $rsSites->Fetch())
 
 ?>
 <form id="webprostor_smtp_send" method="POST" action="<?=$APPLICATION->GetCurPage()?>?lang=<?echo LANG?>" ENCTYPE="multipart/form-data" name="webprostor_smtp_send">
+			<input type="hidden" id="message_id" name="message_id" value="<?=$LOG_ID?>" />
 <?
 echo bitrix_sessid_post();
 $tabControl->Begin();
 $tabControl->BeginNextTab();
-
 ?>
 	<tr>
 		<td width="15%" valign="top">
@@ -128,11 +167,19 @@ $tabControl->BeginNextTab();
 			<textarea id="message" name="message" style="width:100%;height:200px;"><?if($showReq):?><?=htmlspecialchars($_REQUEST["message"])?><?endif;?></textarea>
 		</td>
 	</tr>
+	<?/*<tr>
+		<td width="15%" valign="top">
+			<?=GetMessage("WEBPROSTOR_SMTP_TD_FILE")?>:
+		</td>
+		<td width="85%">
+			<input type="file" id="file" name="file" value="<?if($showReq):?><?=htmlspecialchars($_REQUEST["file"])?><?endif;?>" />
+		</td>
+	</tr>*/?>
 <?
 $tabControl->Buttons();
 ?>
-	<input type="submit" name="Add" value="<?echo GetMessage("WEBPROSTOR_SMTP_BUTTON_SUBMIT")?>" class="adm-btn-save" />
-	<input type="reset" name="Reset" value="<?=GetMessage("WEBPROSTOR_SMTP_BUTTON_RESET")?>" />
+	<input type="submit" name="Add" value="<?echo GetMessage("WEBPROSTOR_SMTP_BUTTON_SUBMIT")?>" class="adm-btn-save"<?=$moduleAccessLevel < 'S'?' disabled=""':''?> />
+	<input type="reset" name="Reset" value="<?=GetMessage("WEBPROSTOR_SMTP_BUTTON_RESET")?>"<?=$moduleAccessLevel < 'S'?' disabled=""':''?> />
 <?
 $tabControl->End();
 echo BeginNote();?>

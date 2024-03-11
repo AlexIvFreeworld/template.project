@@ -319,7 +319,7 @@
     "Print my_asort": {
         "prefix": "my_asort",
         "body": [
-            "function cmp($a, $b)",
+            "function cmp(\\$a, \\$b)",
             "{",
             "global \\$arSectionIdSort;",
             "if (intval(\\$arSectionIdSort[\\$a[0][\"SECTION_ID\"]]) == intval(\\$arSectionIdSort[\\$b[0][\"SECTION_ID\"]])) {",
@@ -377,4 +377,30 @@
             ],
         "description": "my_curl_get"
     },
+    "Print my_debug_bitrix_full": {
+        "prefix": "my_debug_bitrix_full",
+        "body": [
+            "global \\$USER;",
+            "if (\\$USER->IsAdmin()) {",
+            "echo \"Вы администратор!\";",
+            "echo \"<pre>\" . print_r(\\$data, 1) . \"</pre>\";",
+            "}",
+            ],
+        "description": "my_debug_bitrix_full"
+    },
+    "Print my_uasort": {
+        "prefix": "my_uasort",
+        "body": [
+            "function cmp(\\$a, \\$b)",
+            "{",
+            "if (intval(\\$a[\"SORT\"]) == intval(\\$b[\"SORT\"])) {",
+            "return 0;",
+            "}",
+            "return (intval(\\$a[\"SORT\"]) < intval(\\$b[\"SORT\"])) ? -1 : 1;",
+            "}",
+            "uasort(\\$arResult['CHARACTERISTICS'], \"cmp\");",
+            ],
+        "description": "my_uasort"
+    },
+
 }

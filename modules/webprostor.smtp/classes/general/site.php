@@ -5,13 +5,14 @@ Class CWebprostorSmtpSite extends CMain
 {
 	private const MODULE_ID = 'webprostor.smtp';
 	
-	private function Init()
+	private static function Init()
 	{
 		global $debug, $add_init, $del_init;
 		
-		$debug = COption::GetOptionString(self::MODULE_ID, "LOG_ERRORS", false);
+		/*$debug = COption::GetOptionString(self::MODULE_ID, "LOG_ERRORS", false);
 		if($debug == "N")
-			$debug = false;
+			$debug = false;*/
+		$debug = false;
 		
 		$add_init = COption::GetOptionString(self::MODULE_ID, "AUTO_ADD_INIT", false);
 		if($add_init == "N")
@@ -28,7 +29,7 @@ Class CWebprostorSmtpSite extends CMain
 		}
 	}
 	
-	private function RenameFileContent($filePath, $values)
+	private static function RenameFileContent($filePath, $values)
 	{
 		$file_contents = file_get_contents($filePath);
 		foreach($values as $code => $value){
@@ -39,7 +40,7 @@ Class CWebprostorSmtpSite extends CMain
 		return true;
 	}
 	
-	public function AddDirInit($siteId = false)
+	public static function AddDirInit($siteId = false)
 	{
 		self::Init();
 		global $debug, $logError, $add_init;
@@ -50,8 +51,8 @@ Class CWebprostorSmtpSite extends CMain
 			if(is_array($siteId) && isset($siteId["LID"]))
 				$siteId = $siteId["LID"];
 			
-			$dirPath = $_SERVER['DOCUMENT_ROOT'].'/bitrix/php_interface/'.$siteId;
-			$filePath = $_SERVER['DOCUMENT_ROOT'].'/bitrix/php_interface/'.$siteId.'/init.php';
+			$dirPath = $_SERVER['DOCUMENT_ROOT'].self::chechPhpInterfaceDir().$siteId;
+			$filePath = $_SERVER['DOCUMENT_ROOT'].self::chechPhpInterfaceDir().$siteId.'/init.php';
 			
 			if ($debug) 
 			{
@@ -66,7 +67,8 @@ Class CWebprostorSmtpSite extends CMain
 				
 				if (
 					CopyDirFiles($_SERVER['DOCUMENT_ROOT']."/bitrix/modules/".self::MODULE_ID."/install/init.php", $filePath, false) && 
-					self::RenameFileContent($filePath, Array("#SITE_ID#" => $siteId))
+					self::RenameFileContent($filePath, Array("#SITE_ID#" => $siteId)) && 
+					self::RenameFileContent($filePath, Array("'#ADDITIONAL_HEADERS#'" => "''"))
 				) 
 				{
 					if($debug)
@@ -95,7 +97,12 @@ Class CWebprostorSmtpSite extends CMain
 		}
 	}
 	
-	public function DeleteDirInit($siteId = false)
+	public static function chechPhpInterfaceDir()
+	{
+		return file_exists($_SERVER['DOCUMENT_ROOT'].'/local/php_interface/')?"/local/php_interface/":"/bitrix/php_interface/";
+	}
+	
+	public static function DeleteDirInit($siteId = false)
 	{
 		self::Init();
 		global $debug, $logError, $del_init;
@@ -103,8 +110,8 @@ Class CWebprostorSmtpSite extends CMain
 		if ($del_init) 
 		{
 		
-			$dirPath = $_SERVER['DOCUMENT_ROOT'].'/bitrix/php_interface/'.$siteId;
-			$filePath = $_SERVER['DOCUMENT_ROOT'].'/bitrix/php_interface/'.$siteId.'/init.php';
+			$dirPath = $_SERVER['DOCUMENT_ROOT'].self::chechPhpInterfaceDir().$siteId;
+			$filePath = $_SERVER['DOCUMENT_ROOT'].self::chechPhpInterfaceDir().$siteId.'/init.php';
 			
 			if ($debug) 
 			{

@@ -10,6 +10,7 @@ Class webprostor_core extends CModule
 	var $MODULE_DESCRIPTION;
 	var $MODULE_CSS;
 	var $strError = '';
+	var $MODULE_GROUP_RIGHTS = "Y";
 
 	function __construct()
 	{
@@ -46,13 +47,42 @@ Class webprostor_core extends CModule
 
 	function InstallFiles($arParams = array())
 	{
+		if (is_dir($p = $_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/'.self::MODULE_ID.'/admin'))
+		{
+			if ($dir = opendir($p))
+			{
+				while (false !== $item = readdir($dir))
+				{
+					if ($item == '..' || $item == '.' || $item == 'menu.php')
+						continue;
+					file_put_contents($file = $_SERVER['DOCUMENT_ROOT'].'/bitrix/admin/'.self::MODULE_ID.'_'.$item,
+					'<'.'? require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/'.self::MODULE_ID.'/admin/'.$item.'");?'.'>');
+				}
+				closedir($dir);
+			}
+		}
 		CopyDirFiles($_SERVER['DOCUMENT_ROOT']."/bitrix/modules/".self::MODULE_ID."/install/bitrix/", $_SERVER["DOCUMENT_ROOT"]."/bitrix/", true, true);
 		return true;
 	}
 
 	function UnInstallFiles()
 	{
+		if (is_dir($p = $_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/'.self::MODULE_ID.'/admin'))
+		{
+			if ($dir = opendir($p))
+			{
+				while (false !== $item = readdir($dir))
+				{
+					if ($item == '..' || $item == '.')
+						continue;
+					unlink($_SERVER['DOCUMENT_ROOT'].'/bitrix/admin/'.self::MODULE_ID.'_'.$item);
+				}
+				closedir($dir);
+			}
+		}
 		DeleteDirFilesEx('/bitrix/panel/'.self::MODULE_ID.'/');
+		DeleteDirFilesEx('/bitrix/fonts/'.self::MODULE_ID.'/');
+		DeleteDirFilesEx('/bitrix/css/'.self::MODULE_ID.'/');
 		return true;
 	}
 

@@ -3,7 +3,7 @@ use Bitrix\Main\Loader;
 
 Class CWebprostorCoreFilter
 {
-	public function GetFieldsForFilter($IBLOCK_ID = false)
+	public static function GetFieldsForFilter($IBLOCK_ID = false)
 	{
 		$filterFields = array(
 			array(
@@ -101,7 +101,7 @@ Class CWebprostorCoreFilter
 		
 		return $filterFields;
 	}
-	public function GetFieldsForForm($IBLOCK_ID = false, $properties = Array(), $default_values = Array())
+	public static function GetFieldsForForm($IBLOCK_ID = false, $properties = Array(), $default_values = Array())
 	{
 		$filterFields["MAIN"] = Array(
 			"LABEL" => GetMessage("MAIN"),

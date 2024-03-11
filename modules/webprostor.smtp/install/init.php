@@ -5,7 +5,7 @@ if (!function_exists('custom_mail') && COption::GetOptionString("webprostor.smtp
 	{
 		if(CModule::IncludeModule("webprostor.smtp"))
 		{
-			$smtp = new CWebprostorSmtp("#SITE_ID#");
+			$smtp = new CWebprostorSmtp("#SITE_ID#", '#ADDITIONAL_HEADERS#');
 			$result = $smtp->SendMail($to, $subject, $message, $additional_headers, $additional_parameters);
 
 			if($result)

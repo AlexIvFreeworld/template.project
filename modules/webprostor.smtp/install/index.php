@@ -11,6 +11,7 @@ Class webprostor_smtp extends CModule
 	var $MODULE_DESCRIPTION;
 	var $MODULE_CSS;
 	var $strError = '';
+	var $MODULE_GROUP_RIGHTS = "Y";
 
 	function __construct()
 	{
@@ -88,6 +89,7 @@ Class webprostor_smtp extends CModule
 		{
 			CopyDirFiles($_SERVER['DOCUMENT_ROOT']."/bitrix/modules/".self::MODULE_ID."/install/init.php", $filePath, false);
 			self::RenameFileContent($filePath, Array("#SITE_ID#" => ($root?"":$siteId)));
+			self::RenameFileContent($filePath, Array("'#ADDITIONAL_HEADERS#'" => ($root?'$additional_headers':"''")));
 		}
 	}
 	
@@ -133,7 +135,25 @@ Class webprostor_smtp extends CModule
 				closedir($dir);
 			}
 		}
+		
+		CheckDirPath($_SERVER['DOCUMENT_ROOT'].'/bitrix/tools/'.self::MODULE_ID.'/');
+		if (is_dir($p = $_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/'.self::MODULE_ID.'/tools'))
+		{
+			if ($dir = opendir($p))
+			{
+				while (false !== $item = readdir($dir))
+				{
+					if ($item == '..' || $item == '.')
+						continue;
+					file_put_contents($file = $_SERVER['DOCUMENT_ROOT'].'/bitrix/tools/'.self::MODULE_ID.'/'.$item,
+					'<'.'? require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/'.self::MODULE_ID.'/tools/'.$item.'");?'.'>');
+				}
+				closedir($dir);
+			}
+		}
+		
 		CopyDirFiles($_SERVER['DOCUMENT_ROOT']."/bitrix/modules/".self::MODULE_ID."/install/bitrix/", $_SERVER["DOCUMENT_ROOT"]."/bitrix/", true, true);
+		
 		return true;
 	}
 
@@ -152,7 +172,26 @@ Class webprostor_smtp extends CModule
 				closedir($dir);
 			}
 		}
+		if (is_dir($p = $_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/'.self::MODULE_ID.'/tools'))
+		{
+			if ($dir = opendir($p))
+			{
+				while (false !== $item = readdir($dir))
+				{
+					if ($item == '..' || $item == '.')
+						continue;
+					unlink($_SERVER['DOCUMENT_ROOT'].'/bitrix/tools/'.self::MODULE_ID.'/'.$item);
+				}
+				closedir($dir);
+			}
+		}
 		DeleteDirFiles($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/'.self::MODULE_ID."/install/bitrix/", $_SERVER["DOCUMENT_ROOT"]."/bitrix/");
+		DeleteDirFilesEx('/bitrix/panel/'.self::MODULE_ID.'/');
+		DeleteDirFilesEx('/bitrix/tools/'.self::MODULE_ID.'/');
+		
+		DeleteDirFilesEx('/bitrix/gadgets/webprostor/smtp/');
+		rmdir($_SERVER['DOCUMENT_ROOT'].'/bitrix/gadgets/webprostor/');
+		
 		return true;
 	}
 
@@ -172,6 +211,8 @@ Class webprostor_smtp extends CModule
 		)
 		{
 			COption::SetOptionString("main", "fill_to_mail", "Y");
+			//COption::SetOptionString("main", "send_mid", "Y");
+			//COption::SetOptionString("main", "mail_gen_text_version", "N");
 			RegisterModule(self::MODULE_ID);
 			RegisterModuleDependences('main', 'OnBeforeSiteAdd', self::MODULE_ID, 'CWebprostorSmtpSite', 'AddDirInit');
 			RegisterModuleDependences('main', 'OnSiteDelete', self::MODULE_ID, 'CWebprostorSmtpSite', 'DeleteDirInit');
@@ -194,6 +235,8 @@ Class webprostor_smtp extends CModule
 		{
 			COption::RemoveOption(self::MODULE_ID);
 			CAdminNotify::DeleteByModule(self::MODULE_ID);
+			CAgent::RemoveModuleAgents(self::MODULE_ID);
+			
 			UnRegisterModule(self::MODULE_ID);
 			UnRegisterModuleDependences('main', 'OnBeforeSiteAdd', self::MODULE_ID, 'CWebprostorSmtpSite', 'AddDirInit');
 			UnRegisterModuleDependences('main', 'OnSiteDelete', self::MODULE_ID, 'CWebprostorSmtpSite', 'DeleteDirInit');
@@ -202,6 +245,19 @@ Class webprostor_smtp extends CModule
 		}
 		else
 			return false;
+	}
+
+	function GetModuleRightList()
+	{
+		$arr = array(
+			"reference_id" => array("D","R","S","W"),
+			"reference" => array(
+				"[D] ".GetMessage("WEBPROSTOR_SMTP_RIGHT_DENIED"),
+				"[R] ".GetMessage("WEBPROSTOR_SMTP_RIGHT_READ"),
+				"[S] ".GetMessage("WEBPROSTOR_SMTP_RIGHT_SEND"),
+				"[W] ".GetMessage("WEBPROSTOR_SMTP_RIGHT_ADMIN"))
+			);
+		return $arr;
 	}
 }
 ?>

@@ -10,9 +10,9 @@ if($APPLICATION->GetGroupRight($MODULE_ID)>"D")
 	$GLOBALS['APPLICATION']->SetAdditionalCSS('/bitrix/panel/webprostor.smtp/menu.css');
 	
 	$aMenu = array(
-		"parent_menu" => "global_menu_services",
+		"parent_menu" => "global_menu_webprostor",
 		"section" => $MODULE_ID,
-		"sort" => 1000,
+		"sort" => 700,
 		"text" => GetMessage("WEBPROSTOR_SMTP_MAIN_MENU_TEXT"),
 		"icon" => "webprostor_smtp",
 		"page_icon" => "",
@@ -23,24 +23,26 @@ if($APPLICATION->GetGroupRight($MODULE_ID)>"D")
 				"module_id" => $MODULE_ID,
 				"icon" => "sender_menu_icon",
 				"text" => GetMessage("WEBPROSTOR_SMTP_INNER_MENU_SEND_TEXT"),
-				"title" => GetMessage("WEBPROSTOR_SMTP_INNER_MENU_SEND_TITLE"),
 				"url" => "webprostor.smtp_send.php?lang=".LANGUAGE_ID,
-				"items_id" => "webprostor_smtp_send",
 			),
 			array(
 				"module_id" => $MODULE_ID,
 				"icon" => "update_marketplace",
 				"text" => GetMessage("WEBPROSTOR_SMTP_INNER_MENU_LOGS_TEXT"),
-				"title" => GetMessage("WEBPROSTOR_SMTP_INNER_MENU_LOGS_TITLE"),
 				"url" => "webprostor.smtp_logs.php?lang=".LANGUAGE_ID,
 				"more_url" => array("webprostor.smtp_log_view.php"),
-				"items_id" => "webprostor_smtp_logs",
+			),
+			array(
+				"module_id" => $MODULE_ID,
+				"icon" => "fileman_sticker_icon",
+				"text" => GetMessage("WEBPROSTOR_SMTP_INNER_MENU_DEBUG_TEXT"),
+				"url" => "webprostor.smtp_debug.php?lang=".LANGUAGE_ID,
 			),
 			array(
 				"module_id" => $MODULE_ID,
 				"text" => GetMessage("WEBPROSTOR_THANK_THE_DEVELOPER"),
-				"icon" => "currency_menu_icon",
-				"url" => "https://my.qiwi.com/form/Egor-SU2sWXXKYW",
+				"icon" => "blog_menu_icon",
+				"url" => "https://marketplace.1c-bitrix.ru/solutions/{$MODULE_ID}/#tab-rating-link",
 			),
 			array(
 				"module_id" => $MODULE_ID,

@@ -10,9 +10,8 @@ Class CWebprostorSmtp extends CMain
 {
 	private $module_id = 'webprostor.smtp';
 	private $site_id = '';
+	private $site_name = '';
 	private $prefix = '';
-	
-	private $use_phpmailer = false;
 	
 	private $smtp_server = '';
 	private $smtp_port = '';
@@ -28,8 +27,7 @@ Class CWebprostorSmtp extends CMain
 	private $sender_smtp_secure = false;
 	private $sender_smtp_host = '';
 	
-	private $requires_authentication = '';
-	private $helo_command = '';
+	private $requires_authentication = true;
 	
 	private $login = '';
 	private $password = '';
@@ -38,8 +36,16 @@ Class CWebprostorSmtp extends CMain
 	private $sender_login = '';
 	private $sender_password = '';
 	
+	private $use_dkim = true;
+	private $dkim_domain = '';
+	private $dkim_selector = '';
+	private $dkim_passphrase = '';
+	private $dkim_private_string = '';
+	
 	private $replace_from = '';
 	private $replace_from_to_email = '';
+	private $replace_from_name = '';
+	private $dsn = '';
 	
 	private $charset = '';
 	private $priority = '';
@@ -47,38 +53,87 @@ Class CWebprostorSmtp extends CMain
 	private $reply_to = '';
 	
 	private $debug = false;
-	private $debug_commands = false;
-	private $include_send_info = false;
-	private $log_send_ok = false;
+	private $notify_limit = 10000;
+	private $auto_cleaning_logs = false;
+	private $dont_save_send_info = false;
+	private $debug_level = 0;
 	
 	private $duplicate = false;
 	private $bcc = '';
+	//private $mail_gen_text_version = '';
 	
-	public function CWebprostorSmtp($siteId = false)
+	private $def_site_id = '';
+	
+	public function __construct($siteId = false, &$additional_headers = false)
 	{
+		
 		if(!$siteId)
 		{
-			$rsSites = CSite::GetList($by = 'sort', $order = 'desc');
-			while ($arSite = $rsSites->Fetch())
+			if($additional_headers)
 			{
-				if(trim(strtoupper($arSite['SERVER_NAME'])) == strtoupper($_SERVER['SERVER_NAME']))
+				$messID = false;
+				
+				preg_match('/\bX-MID: [0-9]*\D([0-9]*)(.+)\n/i', $additional_headers, $matches);
+				list(, $messID) = $matches;
+				
+				if($messID > 0)
+				{
+					$rsEM = CEventMessage::GetByID($messID);
+					$arEM = $rsEM->Fetch();
+					
+					if($arEM['LID'] != '')
+					{
+						$rsSites = CSite::GetByID($arEM['LID']);
+						$arSite = $rsSites->Fetch();
+						
+						if(is_array($arSite))
+						{
+							$siteId = $arSite['ID'];
+							$siteName = $arSite['SITE_NAME'];
+						}
+					}
+				}
+			}
+			
+			if(!$siteId && $_SERVER['SERVER_NAME'] != '')
+			{
+				$rsSites = CSite::GetList($by = 'sort', $order = 'desc', ['DOMAIN' => $_SERVER['SERVER_NAME']]);
+				while ($arSite = $rsSites->Fetch())
 				{
 					$siteId = $arSite['ID'];
-					continue;
+					$siteName = $arSite['SITE_NAME'];
+				}
+			}
+			
+			$this->def_site_id = COption::GetOptionString($this->module_id, "USE_DEFAULT_SITE_ID_IF_EMPTY", false);
+			if($this->def_site_id == "N")
+				$this->def_site_id = false;
+			
+			if(!$siteId && $this->def_site_id)
+			{
+				$rsSites = CSite::GetList($by = 'sort', $order = 'desc', ['DEFAULT' => 'Y']);
+				while ($arSite = $rsSites->Fetch())
+				{
+					$siteId = $arSite['ID'];
+					$siteName = $arSite['SITE_NAME'];
 				}
 			}
 		}
+		else
+		{
+			$rsSites = CSite::GetByID($siteId);
+			$arSite = $rsSites->Fetch();
+			if($arSite['SITE_NAME'])
+				$siteName = $arSite['SITE_NAME'];
+		}
 		
 		$this->site_id = $siteId;
+		$this->site_name = $siteName;
 		$this->prefix = strtoupper($siteId);
-		
-		$this->use_phpmailer = COption::GetOptionString($this->module_id, "USE_PHPMAILER", false);
-		if($this->use_phpmailer == "N")
-			$this->use_phpmailer = false;
 		
 		$this->smtp_server = COption::GetOptionString($this->module_id, $this->prefix.'_'."SMTP_SERVER");
 		$this->smtp_port = COption::GetOptionString($this->module_id, $this->prefix.'_'."SMTP_PORT");
-		$this->smtp_secure = COption::GetOptionString($this->module_id, $this->prefix.'_'."SECURE");
+		$this->smtp_secure = COption::GetOptionString($this->module_id, $this->prefix.'_'."SECURE", false);
 		if($this->smtp_secure && $this->smtp_secure == "ssl")
 		{
 			$this->smtp_host = $this->smtp_secure.'://'.$this->smtp_server;
@@ -92,13 +147,17 @@ Class CWebprostorSmtp extends CMain
 		
 		$this->sender_smtp_server = COption::GetOptionString($this->module_id, "SMTP_SERVER");
 		$this->sender_smtp_port = COption::GetOptionString($this->module_id, "SMTP_PORT");
-		$this->sender_smtp_secure = COption::GetOptionString($this->module_id, "SECURE");
+		$this->sender_smtp_secure = COption::GetOptionString($this->module_id, "SECURE", false);
 		if($this->sender_smtp_secure && $this->sender_smtp_secure == "ssl")
 		{
 			$this->sender_smtp_host = $this->sender_smtp_secure.'://'.$this->sender_smtp_server;
 		}
 		else
 			$this->sender_smtp_host = $this->sender_smtp_server;
+		
+		$this->requires_authentication = COption::GetOptionString($this->module_id, $this->prefix.'_'."REQUIRES_AUTHENTICATION", true);
+		if($this->requires_authentication == "N")
+			$this->requires_authentication = false;
 		
 		$this->login = COption::GetOptionString($this->module_id, $this->prefix.'_'."LOGIN");
 		$this->password = COption::GetOptionString($this->module_id, $this->prefix.'_'."PASSWORD");
@@ -109,15 +168,25 @@ Class CWebprostorSmtp extends CMain
 		$this->sender_login = COption::GetOptionString($this->module_id, "LOGIN");
 		$this->sender_password = COption::GetOptionString($this->module_id, "PASSWORD");
 		
+		$this->use_dkim = COption::GetOptionString($this->module_id, $this->prefix.'_'."USE_DKIM", true);
+		if($this->use_dkim == "N")
+			$this->use_dkim = false;
+		
+		$this->dkim_domain = COption::GetOptionString($this->module_id, $this->prefix.'_'."DKIM_DOMAIN");
+		$this->dkim_selector = COption::GetOptionString($this->module_id, $this->prefix.'_'."DKIM_SELECTOR");
+		$this->dkim_passphrase = COption::GetOptionString($this->module_id, $this->prefix.'_'."DKIM_PASSPHRASE");
+		$this->dkim_private_string = COption::GetOptionString($this->module_id, $this->prefix.'_'."DKIM_PRIVATE_STRING");
+		
 		$this->replace_from = COption::GetOptionString($this->module_id, $this->prefix.'_'."REPLACE_FROM");
 		$this->replace_from_to_email = COption::GetOptionString($this->module_id, $this->prefix.'_'."REPLACE_FROM_TO_EMAIL");
-		$this->requires_authentication = COption::GetOptionString($this->module_id, $this->prefix.'_'."REQUIRES_AUTHENTICATION", true);
-		if($this->requires_authentication == "N")
-			$this->requires_authentication = false;
-		
-		$this->helo_command = COption::GetOptionString($this->module_id, $this->prefix.'_'."HELO_COMMAND", true);
-		if(!$this->helo_command || strlen($this->helo_command) != 4)
-			$this->helo_command = "EHLO";
+		$this->replace_from_name = COption::GetOptionString($this->module_id, $this->prefix.'_'."REPLACE_FROM_NAME");
+		$this->dsn = COption::GetOptionString($this->module_id, $this->prefix.'_'."DSN");
+		if($this->dsn)
+		{
+			$this->dsn = unserialize($this->dsn);
+			if(is_array($this->dsn))
+				$this->dsn = implode(',',$this->dsn);
+		}
 		
 		$this->charset = strtoupper(COption::GetOptionString($this->module_id, $this->prefix.'_'."CHARSET", "utf-8"));
 		$this->priority = COption::GetOptionString($this->module_id, $this->prefix.'_'."PRIORITY", 3);
@@ -127,39 +196,52 @@ Class CWebprostorSmtp extends CMain
 		$this->debug = COption::GetOptionString($this->module_id, "LOG_ERRORS", false);
 		if($this->debug == "N")
 			$this->debug = false;
-		$this->debug_commands = COption::GetOptionString($this->module_id, "LOG_COMMANDS", false);
-		if($this->debug_commands == "N")
-			$this->debug_commands = false;
-		$this->include_send_info = COption::GetOptionString($this->module_id, "INCLUDE_SEND_INFO_TO_LOG", false);
-		if($this->include_send_info == "N")
-			$this->include_send_info = false;
-		$this->log_send_ok = COption::GetOptionString($this->module_id, "LOG_SEND_OK", false);
-		if($this->log_send_ok == "N")
-			$this->log_send_ok = false;
+		$this->notify_limit = COption::GetOptionString($this->module_id, "NOTIFY_LIMIT", 10000);
+		if(intVal($this->notify_limit) == 0)
+			$this->notify_limit = false;
+		$this->dont_save_send_info = COption::GetOptionString($this->module_id, "DONT_SAVE_SEND_INFO", false);
+		if($this->dont_save_send_info == "N")
+			$this->dont_save_send_info = false;
+		$this->auto_cleaning_logs = COption::GetOptionString($this->module_id, "AUTO_CLEANING_LOGS", false);
+		if($this->auto_cleaning_logs == "N")
+			$this->auto_cleaning_logs = false;
+		$this->debug_level = COption::GetOptionString($this->module_id, "DEBUG_LEVEL", 0);
 		
 		$this->duplicate = COption::GetOptionString($this->module_id, $this->prefix.'_'."DUPLICATE", false);
 		if($this->duplicate == "N")
 			$this->duplicate = false;
 		if($this->duplicate)
 			$this->bcc = COption::GetOptionString("main", "all_bcc");
+		
+		/*$this->mail_gen_text_version = COption::GetOptionString("main", "mail_gen_text_version", false);
+		if($this->mail_gen_text_version == "N")
+			$this->mail_gen_text_version = false;*/
 	}
 	
-	public function SendMail($to = false, $subject = false, $message = false, $additional_headers = '', $additional_parameters = '')
+	public function SendMail($to = false, $subject = false, $message = false, $additional_headers = '', $additional_parameters = '', $attachment = false, $message_id = false)
 	{
+		$result = true;
+		
 		if($this->debug)
 		{
 			global $logError;
 			$logError = new CWebprostorSmtpLogs;
 			
-			$logFields = Array();
-			if($this->debug_commands)
-			{
-				$logCommandFields = Array();
-			}
+			$logFields = 
+			[
+				"SOURCE_TO" => $to,
+				"SOURCE_SUBJECT" => $subject,
+				"SOURCE_MESSAGE" => $message,
+				"SOURCE_HEADERS" => $additional_headers,
+				"SOURCE_PARAMETERS" => $additional_parameters,
+			];
 		}
 		
-		$sendInfo = '';
-		$sendInfo .= 'Subject: '.$subject."\r\n";
+		if($subject)
+		{
+			$sendInfo = '';
+			$sendInfo .= 'Subject: '.$subject."\r\n";
+		}
 		
 		if ($additional_headers) 
 		{
@@ -192,6 +274,9 @@ Class CWebprostorSmtp extends CMain
 		}
 		else
 		{
+			$additional_headers .= "Content-Type: text/html; charset=\"".$this->charset."\"\r\n";
+			$additional_headers .= "Content-Transfer-Encoding: 8bit\r\n";
+			
 			$sendInfo .= "Date: ".date("D, j M Y G:i:s")." +0400\r\n"; 
 			$sendInfo .= "Reply-To: ".($this->reply_to?$this->reply_to:$this->login)."\r\n";
 			$sendInfo .= "To: <{$to}>\r\n";
@@ -207,152 +292,241 @@ Class CWebprostorSmtp extends CMain
 				$hideCopyTo = $this->bcc;
 		}
 		
-		if($this->use_sender_smtp)
+		if($additional_headers) 
 		{
-			if($additional_headers) 
+			preg_match('/\bBitrix-Sender: (.+)\n/i', $additional_headers, $matches);
+			list(, $bitrixSender) = $matches;
+			
+			preg_match('/\bX-Bitrix-Posting: (.+)\n/i', $additional_headers, $matches);
+			list(, $bitrixPosting) = $matches;
+			
+			if($bitrixSender)
 			{
-				preg_match('/\bBitrix-Sender: (.+)\n/i', $additional_headers, $matches);
-				list(, $bitrixSender) = $matches;
-				
-				preg_match('/\bX-Bitrix-Posting: (.+)\n/i', $additional_headers, $matches);
-				list(, $bitrixPosting) = $matches;
-				
-				if($bitrixSender)
-				{
+				if($this->use_sender_smtp)
 					$this->is_sender = true;
-					if($this->debug)
-						$logFields["MODULE_ID"] = "sender";
-				}
-				elseif($bitrixPosting)
-				{
-					$this->is_sender = true;
-					if($this->debug)
-						$logFields["MODULE_ID"] = "subscribe";
-				}
+				
+				if($this->debug)
+					$logFields["MODULE_ID"] = "sender";
 			}
-			if($this->is_sender !== true && strpos($additional_parameters, "bitrix_subscribe=Y") !== false) 
+			elseif($bitrixPosting)
 			{
-				$this->is_sender = true;
+				if($this->use_sender_smtp)
+					$this->is_sender = true;
+				
 				if($this->debug)
 					$logFields["MODULE_ID"] = "subscribe";
 			}
 		}
+		if($this->is_sender !== true && strpos($additional_parameters, "bitrix_subscribe=Y") !== false) 
+		{
+			if($this->use_sender_smtp)
+				$this->is_sender = true;
+			
+			if($this->debug)
+				$logFields["MODULE_ID"] = "subscribe";
+		}
 		
-		$sendInfo .= "\r\n".$message."\r\n";
+		if($message)
+		{
+			$sendInfo .= "\r\n".$message."\r\n";
+		}
 		
 		if($this->debug)
 		{
-			if($this->is_sender !== true)
+			if(!isset($logFields["MODULE_ID"]))
 			{
 				$logFields["SITE_ID"] = $this->site_id;
-				
-				if($this->debug_commands)
-				{
-					$logCommandFields["SITE_ID"] = $this->site_id;
-				}
 			}
+			
+			$logFields["SENDED"] = "Y";
 		}
-		
-		if($this->use_phpmailer)
-		{
 				
-			try {
-				
-				$mail = new PHPMailer(true);
-				$mail->setLanguage('ru', $_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/webprostor.smtp/lang/ru/classes/phpmailer/");
-				
-				//Server settings
-				$mail->isSMTP();
-					
-				$mail->Host       = $this->is_sender?$this->sender_smtp_host:$this->smtp_host;
-				$mail->SMTPAuth   = $this->is_sender?true:$this->requires_authentication;
-				$mail->AuthType	  = $this->use_xoauth2?'XOAUTH2':'LOGIN';
-				/*$mail->setOAuth(
-					new OAuth(
-						[
-							//'provider' => $provider,
-							'clientId' => $this->clientId,
-							'clientSecret' => $this->clientSecret,
-							//'refreshToken' => $this->refreshToken,
-							'userName' => $this->login,
-						]
-					)
-				);*/
+		try {
+			
+			$mail = new PHPMailer(true);
+			$mail->setLanguage(LANGUAGE_ID, $_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/webprostor.smtp/lang/".LANGUAGE_ID."/classes/phpmailer/");
+			
+			if($this->dsn)
+				$mail->dsn = $this->dsn;
+			
+			//Server settings
+			$mail->isSMTP();
+			
+			$mail->SMTPDebug = $this->debug_level;
+			if($this->debug_level > 0)
+			{
+				$mail->Debugoutput = 'error_log';
+			}
+			
+			$mail->Host       = $this->is_sender?$this->sender_smtp_host:$this->smtp_host;
+			$mail->SMTPAuth   = $this->is_sender?true:$this->requires_authentication;
+			/*$mail->setOAuth(
+				new OAuth(
+					[
+						//'provider' => $provider,
+						'clientId' => $this->clientId,
+						'clientSecret' => $this->clientSecret,
+						//'refreshToken' => $this->refreshToken,
+						'userName' => $this->login,
+					]
+				)
+			);*/
+			if($this->is_sender || $this->requires_authentication)
+			{
+				$mail->AuthType	  = $this->use_xoauth2?'XOAUTH2':($this->requires_authentication?'LOGIN':'PLAIN');
+			
 				$mail->Username   = $this->is_sender?$this->sender_login:$this->login;
 				$mail->Password   = $this->is_sender?$this->sender_password:$this->password;
-				$mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-				$mail->Port       = $this->is_sender?$this->sender_smtp_port:$this->smtp_port;
+			}
+			
+			if($this->smtp_secure)
+			{
+				$mail->SMTPSecure = $this->smtp_secure; 
+			}
+			elseif($this->is_sender && $this->sender_smtp_secure)
+			{
+				$mail->SMTPSecure = $this->sender_smtp_secure; 
+			}
+			else
+			{
+				$mail->SMTPAutoTLS = false;
+			}
+			$mail->Port       = $this->is_sender?$this->sender_smtp_port:$this->smtp_port;
+			
+			if($this->use_dkim)
+			{
+				$mail->DKIM_domain = $this->dkim_domain;
+				$mail->DKIM_selector = $this->dkim_selector;
+				$mail->DKIM_passphrase = $this->dkim_passphrase;
+				$mail->DKIM_private_string = $this->dkim_private_string;
+			}
 
-				//Recipients
-				if(!$this->is_sender)
+			//Recipients
+			if(!$this->is_sender)
+			{
+				if($this->replace_from_to_email != "" && filter_var($this->replace_from_to_email, FILTER_VALIDATE_EMAIL))
 				{
-					if($this->replace_from_to_email != "" && filter_var($this->replace_from_to_email, FILTER_VALIDATE_EMAIL))
-					{
-						$mail->setFrom($this->replace_from_to_email);
-					}
-					elseif($this->replace_from == "Y")
-					{
-						$mail->setFrom($this->login);
-					}
+					$mail->setFrom($this->replace_from_to_email, $this->replace_from_name);
 				}
-				else
+				elseif($this->replace_from == "Y")
 				{
-					if(!filter_var($this->from, FILTER_VALIDATE_EMAIL))
-					{
-						preg_match('/[\._a-zA-Z0-9-]+@[\._a-zA-Z0-9-]+/i', $this->from, $matches);
-						if(filter_var($matches[0], FILTER_VALIDATE_EMAIL))
-							$this->from = $matches[0];
-					}
+					$mail->setFrom($this->login, $this->site_name);
+				}
+			}
+			else
+			{
+				if(!filter_var($this->from, FILTER_VALIDATE_EMAIL))
+				{
+					$senderName = $this->from;
+					preg_match('/[\._a-zA-Z0-9-]+@[\._a-zA-Z0-9-]+/i', $this->from, $matches);
+					if(filter_var($matches[0], FILTER_VALIDATE_EMAIL))
+						$this->from = $matches[0];
 					
-					$mail->setFrom($this->from);
-				}
-				$mail->addAddress($to);
-				$senToEmails[] = $to;
-				if($copyTo)
-				{
-					$arrayCC = $this->ParseRecipient([$copyTo]);
-					foreach($arrayCC as $emailCC)
+					if($matches[0] != $senderName)
 					{
-						$mail->addCC($emailCC);
+						$senderName = str_replace('>', '', $senderName);
+						$senderName = str_replace(' <', '', $senderName);
+						$senderName = str_replace($this->from, '', $senderName);
+						$senderName = trim($senderName);
 					}
-					$senToEmails = array_merge($senToEmails, $arrayCC);
-				}
-				if($hideCopyTo)
-				{
-					$arrayBCC = $this->ParseRecipient([$hideCopyTo]);
-					foreach($arrayBCC as $emailBCC)
+					else
 					{
-						$mail->addBCC($emailBCC);
+						$senderName = '';
 					}
-					$senToEmails = array_merge($senToEmails, $arrayBCC);
 				}
 				
-				//Content       
+				$mail->setFrom($this->from, $senderName);
+			}
+			$toArr = explode(",", $to);
+			$senToEmails = [];
+			if(is_array($toArr))
+			{
+				$arrayTo = $this->ParseRecipient($toArr);
+				foreach($arrayTo as $emailTo)
+				{
+					$mail->addAddress($emailTo);
+				}
+				$senToEmails = array_merge($senToEmails, $arrayTo);
+			}
+			elseif($to)
+			{
+				$arrayTo = $this->ParseRecipient([$to]);
+				foreach($arrayTo as $emailTo)
+				{
+					$mail->addAddress($emailTo);
+				}
+				$senToEmails = array_merge($senToEmails, $arrayTo);
+			}
+			if($copyTo)
+			{
+				$arrayCC = $this->ParseRecipient([$copyTo]);
+				foreach($arrayCC as $emailCC)
+				{
+					$mail->addCC($emailCC);
+				}
+				$senToEmails = array_merge($senToEmails, $arrayCC);
+			}
+			if($hideCopyTo)
+			{
+				$arrayBCC = $this->ParseRecipient([$hideCopyTo]);
+				foreach($arrayBCC as $emailBCC)
+				{
+					$mail->addBCC($emailBCC);
+				}
+				$senToEmails = array_merge($senToEmails, $arrayBCC);
+			}
+			
+			if ($this->debug) 
+			{
+				$logFields["RECIPIENTS"] = implode(", ", array_unique($senToEmails));
+				if(!$this->dont_save_send_info)
+					$logFields["SEND_INFO"] = $sendInfo;
+			}
+			
+			$mail->AddCustomHeader("X-Mailer-Bitrix", "webprostor.smtp (https://marketplace.1c-bitrix.ru/solutions/webprostor.smtp/)");
+			
+			if($this->is_sender)
+				$mail->AddCustomHeader("X-Sender-Service", $this->sender_smtp_server);
+			
+			if(defined("BX_UTF") && BX_UTF)
 				$mail->CharSet = 'utf-8';
-				$mail->Subject = $subject;
-				$mail->Body    = $message;
+			else
+				$mail->CharSet = 'windows-1251';
+			
+			$mail->Subject = $subject;
+			$mail->Body = $message;
+			
+			if ($additional_headers != '') 
+			{
+				$additionalHeadersArray = explode("\n", $additional_headers);
 				
-				if ($additional_headers != '') 
+				if(is_array($additionalHeadersArray))
 				{
-					$additionalHeadersArray = explode("\n", $additional_headers);
-					
-					if(is_array($additionalHeadersArray))
+					foreach($additionalHeadersArray as $code=>$value)
 					{
-						foreach($additionalHeadersArray as $code=>$value)
+						if($value != '' && strpos($value, ':') !== false)
 						{
 							$header = explode(":", $value, 2);
 							switch(strtoupper($header[0]))
 							{
+								/*case "CONTENT-TYPE":
+								case "CONTENT-TRANSFER-ENCODING":
+									if($plain_text == 'Y')
+									{
+										$mail->AddCustomHeader($header[0], trim($header[1]));
+									}
+									break;*/
 								case "CC":
 								case "BCC":
 								case "TO":
 								case "FROM":
-								case "CONTENT-TYPE":
-								case "CONTENT-TRANSFER-ENCODING":
 								case "SUBJECT":
+								case "MIME-VERSION":
+								case "DATE":
+								case "BITRIX-SENDER":
 									break;
 								case "REPLY-TO":
-									$mail->addReplyTo(trim($header[1]));
+									$mail->addReplyTo(trim($this->ParseEmail($header[1])));
 									break;
 								default:
 									$mail->AddCustomHeader($header[0], trim($header[1]));
@@ -361,358 +535,86 @@ Class CWebprostorSmtp extends CMain
 						}
 					}
 				}
-				
-				$mail->AddCustomHeader("X-Mailer", "webprostor.smtp (https://marketplace.1c-bitrix.ru/solutions/webprostor.smtp/)");
-				
-				if($this->is_sender)
-					$mail->AddCustomHeader("X-Sender-Service", $this->sender_smtp_server);
+			}
 			
-				preg_match('/-------alt(.+)\n/i', $message, $matches);
-				list(, $boundary_alt) = $matches;
-			
-				preg_match('/-------mix(.+)\n/i', $message, $matches);
-				list(, $boundary_mix) = $matches;
-				
-				if($boundary_alt != '')
+			if($attachment && count($attachment)>0)
+			{
+				foreach($attachment as $file)
 				{
-					$mail->AddCustomHeader('Content-Type', 'multipart/alternative; boundary="-------alt'.$boundary_alt.'"');
-					$mail->isHTML(false, true); 
+					$mail->AddAttachment($file["PATH"], $file["NAME"]);
 				}
-				elseif($boundary_mix != '')
+			}
+			
+			$mail->send();
+		}
+		catch (Exception $e) 
+		{
+			
+			if ($this->debug) 
+			{
+				$logFields["ERROR_TEXT"] = $mail->ErrorInfo;
+				$logFields["SENDED"] = "N";
+				
+				if($message_id>0)
 				{
-					$mail->AddCustomHeader('Content-Type', 'multipart/mixed; boundary="-------mix'.$boundary_mix.'"');
-					$mail->isHTML(false, true); 
+					$logResNew = $logError->GetById($message_id);
+					$messageArr = $logResNew->Fetch();
+					
+					$logFields["RETRY_COUNT"] = ++$messageArr["RETRY_COUNT"];
 				}
 				else
 				{
-					if(strlen($message) == strlen(strip_tags($message)))
-						$mail->isHTML(false); 
-					else
-						$mail->isHTML(true); 
+					$logFields["RETRY_COUNT"] = "1";
 				}
-				
-				$mail->send();
-			}
-			catch (Exception $e) 
-			{
-				
-				if ($this->debug) 
-				{
-					$logFields["ERROR_TEXT"] = $mail->ErrorInfo;
-					if($this->include_send_info)
-						$logFields["SEND_INFO"] = $sendInfo;
-					$logError->Add($logFields);
-				}
-				
-				return false;
 			}
 			
-			if ($this->debug && $this->log_send_ok) 
-			{
-		
-				$logFields["ERROR_TEXT"] = GetMessage("OK_2", Array("#RECIPIENTS#" => implode(", ", array_unique($senToEmails))));
-				if($this->include_send_info)
-					$logFields["SEND_INFO"] = $sendInfo;
-				$logError->Add($logFields);
-			}
+			$result = false;
 		}
-		else
+		
+		if ($this->debug) 
 		{
-		
-			if(!$this->smtp_host || !$this->smtp_port)
-			{
-				if ($this->debug) 
-				{
-					$logFields["ERROR_TEXT"] = GetMessage("SETTING_1");
-					$logError->Add($logFields);
-				}
-				return false;
-			}
-			elseif(!$this->login || !$this->password)
-			{
-				if ($this->debug) 
-				{
-					$logFields["ERROR_TEXT"] = GetMessage("SETTING_2");
-					$logError->Add($logFields);
-				}
-				return false;
-			}
-			elseif($this->smtp_port == 465 && !$this->smtp_secure)
-			{
-				if ($this->debug) 
-				{
-					$logFields["ERROR_TEXT"] = GetMessage("SETTING_3");
-					$logError->Add($logFields);
-				}
-				return false;
-			}
-			elseif($this->smtp_port == 587 && !$this->smtp_secure)
-			{
-				if ($this->debug) 
-				{
-					$logFields["ERROR_TEXT"] = GetMessage("SETTING_4");
-					$logError->Add($logFields);
-				}
-				return false;
-			}
-		
-			if(!$socket = fsockopen($this->smtp_host, $this->smtp_port, $errnum, $errstr, 30)) 
-			{
-				if ($this->debug) 
-				{
-					$logFields["ERROR_TEXT"] = GetMessage("ERROR_0", Array("#SMTP_HOST#" => $this->smtp_host, "#SMTP_PORT#" => $this->smtp_port, "#ERROR_NUMBER#" => $errnum, "#ERROR_TEXT#" => $errstr));
-					$logError->Add($logFields);
-				}
-				return false;
-			}
 			
-			if (!$this->ParseData($socket, "220", __LINE__)) 
-				return false;
-			
-			fputs($socket, $this->helo_command." " . $this->smtp_server . "\r\n");
-			if ($this->debug && $this->debug_commands) 
+			global $LOG_ID;
+			if($message_id>0)
 			{
-				$logCommandFields["ERROR_TEXT"] = $this->helo_command." " . $this->smtp_server . "\r\n";
-				$logError->Add($logCommandFields);
-			}
-			if (!$this->ParseData($socket, "250", __LINE__)) 
-			{
-				if ($this->debug) 
-				{
-					$logFields["ERROR_TEXT"] = GetMessage("ERROR_1", Array("#SMTP_HOST#" => $this->smtp_host, "#HELO_COMMAND#" => $this->helo_command));
-					$logError->Add($logFields);
-				}
-				fclose($socket);
-				return false;
-			}
-			
-			if($this->smtp_secure == "tls")
-			{
-				fputs($socket, "STARTTLS\r\n");
-				if ($this->debug && $this->debug_commands) 
-				{
-					$logCommandFields["ERROR_TEXT"] = "STARTTLS\r\n";
-					$logError->Add($logCommandFields);
-				}
-				if (!$this->ParseData($socket, "220", __LINE__)) 
-				{
-					if ($this->debug) 
-					{
-						$logFields["ERROR_TEXT"] = GetMessage("ERROR_10");
-						$logError->Add($logFields);
-					}
-					fclose($socket);
-					return false;
-				}
+				if($logFields["SENDED"] == "Y")
+					$logFields["ERROR_TEXT"] = '';
 				
-				if(false == stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)){
-					if ($this->debug) 
-					{
-						$logFields["ERROR_TEXT"] = GetMessage("ERROR_11");
-						$logError->Add($logFields);
-					}
-					fclose($socket);
-					return false;
-				}
-			
-				fputs($socket, $this->helo_command." " . $this->smtp_server . "\r\n");
-				if ($this->debug && $this->debug_commands) 
-				{
-					$logCommandFields["ERROR_TEXT"] = $this->helo_command." " . $this->smtp_server . "\r\n";
-					$logError->Add($logCommandFields);
-				}
-				if (!$this->ParseData($socket, "250", __LINE__)) 
-				{
-					if ($this->debug) 
-					{
-						$logFields["ERROR_TEXT"] = GetMessage("ERROR_1", Array("#SMTP_HOST#" => $this->smtp_host));
-						$logError->Add($logFields);
-					}
-					fclose($socket);
-					return false;
-				}
-			}
-			
-			if($this->requires_authentication)
-			{
-			
-				fputs($socket, "AUTH LOGIN\r\n");
-				if ($this->debug && $this->debug_commands) 
-				{
-					$logCommandFields["ERROR_TEXT"] = "AUTH LOGIN\r\n";
-					$logError->Add($logCommandFields);
-				}
-				if (!$this->ParseData($socket, "334", __LINE__))
-				{
-					if ($this->debug) 
-					{
-						$logFields["ERROR_TEXT"] = GetMessage("ERROR_2");
-						$logError->Add($logFields);
-					}
-					fclose($socket);
-					return false;
-				}
-				
-				fputs($socket, base64_encode($this->login) . "\r\n");
-				if ($this->debug && $this->debug_commands) 
-				{
-					$logCommandFields["ERROR_TEXT"] = base64_encode($this->login) . "\r\n";
-					$logError->Add($logCommandFields);
-				}
-				if (!$this->ParseData($socket, "334", __LINE__))
-				{
-					if ($this->debug) 
-					{
-						$logFields["ERROR_TEXT"] = GetMessage("ERROR_3", Array("#LOGIN#" => $this->login));
-						$logError->Add($logFields);
-					}
-					fclose($socket);
-					return false;
-				}
-				
-				fputs($socket, base64_encode($this->password) . "\r\n");
-				if ($this->debug && $this->debug_commands) 
-				{
-					$logCommandFields["ERROR_TEXT"] = base64_encode($this->password) . "\r\n";
-					$logError->Add($logCommandFields);
-				}
-				if (!$this->ParseData($socket, "235", __LINE__)) 
-				{
-					if ($this->debug) 
-					{
-						$logFields["ERROR_TEXT"] = GetMessage("ERROR_4");
-						$logError->Add($logFields);
-					}
-					fclose($socket);
-					return false;
-				}
-			
-			}
-			
-			fputs($socket, "MAIL FROM: <{$this->login}>\r\n");
-			if ($this->debug && $this->debug_commands) 
-			{
-				$logCommandFields["ERROR_TEXT"] = "MAIL FROM: <{$this->login}>\r\n";
-				$logError->Add($logCommandFields);
-			}
-			if (!$this->ParseData($socket, "250", __LINE__))
-			{
-				if ($this->debug) 
-				{
-					$logFields["ERROR_TEXT"] = GetMessage("ERROR_5");
-					$logError->Add($logFields);
-				}
-				fclose($socket);
-				return false;
-			}
-			
-			$senToEmailsArray[] = trim($to);
-			if($copyTo)
-				$senToEmailsArray[] = $copyTo;
-			if($hideCopyTo)
-				$senToEmailsArray[] = $hideCopyTo;
-			
-			$senToEmails = $this->ParseRecipient($senToEmailsArray);
-			
-			if(is_array($senToEmails) && count($senToEmails)>0)
-			{
-				foreach($senToEmails as $recipinet)
-				{
-					$recipinet = trim($recipinet);
-					fputs($socket, "RCPT TO: <" . $recipinet . ">\r\n");
-					if ($this->debug && $this->debug_commands) 
-					{
-						$logCommandFields["ERROR_TEXT"] = "RCPT TO: <" . $recipinet . ">\r\n";
-						$logError->Add($logCommandFields);
-					}
-					if (!$this->ParseData($socket, "250", __LINE__))
-					{
-						if ($this->debug) 
-						{
-							$logFields["ERROR_TEXT"] = GetMessage("ERROR_6", Array("#RECIPIENT#" => $recipinet));
-							$logError->Add($logFields);
-						}
-						fclose($socket);
-						return false;
-					}
-				}
+				$res = $logError->Update($message_id, $logFields);
+				$LOG_ID = $message_id;
 			}
 			else
 			{
-				if ($this->debug) 
-				{
-					$logFields["ERROR_TEXT"] = GetMessage("SETTING_5");
-					$logError->Add($logFields);
-				}
-				return false;
+				global $LOG_ID;
+				$LOG_ID = $logError->Add($logFields);
 			}
-			
-			fputs($socket, "DATA\r\n");
-			if ($this->debug && $this->debug_commands) 
-			{
-				$logCommandFields["ERROR_TEXT"] = "DATA\r\n";
-				$logCommandFields["SEND_INFO"] = $sendInfo."\r\n.\r\n";
-				$logError->Add($logCommandFields);
-				unset($logCommandFields["SEND_INFO"]);
-			}
-			if (!$this->ParseData($socket, "354", __LINE__))
-			{
-				if ($this->debug) 
-				{
-					$logFields["ERROR_TEXT"] = GetMessage("ERROR_7");
-					$logError->Add($logFields);
-				}
-				fclose($socket);
-				return false;
-			}
-			
-			fputs($socket, $sendInfo."\r\n.\r\n");
-			if (!$this->ParseData($socket, "250", __LINE__))
-			{
-				if ($this->debug) 
-				{
-					$logFields["ERROR_TEXT"] = GetMessage("ERROR_8");
-					$logError->Add($logFields);
-				}
-				fclose($socket);
-				return false;
-			}
-			
-			fputs($socket, "QUIT\r\n");
-			if ($this->debug && $this->debug_commands) 
-			{
-				$logCommandFields["ERROR_TEXT"] = "QUIT\r\n";
-				$logError->Add($logCommandFields);
-			}
-			fclose($socket);
-			
-			if ($this->debug && $this->log_send_ok) 
-			{
-				if($this->include_send_info)
-					$logFields["SEND_INFO"] = $sendInfo;
-				
-				$logFields["ERROR_TEXT"] = GetMessage("OK_2", Array("#RECIPIENTS#" => implode(", ", $senToEmails)));
-				$logError->Add($logFields);
-			}
-		
 		}
 			
 		if ($this->debug) 
 		{
 			$logListRes = $logError->GetList();
-			if(intVal($logListRes->SelectedRowsCount())>=1000)
+			$totalLogs = $logListRes->SelectedRowsCount();
+			
+			if(intVal($totalLogs) >= $this->notify_limit)
 			{
-				$errorArray = Array(
-					"MESSAGE" => GetMessage("LOGS_ARE_TOO_BIG"),
-					"TAG" => "LOGS_ARE_TOO_BIG",
-					"MODULE_ID" => "WEBPROSTOR.SMTP",
-					"ENABLE_CLOSE" => "Y"
-				);
-				$notifyID = CAdminNotify::Add($errorArray);
+				if($this->auto_cleaning_logs)
+				{
+					$logError->ClearLogs();
+				}
+				else
+				{
+					$errorArray = Array(
+						"MESSAGE" => GetMessage("LOGS_ARE_TOO_BIG"),
+						"TAG" => "LOGS_ARE_TOO_BIG",
+						"MODULE_ID" => "WEBPROSTOR.SMTP",
+						"ENABLE_CLOSE" => "Y"
+					);
+					$notifyID = CAdminNotify::Add($errorArray);
+				}
 			}
 		}
 		
-		return true;
+		return $result;
 	}
 	
 	private function ParseRecipient($list)
@@ -749,7 +651,7 @@ Class CWebprostorSmtp extends CMain
 		return $senToEmails;
 	}
 	
-	private function ParseEmail($recipient)
+	private static function ParseEmail($recipient)
 	{
 		if(filter_var($recipient, FILTER_VALIDATE_EMAIL))
 			return $recipient;
@@ -758,41 +660,10 @@ Class CWebprostorSmtp extends CMain
 			preg_match_all("/[\._a-zA-Z0-9-]+@[\._a-zA-Z0-9-]+/i", $recipient, $matches);
 			if(is_array($matches[0]))
 			{
-				return implode($matches[0], ',');
+				return implode(',', $matches[0]);
 			}
 		}
 		return false;
-	}
-	
-	private function ParseData($socket, $response, $line = __LINE__)
-	{
-		global $logError;
-		
-		while (@substr($server_response, 3, 1) != ' ')
-		{
-			if (!($server_response = fgets($socket, 256)))
-			{
-				if ($this->debug) 
-				{
-					$logFields["ERROR_TEXT"] = GetMessage("ERROR_9", Array("#SERVER_RESPONSE#" => $server_response));
-					$logError->Add($logFields);
-				}
-				return false;
-			}
-		}
-		$response_code = substr($server_response, 0, 3);
-		$response_text = substr($server_response, 3, strlen($server_response));
-		if (!($response_code == $response))
-		{
-			if ($this->debug) 
-			{
-				$logFields["ERROR_NUMBER"] = $response_code;
-				$logFields["ERROR_TEXT"] = $response_text;
-				$logError->Add($logFields);
-			}
-			return false;
-		}
-		return true;
 	}
 }
 ?>

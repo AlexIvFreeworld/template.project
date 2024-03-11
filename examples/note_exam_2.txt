@@ -39,3 +39,506 @@ if(isset($arResult["DATE_FIRST_NEWS"])){
 }          
 - проверяем наличие значения у свойства specialdate в публичной части с кешированием и без кеширования
 - проверяем результат при выключенном параметре SPECIAL_DATE
+
+------------------------------------------------------------------------------------------------------------
+
+[ex2-108] link rel="canonical" для детальной новости 
+bsm_api.chm
+[CIBlockElement] [CIBlockElement::GetList]
+[SetResultCacheKeys] (Главный модуль>Классы>CBitrixComponent>setResultCacheKeys)
+
+Создаем инфоблок "Canonical" в типе инфоблоков "Новости"
+В созданном информационном блоке создаем свойство Новость - NEW, тип: привязка кинформационному блоку Новости.
+Добавляем элемент в инфоблок Canonical, Название http://test.ru/test/ , Привязка к новости [2] Международная мебельная выставка SALON DEL MOBILE
+В админке "Управление структурой" добавляем тип свойства - canonical, значение - canonical
+
+В local/templates/furniture_dark-blue/components/bitrix/news/.default/.parameters.php добавляем параметр, где будет указан ид инфоблока "Canonical"
+	"ID_REL_CANONICAL_BLOCK" => Array(
+		"NAME" => GetMessage("T_IBLOCK_DESC_NEWS_ID_REL_CANONICAL_BLOCK"),
+		"TYPE" => "STRING",
+		"DEFAULT" =>"",
+		"REFRESH"=> "Y",
+	),
+$MESS["T_IBLOCK_DESC_NEWS_ID_REL_CANONICAL_BLOCK"] = "ID информационного блока для rel=canonical»";
+В публичной части на http://localhost/news/ проверяем в параметрах компонента наличие параметра "ID информационного блока для rel=canonical»"
+Устанавливаем значение ид инфоблока Canonical (в учебном примере - 5)	
+В local/templates/furniture_dark-blue/components/bitrix/news/.default/lang/ru/.parameters.php заносим фразу 
+В local/templates/furniture_dark-blue/components/bitrix/news/.default/detail.php добавляем параметр для детального компонента
+"ID_REL_CANONICAL_BLOCK" => $arParams["ID_REL_CANONICAL_BLOCK"]
+В local/templates/furniture_dark-blue/components/bitrix/news/.default/bitrix/news.detail/.default добавляем
+result_modifier.php, component_epilog.php
+В result_modifier.php получаем значение свойства NEW элемента Canonical связанное с элементом Новости и добавляем в кешируемый
+$arResult для получения в эпилоге
+if (!empty($arParams["ID_REL_CANONICAL_BLOCK"])) {
+    $arSelect = array("ID", "IBLOCK_ID", "NAME", "PROPERTY_NEW");
+    $arFilter = array("IBLOCK_ID" => IntVal($arParams["ID_REL_CANONICAL_BLOCK"]), "PROPERTY_NEW" => $arResult["ID"], "ACTIVE" => "Y");
+    $res = CIBlockElement::GetList(array(), $arFilter, false, array("nPageSize" => 50), $arSelect);
+    if ($ob = $res->GetNextElement()) {
+        $arFields = $ob->GetFields();
+        $arResult["CANONICAL_LINK"] = $arFields["NAME"];
+        $this->__component->SetResultCacheKeys(array("CANONICAL_LINK"));
+    }
+}
+В component_epilog.php устанавливаем свойство страницы
+if(isset($arResult["CANONICAL_LINK"])){
+    $APPLICATION->SetPageProperty("canonical",$arResult["CANONICAL_LINK"]);
+}
+Прим так можно делать без использования вывода в head через $APPLICATION->ShowProperty(), для типов свойств управляющих метаданными страницы
+description, keywords, title, canonical
+
+------------------------------------------------------------------------------------------------------------
+
+[ex2-50] Проверка при деактивации товара
+bsm_api.chm
+[OnBeforeIBlockElementUpdate]
+[CIBlockElement] [CIBlockElement::GetList]
+[Loc] [Loc::getMessage]
+
+Создадим local/php_interface/init.php, local/php_interface/include/events.php, local/php_interface/include/constants.php
+Найдем в справочнике событие onBeforeIBlockElementUpdate и разместим пример в events.php
+Уберем условие и заменим названия класса и метода, добавим методу public static
+AddEventHandler("iblock", "OnBeforeIBlockElementUpdate", array("Ex2", "Ex2_50"));
+class Ex2
+{
+    // создаем обработчик события "OnBeforeIBlockElementUpdate"
+   public static function Ex2_50(&$arFields)
+    {
+        global $APPLICATION;
+        $APPLICATION->throwException("Введите символьный код. (ID:" . $arFields["ID"] . ")");
+        return false;
+    }
+}
+В админке пробуем изменить элемент инфоблока, должен сработать обработчик, выдав сообщение "Введите символьный код. (ID:" . $arFields["ID"] . ")"
+Посмотрим какие поля приходят echo "<pre>"; print_r($arFields); echo "</pre>";
+Определим константу IBLOCK_CATALOG_ID в constants.php (ид инфоблока "Продукция") 
+Добавим в обработчик отбор по ид инфоблока и активности элемента
+С помощью CIBlockElement::GetList, получим поле элемента SHOW_COUNTER
+    public static function Ex2_50(&$arFields)
+    {
+        if ($arFields["IBLOCK_ID"] == IBLOCK_CATALOG_ID) {
+
+            if ($arFields["ACTIVE"] == "N") {
+                $arSelect = array("ID", "IBLOCK_ID", "NAME", "SHOW_COUNTER");
+                $arFilter = array("IBLOCK_ID" => IBLOCK_CATALOG_ID, "ID" => $arFields["ID"]);
+                $res = CIBlockElement::GetList(array(), $arFilter, false, false, $arSelect);
+                if ($arItem = $res->Fetch()) {
+                    echo "<pre>"; print_r($arItem); echo "</pre>";
+                }
+                global $APPLICATION;
+                // echo "<pre>"; print_r($arFields); echo "</pre>";
+                $APPLICATION->throwException("Введите символьный код. (ID:" . $arFields["ID"] . ")");
+                return false;
+            }
+        }
+    }
+В режиме инкогнито откроем  детальную страницу элемента (в решении "Герцог")
+Проверим что бы значение поля SHOW_COUNTER было равно 3
+Добавим константу define("MAX_COUNT",2);
+Добавим условие вывода сообщения об ошибке, для элементов с количеством просмотров больше чем MAX_COUNT
+Добавим для языковых фраз файл в соответвтвующих разделах local/php_interface/include/lang/ru/events.php
+Добавим фразу $MESS["SHOW_COUNTER_TEXT"] = "Товар невозможно деактивировать у него #COUNT# просмотров";
+Выведем сообщение с помощью языковой фразы
+    public static function Ex2_50(&$arFields)
+    {
+        if ($arFields["IBLOCK_ID"] == IBLOCK_CATALOG_ID) {
+
+            if ($arFields["ACTIVE"] == "N") {
+                $arSelect = array("ID", "IBLOCK_ID", "NAME", "SHOW_COUNTER");
+                $arFilter = array("IBLOCK_ID" => IBLOCK_CATALOG_ID, "ID" => $arFields["ID"]);
+                $res = CIBlockElement::GetList(array(), $arFilter, false, false, $arSelect);
+                $arItem = $res->Fetch();
+                
+                if (intval($arItem["SHOW_COUNTER"]) > MAX_COUNT) {
+                    global $APPLICATION;
+                    $erText = Loc::getMessage("SHOW_COUNTER_TEXT", array("#COUNT#" => $arItem["SHOW_COUNTER"]));
+                    $APPLICATION->throwException($erText);
+                    return false;
+                }
+            }
+        }
+    }
+
+------------------------------------------------------------------------------------------------------------
+
+[ex2-93] Записывать в Журнал событий открытие не существующих страниц сайта
+bsm_api.chm
+[OnEpilog]
+[CEventLog] [CEventLog::Add]
+
+В local/php_interface/include/events.php добавляем обработчик события OnEpilog
+При условии ошибки 404 с показываем 404.php и с помощью CEventLog::Add делаем запись в Журнал событий
+AddEventHandler("main", "OnEpilog", array("Ex2", "Ex2_93"));
+    public static function Ex2_93()
+    {
+        if (defined("ERROR_404") && ERROR_404 == "Y") {
+            global $APPLICATION;
+            $APPLICATION->RestartBuffer();
+            include $_SERVER["DOCUMENT_ROOT"] . SITE_TEMPLATE_PATH . "/header.php";
+            include $_SERVER["DOCUMENT_ROOT"] . "/404.php";
+            include $_SERVER["DOCUMENT_ROOT"] . SITE_TEMPLATE_PATH . "/footer.php";
+            CEventLog::Add(array(
+                "SEVERITY" => "INFO",
+                "AUDIT_TYPE_ID" => "ERROR_404",
+                "MODULE_ID" => "main",
+                "DESCRIPTION" => $APPLICATION->GetCurPage()
+            ));
+        }
+    }
+В качестве проверки заходим на страницы /not_real/?not=N, /news/not_real/
+Проверяем наличие записей в Журнале событий
+
+------------------------------------------------------------------------------------------------------------
+
+[ex2-51] Изменение данных в письме 
+bsm_api.chm
+[OnBeforeEventAdd]
+[CUser] [CUser::IsAuthorized]
+[CEventLog] [CEventLog::Add]
+
+В публичной части создаем разделы /ex2/feedback/ с названиями /Экзамен2/Форма обратной связ/
+В публичной части в разделе feedback через визуальный редактор устанавливаем компонент "Форма обратной связи"
+В local/php_interface/include/events.php добавляем обработчик события OnBeforeEventAdd методом Ex2_51
+Проверяем входящие параметры с отправки формы
+AddEventHandler("main", "OnBeforeEventAdd", array("Ex2", "Ex2_51"));
+ public static    function Ex2_51(&$event, &$lid, &$arFields)
+    {
+        echo "<pre>"; print_r($event); echo "</pre>";
+        echo "<pre>"; print_r($lid); echo "</pre>";
+        echo "<pre>"; print_r($arFields); echo "</pre>";
+        die();
+    }
+Для события FEEDBACK_FORM проверяем пользователя на наличие авторизации
+Формируем новое значение поля $arFields["AUTHOR"] для авторизованного и неавторизованного пользователя
+С помощью CEventLog::Add делаем запись в Журнале событий
+Отправляем форму от авторизованного и неавторизованного пользователя
+Проверяем наличие записи в Журнале событий
+Проверяем поле AUTHOR на соответствие задаче запросом к базе SELECT * FROM b_event;
+
+------------------------------------------------------------------------------------------------------------
+
+[ex2-95] Упростить меню в адмистративном разделе для контент-менеджера
+bsm_api.chm
+[OnBuildGlobalMenu]
+[CUser] [CUser::GetUserGroupList]
+[CGroup] [CGroup::GetList]
+
+В публичной части добавляем пользователя manager, помещаем его в группу "Контент-редакторы"
+В local/php_interface/include/events.php добавляем обработчик события OnBuildGlobalMenu
+    public static function Ex2_95(&$aGlobalMenu, &$aModuleMenu)
+    {
+        echo "<pre>"; print_r($aGlobalMenu); echo "</pre>";
+        echo "<pre>"; print_r($aModuleMenu); echo "</pre>";
+    }
+Проверяем входящие параметры
+Устанавливаем флаги принадлежности текущего пользователя к группам администраторы и "Контент-редакторы"
+        $isAdmin = false;
+        $isManager = false;
+Получаем группы которым принадлежит текущий пользователь с помощью $USER::GetUserGroupList
+Получаем ид группы "Контент-редакторы" с помощью CGroup::GetList, фильтруя по "STRING_ID" => "content_editor"
+Находим значения для флагов в зависимости от текущего пользователя
+        while ($group = $userGroup->Fetch()) {
+            if ($group["GROUP_ID"] == 1) {
+                $isAdmin = true;
+            }
+            if ($group["GROUP_ID"] == $contentGroupId) {
+                $isManager = true;
+            }
+        }
+Для пользователя принадлежащего к группе "Контент-редакторы" и не принадлежащего к группе администраторы, формируем меню модулей
+Переопределяем глобальное меню, оставляя в нем только меню контента
+$aGlobalMenu = ["global_menu_content" => $aGlobalMenu["global_menu_content"]];
+
+        if (!$isAdmin && $isManager) {
+            foreach ($aModuleMenu as $key => $arItem) {
+                if ($arItem["items_id"] == "menu_iblock_/news") {
+                    $aModuleMenu = [$arItem];
+                    foreach ($arItem["items"] as $arChildItem) {
+                        if ($arChildItem["items_id"] == "menu_iblock_/news/1") {
+                            $aModuleMenu[0]["items"] = [$arChildItem];
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            $aGlobalMenu = ["global_menu_content" => $aGlobalMenu["global_menu_content"]];
+        }
+Итоговый код
+    public static function Ex2_95(&$aGlobalMenu, &$aModuleMenu)
+    {
+        // echo "<pre>"; print_r($aGlobalMenu); echo "</pre>";
+        // echo "<pre>"; print_r($aModuleMenu); echo "</pre>";
+        $isAdmin = false;
+        $isManager = false;
+        global $USER;
+        $userGroup = $USER::GetUserGroupList($USER->GetID());
+        // echo "<pre>"; print_r($userGroup); echo "</pre>";
+        $contentGroupId = CGroup::GetList(
+            $by = "c_sort",
+            $order = "asc",
+            array("STRING_ID" => "content_editor")
+        )->Fetch()["ID"];
+        echo "<pre>"; print_r("contentGroupId: " . $contentGroupId); echo "</pre>";
+        while ($group = $userGroup->Fetch()) {
+            echo "<pre>"; print_r($group); echo "</pre>";
+            if ($group["GROUP_ID"] == 1) {
+                $isAdmin = true;
+            }
+            if ($group["GROUP_ID"] == $contentGroupId) {
+                $isManager = true;
+            }
+        }
+        echo "<pre>"; print_r("\$isAdmin: " . $isAdmin); echo "</pre>";
+        echo "<pre>"; print_r("\$isManager: " . $isManager); echo "</pre>";
+        if (!$isAdmin && $isManager) {
+            foreach ($aModuleMenu as $key => $arItem) {
+                echo "<pre>"; print_r($arItem); echo "</pre>";
+                if ($arItem["items_id"] == "menu_iblock_/news") {
+                    $aModuleMenu = [$arItem];
+                    foreach ($arItem["items"] as $arChildItem) {
+                        if ($arChildItem["items_id"] == "menu_iblock_/news/1") {
+                            $aModuleMenu[0]["items"] = [$arChildItem];
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            $aGlobalMenu = ["global_menu_content" => $aGlobalMenu["global_menu_content"]];
+        }
+    }
+Регистрируемся в режиме "инкогнито" под пользователем manager
+Проверяем что в административной части остался только "Контент" с инфоблоком "Новости"
+
+------------------------------------------------------------------------------------------------------------
+
+[ex2-94] Супер инструмент SEO специалиста 
+bsm_api.chm
+[OnBeforeProlog]
+[CMain][CMain::GetCurDir]
+[CMain][CMain::SetPageProperty]
+[CIBlockElement] [CIBlockElement::GetList]
+api_d7.chm
+[Loader] [\Bitrix\Main\Loader::includeModule]
+
+Для типа информационного блока "Товары и услуги" создаем информационный блок "Метатеги"
+В созданном инфоблоке создаем два элемента в соответствии с заданием
+В local/php_interface/include/events.php добавляем обработчик события OnBeforeProlog
+В local/php_interface/include/constants.php добавляем константу ид инфоблока "Метатеги"
+define("IBLOCK_META_ID",6);
+В обработчике получаем текущий раздел с помощью $APPLICATION->GetCurDir()
+В инфоблоке "Метатеги" ищем элемент по фильтру "IBLOCK_ID" => IBLOCK_META_ID, "NAME" => $curPage
+Устанавливаем свойства страницы используя свойства отобранного элемента с помощью $APPLICATION->SetPageProperty
+
+    public static function Ex2_94()
+    {
+        global $APPLICATION;
+        $curPage = $APPLICATION->GetCurDir();
+        if (\Bitrix\Main\Loader::includeModule('iblock')) {
+            $arFilter = array("IBLOCK_ID" => IBLOCK_META_ID, "NAME" => $curPage);
+            $arSelect = array("IBLOCK_ID", "ID", "PROPERTY_TITLE", "PROPERTY_DESCRIPTION");
+            $res = CIBlockElement::GetList(array(), $arFilter, false, false, $arSelect);
+            if ($ob = $res->Fetch()) {
+                $APPLICATION->SetPageProperty("title", $ob["PROPERTY_TITLE_VALUE"]);
+                $APPLICATION->SetPageProperty("description", $ob["PROPERTY_DESCRIPTION_VALUE"]);
+            }
+        }
+    }
+В публичной части проверяем исполнение
+
+------------------------------------------------------------------------------------------------------------
+
+[ex2-70] Разработать простой компонент «Каталог товаров»
+bsm_api.chm
+[CBitrixComponent] [CBitrixComponent::StartResultCache]
+[CBitrixComponent] [CBitrixComponent::AbortResultCache]
+[CBitrixComponent] [CBitrixComponent::setResultCacheKeys]
+[CIBlockElement] [CIBlockElement::GetList]
+[CIBlockSection] [CIBlockSection::GetList]
+[CMain] [CMain::SetTitle]
+api_d7.chm
+[Loc] [Loc::loadMessages]
+[Loc] [Loc::getMessage]
+
+В разделе "Экзамен2" создаем раздел "Простой компонент"
+В папке "local" создаем папку local/components, из материалов копируем в эту папку простой компонент
+Меняем название компонента на предложенное в задании "simplecomp.exam"
+В файле local/components/exam2/simplecomp.exam/.description.php меняем описание компонента
+
+$arComponentDescription = array(
+	"NAME" => GetMessage("SIMPLECOMP_EXAM2_NAME_70"),
+	"CACH_PATH" => "Y",
+	"PATH" => array(
+		"ID" => "ex2simple",
+		"NAME" => GetMessage("EXAM2")
+	),
+);
+
+Открываем страницу в режиме правки, обновляем кэш, проверяем наличие своего компонента с списке
+Добавляем вызов компонента на страницу 
+В файле local/components/exam2/simplecomp.exam/.parameters.php добввим требуемые параметры компонента
+Используем как ориентир параметры стандартного компонента bitrix/components/bitrix/news.list/.parameters.php
+Возьмем оттуда "PARENT" и "CACHE_TIME" 
+
+$arComponentParameters = array(
+	"PARAMETERS" => array(
+		"PRODUCTS_IBLOCK_ID" => array(
+			"NAME" => GetMessage("SIMPLECOMP_EXAM2_CAT_IBLOCK_ID_70"),
+			"PARENT" => "BASE",
+			"TYPE" => "STRING",
+		),
+		"NEWS_IBLOCK_ID" => array(
+			"NAME" => GetMessage("SIMPLECOMP_EXAM2_NEWS_IBLOCK_ID_70"),
+			"PARENT" => "BASE",
+			"TYPE" => "STRING",
+		),
+		"PRODUCTS_IBLOCK_ID_PROPERTY" => array(
+			"NAME" => GetMessage("SIMPLECOMP_EXAM2_CAT_PROPERTY_IBLOCK_ID_70"),
+			"PARENT" => "BASE",
+			"TYPE" => "STRING",
+		),
+		"CACHE_TIME"  => array(
+			"DEFAULT" => 36000000
+		),
+
+	),
+);
+
+Создаем языковые фразы для параметров в local/components/exam2/simplecomp.exam/lang/ru/.parameters.php
+$MESS["SIMPLECOMP_EXAM2_CAT_IBLOCK_ID_70"] = "ID инфоблока с каталогом товаров";
+$MESS["SIMPLECOMP_EXAM2_NEWS_IBLOCK_ID_70"] = "ID инфоблока с новостями";
+$MESS["SIMPLECOMP_EXAM2_CAT_PROPERTY_IBLOCK_ID_70"] = "Код пользовательского свойства разделов каталога, в котором хранится привязка к
+новостям";
+
+В публичной части проверяем, что параметры отобразились в настройках компонента
+В админке в инфоблоке "Продукция" создаем для разделов множественное свойство для привязки к элементам инфоблока "Новости", "UF_NEWS_LINK"
+Настроим привязки разделов к новостям согласно заданию
+В публичной части заполним параметры компонента
+В компоненте local/components/exam2/simplecomp.exam/component.php опишем логику подготовки данных с учетом кэширования
+Основные блоки
+- проверка входящих параметров и установление дефолтных
+- проверка наличия кэша $this->StartResultCache() и в случае его отсутствия формирование данных
+- вывод заголовка $APPLICATION->SetTitle, добавленого $this->SetResultCacheKeys(array("PRODUCT_CNT"));
+
+В local/components/exam2/simplecomp.exam.my/lang/ru/component.php добавляем языковую фразу
+$MESS["COUNT_PRODUCT_CNT"] = "В каталоге представлено товаров: ";
+
+// checking params
+if (!isset($arParams["CACHE_TIME"])) {
+	$arParams["CACHE_TIME"] = 36000000;
+}
+if (!isset($arParams["PRODUCTS_IBLOCK_ID"])) {
+	$arParams["PRODUCTS_IBLOCK_ID"] = 0;
+}
+if (!isset($arParams["NEWS_IBLOCK_ID"])) {
+	$arParams["NEWS_IBLOCK_ID"] = 0;
+}
+
+// caching
+if ($this->StartResultCache()) {
+	$arNewsRoot = array();
+	$arNewsIds = array();
+	$arSectionIds = array();
+	$arFilter = array(
+		'IBLOCK_ID' => $arParams["PRODUCTS_IBLOCK_ID"],
+		'ACTIVE' => "Y",
+	);
+	$arSelect = array("NAME", "IBLOCK_ID", "ID", $arParams["PRODUCTS_IBLOCK_ID_PROPERTY"]);
+	$rsSections = CIBlockSection::GetList(array(), $arFilter, true, $arSelect, false);
+	while ($arSection = $rsSections->Fetch()) {
+		foreach ($arSection[$arParams["PRODUCTS_IBLOCK_ID_PROPERTY"]] as $newId) {
+			$arNewsRoot[$newId]["SECTIONS_NAME"][] = $arSection["NAME"];
+			$arNewsRoot[$newId]["SECTIONS_IDS"][] = $arSection["ID"];
+			if (!in_array($newId, $arNewsIds)) {
+				$arNewsIds[] = $newId;
+			}
+			if (!in_array($arSection["ID"], $arSectionIds)) {
+				$arSectionIds[] = $arSection["ID"];
+			}
+		}
+	}
+
+	$arNews = array();
+	$arSelect = array("NAME", "ACTIVE_FROM", "ID");
+	$arFilter = array("IBLOCK_ID" => IntVal($arParams["NEWS_IBLOCK_ID"]), "ID" => $arNewsIds, "ACTIVE" => "Y");
+	$res = CIBlockElement::GetList(array(), $arFilter, false, false, $arSelect);
+	while ($ob = $res->Fetch()) {
+		$arNews[$ob["ID"]] = $ob;
+	}
+
+	$arProducts = array();
+	$arSelect = array(
+		"NAME",
+		"IBLOCK_SECTION_ID",
+		"ID",
+		"IBLOCK_ID",
+		"PROPERTY_ARTNUMBER",
+		"PROPERTY_MATERIAL",
+		"PROPERTY_PRICE",
+	);
+	$arFilter = array(
+		"IBLOCK_ID" => IntVal($arParams["PRODUCTS_IBLOCK_ID"]),
+		"ACTIVE" => "Y",
+		"SECTION_ID" => $arSectionIds
+	);
+	$arResult["PRODUCT_CNT"] = 0;
+	$res = CIBlockElement::GetList(array(), $arFilter, false, false, $arSelect);
+	while ($ob = $res->Fetch()) {
+		$arResult["PRODUCT_CNT"]++;
+		$arProducts[] = $ob;
+	}
+
+	foreach ($arNewsRoot as $key => $arItem) {
+		$arNewsRoot[$key]["NEWS"] = $arNews[$key];
+		foreach ($arProducts as $arProduct) {
+			if (in_array($arProduct["IBLOCK_SECTION_ID"], $arItem["SECTIONS_IDS"])) {
+				$arNewsRoot[$key]["PRODUCTS"][] = $arProduct;
+			}
+		}
+	}
+
+	$arResult["NEWS"] = $arNewsRoot;
+	$this->SetResultCacheKeys(array("PRODUCT_CNT"));
+	$this->includeComponentTemplate();
+} else {
+	$this->AbortResultCache();
+}
+$APPLICATION->SetTitle(Loc::getMessage("COUNT_PRODUCT_CNT") . $arResult["PRODUCT_CNT"]);
+
+Формируем вывод данных в шаблоне компонента
+
+<? if (!empty($arResult["NEWS"])) : ?>
+    <? foreach ($arResult["NEWS"] as $arNews) : ?>
+        <li>
+            <b><?= $arNews["NEWS"]["NAME"] ?></b>
+            <?= $arNews["NEWS"]["ACTIVE_FROM"] ?>
+            (<?= implode(",", $arNews["SECTIONS_NAME"]) ?>)
+            <? if (!empty($arNews["PRODUCTS"])) : ?>
+                <ul>
+                    <? foreach ($arNews["PRODUCTS"] as $arProduct) : ?>
+                        <li>
+                            <?= $arProduct["NAME"] ?> -
+                            <?= $arProduct["PROPERTY_PRICE_VALUE"] ?> -
+                            <?= $arProduct["PROPERTY_MATERIAL_VALUE"] ?> -
+                            <?= $arProduct["PROPERTY_ARTNUMBER_VALUE"] ?>
+                        </li>
+                    <? endforeach; ?>
+                </ul>
+            <? endif; ?>
+        </li>
+    <? endforeach; ?>
+<? endif; ?>
+
+Проверяем в публичной части корректность вывода товаров и подсчет их количества
+
+------------------------------------------------------------------------------------------------------------
+
+[ex2-71] Разработать простой компонент «Каталог товаров»
+
+bsm_api.chm
+[CBitrixComponent] [CBitrixComponent::StartResultCache]
+[CBitrixComponent] [CBitrixComponent::AbortResultCache]
+[CUser] $USER->GetGroups() ????
+[CIBlockElement][CIBlockElement::GetList]
+
+

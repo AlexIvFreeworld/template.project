@@ -1,5 +1,6 @@
 <?
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
+require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/webprostor.smtp/prolog.php");
 
 $module_id = 'webprostor.smtp';
 $moduleAccessLevel = $APPLICATION->GetGroupRight($module_id);
@@ -18,10 +19,13 @@ $groupsMain = Array(
 	"MAIN" => GetMessage("WEBPROSTOR_SMTP_OPTIONS_GROUP_MAIN"),
 	"SENDER" => GetMessage("WEBPROSTOR_SMTP_OPTIONS_GROUP_SENDER"),
 	"LOGS" => GetMessage("WEBPROSTOR_SMTP_OPTIONS_GROUP_LOGS"),
+	"RESEND" => GetMessage("WEBPROSTOR_SMTP_OPTIONS_GROUP_RESEND"),
+	"DEBUG" => GetMessage("WEBPROSTOR_SMTP_OPTIONS_GROUP_DEBUG"),
 );
 $groupsSites = Array(
 	"CONNECTION" => GetMessage("WEBPROSTOR_SMTP_OPTIONS_GROUP_CONNECTION"),
 	"AUTHORIZATION" => GetMessage("WEBPROSTOR_SMTP_OPTIONS_GROUP_AUTHORIZATION"),
+	"DKIM" => GetMessage("WEBPROSTOR_SMTP_OPTIONS_GROUP_DKIM"),
 	"SENDING" => GetMessage("WEBPROSTOR_SMTP_OPTIONS_GROUP_SENDING"),
 	"MAIL" => GetMessage("WEBPROSTOR_SMTP_OPTIONS_GROUP_MAIL"),
 );
@@ -35,14 +39,6 @@ $optionsMain = Array(
 		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_USE_MODULE"),
 		'TYPE' => 'CHECKBOX',
 		'SORT' => '10',
-	),
-	Array(
-		'CODE' => "USE_PHPMAILER",
-		'GROUP' => "MAIN",
-		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_USE_PHPMAILER"),
-		'NOTES' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_USE_PHPMAILER_NOTES"),
-		'TYPE' => 'CHECKBOX',
-		'SORT' => '12',
 	),
 	Array(
 		'CODE' => "AUTO_ADD_INIT",
@@ -59,6 +55,13 @@ $optionsMain = Array(
 		'SORT' => '17',
 	),
 	Array(
+		'CODE' => "USE_DEFAULT_SITE_ID_IF_EMPTY",
+		'GROUP' => "MAIN",
+		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_USE_DEFAULT_SITE_ID_IF_EMPTY"),
+		'TYPE' => 'CHECKBOX',
+		'SORT' => '18',
+	),
+	Array(
 		'CODE' => "LOG_ERRORS",
 		'GROUP' => "LOGS",
 		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_LOG_ERRORS"),
@@ -66,26 +69,62 @@ $optionsMain = Array(
 		'SORT' => '20',
 	),
 	Array(
-		'CODE' => "LOG_COMMANDS",
+		'CODE' => "NOTIFY_LIMIT",
 		'GROUP' => "LOGS",
-		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_LOG_COMMANDS"),
-		'NOTES' => GetMessage("WEBPROSTOR_SMTP_NOT_USE_BY_PHPMAILER"),
-		'TYPE' => 'CHECKBOX',
-		'SORT' => '35',
+		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_NOTIFY_LIMIT"),
+		'SORT' => '43',
+		'TYPE' => 'INT',
+		'MIN' => '0',
 	),
 	Array(
-		'CODE' => "LOG_SEND_OK",
+		'CODE' => "AUTO_CLEANING_LOGS",
 		'GROUP' => "LOGS",
-		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_LOG_SEND_OK"),
+		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_AUTO_CLEANING_LOGS"),
 		'TYPE' => 'CHECKBOX',
+		'SORT' => '46',
+	),
+	Array(
+		'CODE' => "DONT_SAVE_SEND_INFO",
+		'GROUP' => "LOGS",
+		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DONT_SAVE_SEND_INFO"),
+		'TYPE' => 'CHECKBOX',
+		'SORT' => '50',
+	),
+	Array(
+		'CODE' => "ENABLE_RESEND",
+		'GROUP' => "RESEND",
+		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_ENABLE_RESEND"),
+		'SORT' => '10',
+		'TYPE' => 'CHECKBOX',
+	),
+	Array(
+		'CODE' => "RESEND_RETRY_COUNT",
+		'GROUP' => "RESEND",
+		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_RESEND_RETRY_COUNT"),
+		'SORT' => '20',
+		'TYPE' => 'INT',
+		'MIN' => '0',
+		'SIZE' => '1',
+		'MAXLENGTH' => '1',
+		'MAX' => '9',
+	),
+	Array(
+		'CODE' => "RESEND_AGENT_INTERVAL",
+		'GROUP' => "RESEND",
+		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_RESEND_AGENT_INTERVAL"),
+		'SORT' => '30',
+		'TYPE' => 'INT',
+		'MIN' => '60',
+		'SIZE' => '1',
+	),
+	Array(
+		'CODE' => "RESEND_MESSAGE_COUNT",
+		'GROUP' => "RESEND",
+		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_RESEND_MESSAGE_COUNT"),
 		'SORT' => '40',
-	),
-	Array(
-		'CODE' => "INCLUDE_SEND_INFO_TO_LOG",
-		'GROUP' => "LOGS",
-		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_INCLUDE_SEND_INFO_TO_LOG"),
-		'TYPE' => 'CHECKBOX',
-		'SORT' => '41',
+		'TYPE' => 'INT',
+		'MIN' => '1',
+		'SIZE' => '1',
 	),
 	Array(
 		'CODE' => "USE_SENDER_SMTP",
@@ -107,12 +146,15 @@ $optionsMain = Array(
 		'GROUP' => "SENDER",
 		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_SMTP_PORT"),
 		'NOTES' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_SMTP_PORT_NOTES"),
+		'TYPE' => 'INT',
+		'MIN' => '0',
 		'SORT' => '20',
 	),
 	Array(
 		'CODE' => "SECURE",
 		'GROUP' => "SENDER",
 		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_SMTP_SECURE"),
+		'NOTES' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_SMTP_SECURE_NOTES"),
 		'SORT' => '25',
 		'TYPE' => 'SELECT',
 		'VALUES' => Array(
@@ -138,6 +180,40 @@ $optionsMain = Array(
 		'SORT' => '40',
 	),
 );
+if(ini_get("error_log") != '')
+{
+	$optionsMain[] = Array(
+		'CODE' => "DEBUG_LEVEL",
+		'GROUP' => "DEBUG",
+		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DEBUG_LEVEL"),
+		'NOTES' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DEBUG_LEVEL_NOTE", ["#FILE_PATH#" => ini_get("error_log")]),
+		'SORT' => '50',
+		'TYPE' => 'SELECT',
+		'VALUES' => Array(
+			'REFERENCE' => Array(
+				GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DEBUG_LEVEL_OFF"), 
+				GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DEBUG_LEVEL_CLIENT"),
+				GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DEBUG_LEVEL_SERVER"),
+				GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DEBUG_LEVEL_CONNECTION"),
+				GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DEBUG_LEVEL_LOWLEVEL"),
+			),
+			'REFERENCE_ID' => Array(
+				"0", "1", "2", "3", "4",
+			),
+		),
+	);
+}
+else
+{
+	$optionsMain[] = Array(
+		'CODE' => "DEBUG_LEVEL",
+		'GROUP' => "DEBUG",
+		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DEBUG_LEVEL"),
+		'NOTES' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DEBUG_LEVEL_NOTE_ENABLE"),
+		'SORT' => '50',
+		'TYPE' => 'CUSTOM',
+	);
+}
 
 $optionsSites = Array(
 	Array(
@@ -152,12 +228,15 @@ $optionsSites = Array(
 		'GROUP' => "CONNECTION",
 		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_SMTP_PORT"),
 		'NOTES' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_SMTP_PORT_NOTES"),
+		'TYPE' => 'INT',
+		'MIN' => '0',
 		'SORT' => '20',
 	),
 	Array(
 		'CODE' => "SECURE",
 		'GROUP' => "CONNECTION",
 		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_SMTP_SECURE"),
+		'NOTES' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_SMTP_SECURE_NOTES"),
 		'SORT' => '25',
 		'TYPE' => 'SELECT',
 		'VALUES' => Array(
@@ -170,25 +249,10 @@ $optionsSites = Array(
 		),
 	),
 	Array(
-		'CODE' => "HELO_COMMAND",
-		'GROUP' => "CONNECTION",
-		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_HELO_COMMAND"),
-		'NOTES' => GetMessage("WEBPROSTOR_SMTP_NOT_USE_BY_PHPMAILER"),
-		'TYPE' => 'SELECT',
-		'SORT' => '27',
-		'VALUES' => Array(
-			'REFERENCE' => Array(
-				"HELO", GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_HELO_COMMAND_EHLO"),
-			),
-			'REFERENCE_ID' => Array(
-				"HELO", "EHLO",
-			),
-		),
-	),
-	Array(
 		'CODE' => "REQUIRES_AUTHENTICATION",
 		'GROUP' => "AUTHORIZATION",
 		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_REQUIRES_AUTHENTICATION"),
+		'NOTES' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_REQUIRES_AUTHENTICATION_NOTES"),
 		'TYPE' => 'CHECKBOX',
 		'SORT' => '29',
 	),
@@ -196,12 +260,14 @@ $optionsSites = Array(
 		'CODE' => "LOGIN",
 		'GROUP' => "AUTHORIZATION",
 		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_LOGIN"),
+		'NOTES' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_LOGIN_NOTES"),
 		'SORT' => '30',
 	),
 	Array(
 		'CODE' => "PASSWORD",
 		'GROUP' => "AUTHORIZATION",
 		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_PASSWORD"),
+		'NOTES' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_PASSWORD_NOTES"),
 		'TYPE' => 'PASSWORD',
 		'SORT' => '40',
 	),
@@ -213,9 +279,46 @@ $optionsSites = Array(
 		'SORT' => '42',
 	),*/
 	Array(
+		'CODE' => "USE_DKIM",
+		'GROUP' => "DKIM",
+		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_USE_DKIM"),
+		'TYPE' => 'CHECKBOX',
+		'SORT' => '29',
+	),
+	Array(
+		'CODE' => "DKIM_DOMAIN",
+		'GROUP' => "DKIM",
+		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DKIM_DOMAIN"),
+		'NOTES' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DKIM_DOMAIN_NOTES"),
+		'SORT' => '30',
+	),
+	Array(
+		'CODE' => "DKIM_SELECTOR",
+		'GROUP' => "DKIM",
+		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DKIM_SELECTOR"),
+		'NOTES' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DKIM_SELECTOR_NOTES"),
+		'SORT' => '31',
+	),
+	Array(
+		'CODE' => "DKIM_PASSPHRASE",
+		'GROUP' => "DKIM",
+		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DKIM_PASSPHRASE"),
+		'NOTES' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DKIM_PASSPHRASE_NOTES"),
+		'SORT' => '33',
+	),
+	Array(
+		'CODE' => "DKIM_PRIVATE_STRING",
+		'GROUP' => "DKIM",
+		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DKIM_PRIVATE_STRING"),
+		'NOTES' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DKIM_PRIVATE_STRING_NOTES"),
+		'TYPE' => 'TEXTAREA',
+		'SORT' => '34',
+	),
+	Array(
 		'CODE' => "REPLACE_FROM",
 		'GROUP' => "SENDING",
 		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_REPLACE_FROM"),
+		'NOTES' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_REPLACE_FROM_NOTES"),
 		'TYPE' => 'CHECKBOX',
 		'SORT' => '45',
 	),
@@ -223,9 +326,34 @@ $optionsSites = Array(
 		'CODE' => "REPLACE_FROM_TO_EMAIL",
 		'GROUP' => "SENDING",
 		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_REPLACE_FROM_TO_EMAIL"),
+		'NOTES' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_REPLACE_FROM_TO_EMAIL_NOTES"),
 		'SORT' => '46',
 	),
 	Array(
+		'CODE' => "REPLACE_FROM_NAME",
+		'GROUP' => "SENDING",
+		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_REPLACE_FROM_NAME"),
+		'NOTES' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_REPLACE_FROM_NAME_NOTES"),
+		'SORT' => '48',
+	),
+	Array(
+		'CODE' => "DSN",
+		'GROUP' => "SENDING",
+		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DSN"),
+		'NOTES' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DSN_NOTES"),
+		'SORT' => '50',
+		'TYPE' => 'MSELECT',
+		'MULTIPLE' => 'Y',
+		'VALUES' => Array(
+			'REFERENCE' => Array(
+				GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DSN_SUCCESS"), GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DSN_FAILURE"), GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DSN_DELAY"),
+			),
+			'REFERENCE_ID' => Array(
+				"SUCCESS", "FAILURE", "DELAY",
+			),
+		),
+	),
+	/*Array(
 		'CODE' => "FROM",
 		'GROUP' => "MAIL",
 		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_FROM"),
@@ -273,11 +401,60 @@ $optionsSites = Array(
 		'TITLE' => GetMessage("WEBPROSTOR_SMTP_OPTIONS_OPTION_DUPLICATE", Array("#EMAILS#" => COption::GetOptionString("main", "all_bcc"))),
 		'TYPE' => 'CHECKBOX',
 		'SORT' => '30',
-	),
+	),*/
 );
 
 $arOptions = CWebprostorCoreOptions::GetOptions($optionsSites, $arTabs, $optionsMain);
 
 $opt = new CWebprostorCoreOptions($module_id, $arTabs, $arGroups, $arOptions, $showMainTab = true, $showRightsTab = true);
 $opt->ShowHTML();
+
+if ($moduleAccessLevel >= 'R')
+{
+	if($REQUEST_METHOD=="POST" && strlen($save)>0 && check_bitrix_sessid())
+	{
+		$enable_resend = COption::GetOptionString($module_id, "ENABLE_RESEND", "N");
+		$resend_agent_interval = COption::GetOptionString($module_id, "RESEND_AGENT_INTERVAL", "300");
+		
+		global $DB;
+		$cAgentResults = $DB->Query("SELECT * FROM `b_agent` WHERE `NAME` = 'CWebprostorSmtpAgent::Resend();'");
+		$cAgentArray = array();
+		
+		while ($cAgentRow = $cAgentResults->Fetch()) {
+			array_push($cAgentArray, $cAgentRow);
+		}
+		
+		if($enable_resend == "Y")
+		{
+			foreach($cAgentArray as $key => $agent)
+			{
+				if($resend_agent_interval != $agent["AGENT_INTERVAL"])
+				{
+					CAgent::Delete($agent["ID"]);
+					unset($cAgentArray[$key]);
+				}
+			}
+			if(count($cAgentArray) == 0)
+			{
+				CAgent::AddAgent(
+					"CWebprostorSmtpAgent::Resend();",
+					"webprostor.smtp",
+					"N",
+					$resend_agent_interval,
+					date("d.m.Y H:i:s"),
+					"Y",
+					date("d.m.Y H:i:s"), 
+					30
+				);
+			}
+		}
+		elseif($enable_resend == "N" && count($cAgentArray) > 0)
+		{
+			foreach($cAgentArray as $agent)
+			{
+				CAgent::Delete($agent["ID"]);
+			}
+		}
+	}
+}
 ?>

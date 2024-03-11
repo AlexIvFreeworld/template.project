@@ -15,9 +15,9 @@ Class CWebprostorCoreOptions
 	const MAIN_TAB_DIV_ID = 'edit_main_tab';
 	
 	private $access_tab_div_id = 'edit_access_tab';
-	const ACCESS_TAB_DIV_ID = 'edit_access_tab';
+	//const ACCESS_TAB_DIV_ID = 'edit_access_tab';
 	
-	public function GetTabs()
+	public static function GetTabs()
 	{
 		$i = 0; $arTabs = Array();
 		$rsSites = CSite::GetList($by="sort", $order="asc", Array());
@@ -36,7 +36,7 @@ Class CWebprostorCoreOptions
 		return $arTabs;
 	}
 	
-	public function GetGroups($groups = Array(), $arTabs = Array(), $additionalGroups = Array())
+	public static function GetGroups($groups = Array(), $arTabs = Array(), $additionalGroups = Array())
 	{
 		$arGroups = Array();
 		foreach($arTabs as $i => $tab)
@@ -64,7 +64,7 @@ Class CWebprostorCoreOptions
 		return $arGroups;
 	}
 	
-	public function GetOptions($options = Array(), $arTabs = Array(), $additionalOptions = Array())
+	public static function GetOptions($options = Array(), $arTabs = Array(), $additionalOptions = Array())
 	{
 		$arOptions = Array();
 		foreach($arTabs as $i => $tab)
@@ -78,14 +78,18 @@ Class CWebprostorCoreOptions
 					'TYPE' => $option["TYPE"],
 					'SORT' => $option["SORT"],
 					'NOTES' => $option["NOTES"],
+					'USER_FIELD' => $option["USER_FIELD"],
 					'COLS' => $option["COLS"],
 					'ROWS' => $option["ROWS"],
 					'REFRESH' => $option["REFRESH"],
 					'VALUES' => $option["VALUES"],
+					'SIZE' => $option["SIZE"],
 					'FIELD_SIZE' => $option["FIELD_SIZE"],
 					'FIELD_READONLY' => $option["FIELD_READONLY"],
 					'BUTTON_TEXT' => $option["BUTTON_TEXT"],
 					'MAXLENGTH' => $option["MAXLENGTH"],
+					'MIN' => $option["MIN"],
+					'MAX' => $option["MAX"],
 				);
 			}
 		}
@@ -97,6 +101,7 @@ Class CWebprostorCoreOptions
 				$arOptions[$option["CODE"]] = array(
 					'GROUP' => $option["GROUP"],
 					'TITLE' => $option["TITLE"],
+					'CODE' => $option["CODE"],
 					'TYPE' => $option["TYPE"],
 					'SORT' => $option["SORT"],
 					'NOTES' => $option["NOTES"],
@@ -104,10 +109,14 @@ Class CWebprostorCoreOptions
 					'ROWS' => $option["ROWS"],
 					'REFRESH' => $option["REFRESH"],
 					'VALUES' => $option["VALUES"],
+					'SIZE' => $option["SIZE"],
 					'FIELD_SIZE' => $option["FIELD_SIZE"],
+					'SIZE' => $option["SIZE"],
 					'FIELD_READONLY' => $option["FIELD_READONLY"],
 					'BUTTON_TEXT' => $option["BUTTON_TEXT"],
 					'MAXLENGTH' => $option["MAXLENGTH"],
+					'MIN' => $option["MIN"],
+					'MAX' => $option["MAX"],
 				);
 			}
 		}
@@ -115,7 +124,7 @@ Class CWebprostorCoreOptions
 		return $arOptions;
 	}
 	
-	public function CWebprostorCoreOptions($module_id = false, $arTabs = Array(), $arGroups = Array(), $arOptions = Array(), $need_main_tab = false, $need_access_tab = false)
+	public function __construct($module_id = false, $arTabs = Array(), $arGroups = Array(), $arOptions = Array(), $need_main_tab = false, $need_access_tab = false)
 	{
 		$this->module_id = $module_id;
 		$this->arTabs = $arTabs;
@@ -277,7 +286,7 @@ Class CWebprostorCoreOptions
 								'class="adm-detail-iblock-list select-search"'
 							);
 							if($arOptParams['REFRESH'] == 'Y')
-								$input .= '<input type="submit" name="apply" value="OK" />';
+								$input .= '<button type="submit" name="refresh" class="ui-ctl-after ui-ctl-icon-forward"></button>';
 						}
 						break;
 					case("HIGHLOAD_BLOCK"):
@@ -297,9 +306,9 @@ Class CWebprostorCoreOptions
 								$HLblocks["REFERENCE_ID"][] = $hldata["ID"];
 								$HLblocks["REFERENCE"][] = htmlspecialcharsbx($hldata["NAME"]).' ['.$hldata["TABLE_NAME"].']';
 							}
-							$input = SelectBoxFromArray($opt, $HLblocks, $val, '', '', ($arOptParams['REFRESH'] == 'Y' ? true : false), ($arOptParams['REFRESH'] == 'Y' ? $this->module_id : ''));
+							$input = SelectBoxFromArray($opt, $HLblocks, $val, '', ' class="select-search"', ($arOptParams['REFRESH'] == 'Y' ? true : false), ($arOptParams['REFRESH'] == 'Y' ? $this->module_id : ''));
 							if($arOptParams['REFRESH'] == 'Y')
-								$input .= '<input type="submit" name="refresh" value="OK" />';
+								$input .= '<button type="submit" name="refresh" class="ui-ctl-after ui-ctl-icon-forward"></button>';
 						}
 						break;
 					case("BLOG"):
@@ -319,13 +328,13 @@ Class CWebprostorCoreOptions
 								$BLOGS["REFERENCE_ID"][] = $arBlog["ID"];
 								$BLOGS["REFERENCE"][] = htmlspecialcharsbx($arBlog["NAME"]).' ['.$arBlog["ID"].']';
 							}
-							$input = SelectBoxFromArray($opt, $BLOGS, $val, '', '', ($arOptParams['REFRESH'] == 'Y' ? true : false), ($arOptParams['REFRESH'] == 'Y' ? $this->module_id : ''));
+							$input = SelectBoxFromArray($opt, $BLOGS, $val, '', ' class="select-search"', ($arOptParams['REFRESH'] == 'Y' ? true : false), ($arOptParams['REFRESH'] == 'Y' ? $this->module_id : ''));
 							if($arOptParams['REFRESH'] == 'Y')
-								$input .= '<input type="submit" name="refresh" value="OK" />';
+								$input .= '<button type="submit" name="refresh" class="ui-ctl-after ui-ctl-icon-forward"></button>';
 						}
 						break;
 					case 'CHECKBOX':
-						$input = '<input type="checkbox" name="'.$opt.'" id="'.$opt.'" value="Y"'.($val == 'Y' ? ' checked' : '').' '.($arOptParams['REFRESH'] == 'Y' ? 'onclick="document.forms[\''.$this->module_id.'\'].submit();"' : '').' />';
+						$input = '<label class="ui-ctl ui-ctl-checkbox ui-ctl-xs"><input class="ui-ctl-element" type="checkbox" name="'.$opt.'" id="'.$opt.'" value="Y"'.($val == 'Y' ? ' checked' : '').' '.($arOptParams['REFRESH'] == 'Y' ? 'onclick="document.forms[\''.$this->module_id.'\'].submit();"' : '').' /></label>';
 						break;
 					case 'TEXTAREA':
 					case 'TEXT':
@@ -333,19 +342,26 @@ Class CWebprostorCoreOptions
 							$arOptParams['COLS'] = 25;
 						if(!isset($arOptParams['ROWS']))
 							$arOptParams['ROWS'] = 5;
-						$input = '<textarea cols="'.$arOptParams['COLS'].'" rows="'.$arOptParams['ROWS'].'" name="'.$opt.'">'.htmlspecialcharsbx($val).'</textarea>';
+						$input = '<div class="ui-ctl ui-ctl-textarea"><textarea class="ui-ctl-element" cols="'.$arOptParams['COLS'].'" rows="'.$arOptParams['ROWS'].'" name="'.$opt.'">'.htmlspecialcharsbx($val).'</textarea>';
 						if($arOptParams['REFRESH'] == 'Y')
-							$input .= '<input type="submit" name="refresh" value="OK" />';
+							$input .= '<button type="submit" name="refresh" class="ui-ctl-after ui-ctl-icon-forward"></button>';
+						$input .= '</div>';
 						break;
 					case 'SELECT':
-						$input = SelectBoxFromArray($opt, $arOptParams['VALUES'], $val, '', '', ($arOptParams['REFRESH'] == 'Y' ? true : false), ($arOptParams['REFRESH'] == 'Y' ? $this->module_id : ''));
+						$input = SelectBoxFromArray($opt, $arOptParams['VALUES'], $val, '', ' class="select-search"', ($arOptParams['REFRESH'] == 'Y' ? true : false), ($arOptParams['REFRESH'] == 'Y' ? $this->module_id : ''));
 						if($arOptParams['REFRESH'] == 'Y')
-							$input .= '<input type="submit" name="refresh" value="OK" />';
+							$input .= '<button type="submit" name="refresh" class="ui-ctl-after ui-ctl-icon-forward"></button>';
 						break;
 					case 'MSELECT':
 						$input = SelectBoxMFromArray($opt.'[]', $arOptParams['VALUES'], $val);
 						if($arOptParams['REFRESH'] == 'Y')
-							$input .= '<input type="submit" name="refresh" value="OK" />';
+							$input .= '<button type="submit" name="refresh" class="ui-ctl-after ui-ctl-icon-forward"></button>';
+						break;
+					case 'CALENDAR':
+						$input = '<input class="ui-ctl-element" type="text" value="'.htmlspecialcharsbx($val).'" name="'.htmlspecialcharsbx($option).'" />'.Calendar(htmlspecialcharsbx($option), "");
+						break;
+					case 'CALENDAR_DATE':
+						$input = CalendarDate(htmlspecialcharsbx($option), htmlspecialcharsbx($val), $this->module_id, 18, '');
 						break;
 					case 'COLORPICKER':
 						if(!isset($arOptParams['FIELD_SIZE']))
@@ -362,13 +378,13 @@ Class CWebprostorCoreOptions
 						$APPLICATION->IncludeComponent('bitrix:main.colorpicker', '', Array(
 								'SHOW_BUTTON' => 'Y',
 								'ID' => $opt,
-								'NAME' => 'Выбор цвета',
+								'NAME' => GetMessage("WEBPROSTOR_CORE_OPTIONS_COLOR_SELECT"),
 								'ONSELECT' => 'onSelect_'.$opt
 							), false
 						);
 						$input = ob_get_clean();
 						if($arOptParams['REFRESH'] == 'Y')
-							$input .= '<input type="submit" name="refresh" value="OK" />';
+							$input .= '<button type="submit" name="refresh" class="ui-ctl-after ui-ctl-icon-forward"></button>';
 						break;
 					case 'FILE':
 						if(!isset($arOptParams['FIELD_SIZE']))
@@ -387,8 +403,8 @@ Class CWebprostorCoreOptions
 							'allowAllFiles' => true,
 							'SaveConfig' => true
 						));
-						$input = 	'<input id="__FD_PARAM_'.$opt.'" name="'.$opt.'" size="'.$arOptParams['FIELD_SIZE'].'" value="'.htmlspecialcharsbx($val).'" type="text" style="float: left;" '.($arOptParams['FIELD_READONLY'] == 'Y' ? 'readonly' : '').' />
-									<input value="'.$arOptParams['BUTTON_TEXT'].'" type="button" onclick="window.BX_FD_'.$opt.'();" />
+						$input = 	'<div class="ui-ctl ui-ctl-textbox ui-ctl-ext-after-icon"><input class="ui-ctl-element" id="__FD_PARAM_'.$opt.'" name="'.$opt.'" size="'.$arOptParams['FIELD_SIZE'].'" value="'.htmlspecialcharsbx($val).'" type="text" style="float: left;" '.($arOptParams['FIELD_READONLY'] == 'Y' ? 'readonly' : '').' />
+									<button class="ui-ctl-after ui-ctl-icon-dots" onclick="window.BX_FD_'.$opt.'(); return false;">'.$arOptParams['BUTTON_TEXT'].'</button>
 									<script>
 										setTimeout(function(){
 											if (BX("bx_fd_input_'.strtolower($opt).'"))
@@ -404,10 +420,11 @@ Class CWebprostorCoreOptions
 										}
 									</script>';
 						if($arOptParams['REFRESH'] == 'Y')
-							$input .= '<input type="submit" name="refresh" value="OK" />';
+							$input .= '<button type="submit" name="refresh" class="ui-ctl-after ui-ctl-icon-forward"></button>';
+						$input .= '</div>';
 						break;
 					case 'SUBMIT':
-						$input = '<input type="submit" name="'.$opt.'" value="'.$arOptParams['BUTTON_TEXT'].'">';
+						$input = '<button class="ui-btn ui-btn-success" type="submit" name="'.$opt.'">'.$arOptParams['BUTTON_TEXT'].'</button>';
 						break;
 					case 'CUSTOM':
 						$input = $arOptParams['VALUE'];
@@ -417,13 +434,26 @@ Class CWebprostorCoreOptions
 							$arOptParams['SIZE'] = 25;
 						if(!isset($arOptParams['MAXLENGTH']))
 							$arOptParams['MAXLENGTH'] = 255;
-						$input = '<input type="'.($arOptParams['TYPE'] == 'INT' ? 'number' : ($arOptParams['TYPE'] == 'PASSWORD' ? 'password' :'text')).'" size="'.$arOptParams['SIZE'].'" maxlength="'.$arOptParams['MAXLENGTH'].'" value="'.htmlspecialcharsbx($val).'" name="'.htmlspecialcharsbx($option).'" />';
+						
+						$input = '<div class="ui-ctl ui-ctl-textbox ui-ctl-ext-after-icon"><input class="ui-ctl-element" type="'.
+							($arOptParams['TYPE'] == 'INT' ? 'number' : ($arOptParams['TYPE'] == 'PASSWORD' ? 'password' :'text'))
+							.'" size="'.$arOptParams['SIZE'].'"'.
+							($arOptParams['TYPE'] == 'PASSWORD'?' autocomplete="new-password"':'').
+							(isset($arOptParams['MIN'])?' min="'.$arOptParams['MIN'].'"':'').
+							(isset($arOptParams['MAX'])?' max="'.$arOptParams['MAX'].'"':'')
+							.' maxlength="'.$arOptParams['MAXLENGTH'].'" value="'.htmlspecialcharsbx($val).'" name="'.htmlspecialcharsbx($option).'" />';
 						if($arOptParams['REFRESH'] == 'Y')
-							$input .= '<input type="submit" name="refresh" value="OK" />';
+							$input .= '<button type="submit" name="refresh" class="ui-ctl-after ui-ctl-icon-forward"></button>';
+						$input .= '</div>';
 						break;
 				}
 
-				if(isset($arOptParams['NOTES']) && $arOptParams['NOTES'] != '')
+				if(isset($arOptParams['NOTES']) && $arOptParams['NOTES'] != '' || $arOptParams['USER_FIELD'] == 'Y')
+				{
+					if($arOptParams['USER_FIELD'] == 'Y')
+					{
+						$arOptParams['NOTES'] = '\Bitrix\Main\Config\Option::get("webprostor.core", "'.$opt.'");';
+					}
 					$input .= 	'<div class="notes">
 									<table cellspacing="0" cellpadding="0" border="0" class="notes">
 										<tbody>
@@ -447,6 +477,7 @@ Class CWebprostorCoreOptions
 										</tbody>
 									</table>
 								</div>';
+				}
 
 				$arP[$this->arGroups[$arOptParams['GROUP']]['TAB']][$arOptParams['GROUP']]['OPTIONS'][] = $label != '' ? '<tr><td valign="top" width="50%">'.$label.':</td><td valign="top" width="50%" nowrap>'.$input.'</td></tr>' : '<tr><td valign="top" colspan="2" align="center">'.$input.'</td></tr>';
 				$arP[$this->arGroups[$arOptParams['GROUP']]['TAB']][$arOptParams['GROUP']]['OPTIONS_SORT'][] = $arOptParams['SORT'];

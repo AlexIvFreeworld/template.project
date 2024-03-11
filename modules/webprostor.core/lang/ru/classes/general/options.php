@@ -14,4 +14,6 @@ $MESS["WEBPROSTOR_CORE_OPTIONS_SAVE_SUCCESS"] = "Настройки сохран
 $MESS["WEBPROSTOR_CORE_OPTIONS_RESET_SUCCESS"] = "Настройки восстановлены";
 
 $MESS["WEBPROSTOR_CORE_OPTIONS_SELECT"] = "-- Выберите --";
+
+$MESS["WEBPROSTOR_CORE_OPTIONS_COLOR_SELECT"] = "Выбор цвета";
 ?>

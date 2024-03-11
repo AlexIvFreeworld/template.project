@@ -1,10 +1,30 @@
 <?
 define("ADMIN_MODULE_NAME", "webprostor.smtp");
 
-if(!CModule::IncludeModule("webprostor.core"))
+$moduleAccessLevel = $APPLICATION->GetGroupRight(ADMIN_MODULE_NAME);
+
+if ($moduleAccessLevel > "D")
 {
-	$APPLICATION->IncludeAdminFile("webprostor.core", $_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/".ADMIN_MODULE_NAME."/install/webprostor.core.php");
+	if(!CModule::IncludeModule("webprostor.core"))
+	{
+		$APPLICATION->IncludeAdminFile("webprostor.core", $_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/".ADMIN_MODULE_NAME."/install/webprostor.core.php");
+	}
 }
+
+CJSCore::Init(array("jquery3"));
+
+\Bitrix\Main\UI\Extension::load("ui.buttons");
+\Bitrix\Main\UI\Extension::load("ui.buttons.icons");
+\Bitrix\Main\UI\Extension::load("ui.alerts");
+\Bitrix\Main\UI\Extension::load("ui.hints");
+\Bitrix\Main\UI\Extension::load("ui.forms"); 
+
+$GLOBALS['APPLICATION']->AddHeadScript('/bitrix/panel/webprostor.core/select2/js/select2.min.js');
+$GLOBALS['APPLICATION']->AddHeadScript('/bitrix/panel/webprostor.core/select2/js/ru.js');
+$GLOBALS['APPLICATION']->AddHeadScript('/bitrix/panel/webprostor.core/select2/js/main.js');
+
+$GLOBALS['APPLICATION']->SetAdditionalCSS('/bitrix/panel/webprostor.core/select2/css/select2.min.css');
+$GLOBALS['APPLICATION']->SetAdditionalCSS('/bitrix/panel/webprostor.core/select2/css/style.css');
 
 function parseMailHeading(&$message)
 {
@@ -30,6 +50,7 @@ function parseMailHeading(&$message)
 		"X-Bitrix-Posting" => "/\bX-Bitrix-Posting: (.+)\n/i",
 		"Precedence" => "/\bPrecedence: (.+)\n/i",
 		"Bitrix-Sender" => "/\bBitrix-Sender: (.+)\n/i",
+		"Content-Disposition" => "/\bContent-Disposition: (.+)\n/i",
 	];
 	$result = [];
 	

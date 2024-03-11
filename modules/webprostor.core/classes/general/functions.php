@@ -1,14 +1,16 @@
 <?
+require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/webprostor.core/prolog.php");
+
 Class CWebprostorCoreFunctions
 {
-	public function dump($data)
+	public static function dump($data)
 	{
 		echo '<pre>';
 		var_dump($data);
 		echo '</pre>';
 	}
 	
-	public function GenerateRandomCode($lenght = false)
+	public static function GenerateRandomCode($lenght = false)
 	{
 		$min_lenght= 0;
 		$max_lenght = 100;
@@ -43,7 +45,7 @@ Class CWebprostorCoreFunctions
 		return $result;
 	}
 	
-	public function GetCorrectWord($num, $str1, $str2, $str3)
+	public static function GetCorrectWord($num, $str1, $str2, $str3)
 	{
 		$val = $num % 100;
 
@@ -56,7 +58,7 @@ Class CWebprostorCoreFunctions
 		}
 	}
 	
-	public function ReturnBytes($val)
+	public static function ReturnBytes($val)
 	{
 		$val = trim($val);
 		$last = strtolower($val[strlen($val)-1]);
@@ -72,7 +74,17 @@ Class CWebprostorCoreFunctions
 		return $val;
 	}
 	
-	public function ShowFormFields($arFields = Array())
+	public static function mb_ucfirst($str)
+	{
+		$result = '';
+		
+		if(is_string($str) && strlen($str) > 0)
+			$result = mb_strtoupper(mb_substr($str, 0, 1)).mb_substr($str, 1);
+
+		return $result;
+	}
+	
+	public static function ShowFormFields($arFields = Array())
 	{
 		if(count($arFields))
 		{
@@ -100,20 +112,24 @@ Class CWebprostorCoreFunctions
 						case("EDITOR"):
 							global $APPLICATION;
 						?>
-						<?$APPLICATION->IncludeComponent("bitrix:fileman.light_editor","",Array(
-							"CONTENT" => html_entity_decode($field["VALUE"]),
-							"INPUT_NAME" => $field["CODE"],
-							"INPUT_ID" => $field["ID"],
-							"WIDTH" => "100%",
-							"HEIGHT" => "300px",
-							"RESIZABLE" => "Y",
-							"AUTO_RESIZE" => "Y",
-							"VIDEO_ALLOW_VIDEO" => "N",
-							"USE_FILE_DIALOGS" => "N",
-							"ID" => "",	
-							"JS_OBJ_NAME" => ""
+						<?$APPLICATION->IncludeComponent(
+							"bitrix:fileman.light_editor",
+							"",
+							Array(
+								"CONTENT" => html_entity_decode($field["VALUE"]),
+								"INPUT_NAME" => $field["CODE"],
+								"INPUT_ID" => $field["ID"],
+								"WIDTH" => "100%",
+								"HEIGHT" => "300px",
+								"RESIZABLE" => "Y",
+								"AUTO_RESIZE" => "Y",
+								"VIDEO_ALLOW_VIDEO" => "N",
+								"USE_FILE_DIALOGS" => "N",
+								"ID" => "",	
+								"JS_OBJ_NAME" => ""
 							)
-						);?>
+						);
+						?>
 						<?
 						break;
 						case("PICTURE"):
@@ -190,7 +206,7 @@ Class CWebprostorCoreFunctions
 								'class="adm-detail-iblock-list select-search"'
 							);
 							if($field['REFRESH'] == 'Y')
-								echo '<input type="submit" name="apply" value="'.GetMessage("WEBPROSTOR_CORE_FUNCTIONS_APPLY").'" />';
+								echo '<button class="ui-btn ui-btn-sm" type="submit" name="apply" value="Y">'.GetMessage("WEBPROSTOR_CORE_FUNCTIONS_APPLY").'</button>';
 							break;
 						break;
 						case("IBLOCK_TREE"):
@@ -265,7 +281,14 @@ Class CWebprostorCoreFunctions
 								$rsData = \Bitrix\Highloadblock\HighloadBlockTable::getList();
 								while($hldata = $rsData->Fetch())
 								{
-									$HLblocks[$hldata["ID"]] = htmlspecialcharsbx($hldata["NAME"]).' ['.$hldata["TABLE_NAME"].']';
+									$rights = \Bitrix\HighloadBlock\HighloadBlockRightsTable::getOperationsName($hldata["ID"]);
+									
+									if(is_array($rights) && in_array('hl_element_write', $rights))
+									{
+										$HLblocks[$hldata["ID"]] = htmlspecialcharsbx($hldata["NAME"]).' ['.$hldata["TABLE_NAME"].']';
+									}
+									
+									unset($rights);
 								}
 						?>
 					<?if($field["DISABLED"] == "Y") {?><input type="hidden" name="<?=$field["CODE"]?>" value="<?=$field["VALUE"]?>" /><? } ?>
@@ -307,7 +330,7 @@ Class CWebprostorCoreFunctions
 						<?endforeach;?>
 					</select>
 					<?if($field["PARAMS"]["CHECK_ALL"] == "Y" && $field["PARAMS"]["MULTIPLE"] == "Y") {?>
-					&nbsp;<label for="<?=$field["ID"]?>_checkbox"><input type="checkbox" id="<?=$field["ID"]?>_checkbox" > <?=GetMessage("WEBPROSTOR_CORE_FUNCTIONS_SELECT_ALL")?></label>
+					&nbsp;<label for="<?=$field["ID"]?>_checkbox"><input type="checkbox" id="<?=$field["ID"]?>_checkbox"<?if($field["PARAMS"]["CHECK_ALL_CHECKED"] == "Y") echo ' checked';?>> <?=GetMessage("WEBPROSTOR_CORE_FUNCTIONS_SELECT_ALL")?></label>
 					<script>
 					$(document).ready(function(){
 						$('#<?=$field["ID"]?>_checkbox').click(function()
@@ -328,7 +351,7 @@ Class CWebprostorCoreFunctions
 					<? } ?>
 						<?
 						if($field['REFRESH'] == 'Y')
-							echo '<input type="submit" name="apply" value="'.GetMessage("WEBPROSTOR_CORE_FUNCTIONS_APPLY").'" />';
+							echo '<button class="ui-btn ui-btn-sm" type="submit" name="apply" value="Y">'.GetMessage("WEBPROSTOR_CORE_FUNCTIONS_APPLY").'</button>';
 						break;
 						case("RANGE"):
 						?>
@@ -338,7 +361,14 @@ Class CWebprostorCoreFunctions
 						break;
 						case("TEXT"):
 						?>
-					<input type="text" placeholder="<?=$field["PARAMS"]["PLACEHOLDER"]?>" name="<?=$field["CODE"]?>" id="<?=$field["ID"]?$field["ID"]:strtolower($field["CODE"])?>" size="<?=$field["PARAMS"]["SIZE"]?>"  maxlength="<?=$field["PARAMS"]["MAXLENGTH"]?>" value="<?=$field["VALUE"]?>"<?if($field["DISABLED"] == "Y") {?> disabled<? } ?><?if(isset($field["PARAMS"]["AUTOCOMPLETE"])) {?> autocomplete="<?=$field["PARAMS"]["AUTOCOMPLETE"]?"on":"off";?>"<? } ?>>
+					<input type="text" placeholder="<?=$field["PARAMS"]["PLACEHOLDER"]?>" name="<?=$field["CODE"]?>" id="<?=$field["ID"]?$field["ID"]:strtolower($field["CODE"])?>" size="<?=$field["PARAMS"]["SIZE"]?>"  maxlength="<?=$field["PARAMS"]["MAXLENGTH"]?>" value="<?=$field["VALUE"]?>"<?if($field["DISABLED"] == "Y") {?> disabled<? } ?><?if(isset($field["PARAMS"]["AUTOCOMPLETE"])) {?> autocomplete="<?=$field["PARAMS"]["AUTOCOMPLETE"]?"on":"off";?>"<? } ?><?if(isset($field["PARAMS"]["LIST"]) && is_array($field["PARAMS"]["LIST"])){?> list="<?=$field["ID"]?$field["ID"]:strtolower($field["CODE"])?>_list"<? } ?>>
+					<?if(isset($field["PARAMS"]["LIST"]) && is_array($field["PARAMS"]["LIST"])){?>
+					<datalist id="<?=$field["ID"]?$field["ID"]:strtolower($field["CODE"])?>_list">
+					<?foreach($field["PARAMS"]["LIST"] as $option){?>
+						<option><?=$option?></option>
+					<? } ?>
+					</datalist>
+					<? } ?>
 						<?
 						break;
 						case("HIDDEN"):
@@ -374,7 +404,7 @@ Class CWebprostorCoreFunctions
 						break;
 						case("NUMBER"):
 						?>
-					<input type="number" class="adm-input" name="<?=$field["CODE"]?>" id="<?=$field["ID"]?$field["ID"]:strtolower($field["CODE"])?>" size="<?=$field["PARAMS"]["SIZE"]?>" min="<?=$field["PARAMS"]["MIN"]?>" max="<?=$field["PARAMS"]["MAX"]?>" maxlength="<?=$field["PARAMS"]["MAXLENGTH"]?>" value="<?=$field["VALUE"]?>"<?if($field["DISABLED"] == "Y") {?> disabled<? } ?>>
+					<input type="number" class="adm-input" name="<?=$field["CODE"]?>" id="<?=$field["ID"]?$field["ID"]:strtolower($field["CODE"])?>" size="<?=$field["PARAMS"]["SIZE"]?>" min="<?=$field["PARAMS"]["MIN"]?>" max="<?=$field["PARAMS"]["MAX"]?>" step="<?=$field["PARAMS"]["STEP"]?>" maxlength="<?=$field["PARAMS"]["MAXLENGTH"]?>" value="<?=$field["VALUE"]?>"<?if($field["DISABLED"] == "Y") {?> disabled<? } ?>>
 						<?
 						break;
 						case("CHECKBOX"):?>
@@ -387,7 +417,7 @@ Class CWebprostorCoreFunctions
 						<?
 						break;
 						case("BUTTON"):?>
-						<a class="adm-btn" href="<?=$field["VALUE"]?>" target="<?=$field["PARAMS"]["TARGET"]?$field["PARAMS"]["TARGET"]:"_blank";?>"><span><?=$field["PARAMS"]["TEXT"]?></span></a>
+						<a class="ui-btn ui-btn-sm" href="<?=$field["VALUE"]?>" target="<?=$field["PARAMS"]["TARGET"]?$field["PARAMS"]["TARGET"]:"_blank";?>"><span><?=$field["PARAMS"]["TEXT"]?></span></a>
 						<?
 						break;
 						case("WINDOW_DIALOG"):?>
@@ -436,14 +466,14 @@ Class CWebprostorCoreFunctions
 						</script>
 						<div id="dialog_<?=$field["ID"]?>"></div>
 						<input type="hidden" id="<?=$field["ID"]?>" name="<?=$field["CODE"]?>" value="<?=$field["VALUE"]?>">
-						<a id="open_<?=$field["ID"]?>" class="adm-btn" ><?=GetMessage("WEBPROSTOR_CORE_FUNCTIONS_OPEN");?></a>
+						<a id="open_<?=$field["ID"]?>" class="ui-btn ui-btn-sm ui-btn-light-border" ><?=GetMessage("WEBPROSTOR_CORE_FUNCTIONS_OPEN");?></a>
 						<?
 						break;
 						case("FILE_DIALOG"):
 							$BtnClickFileEvent = $field["CODE"].'_open';
 							?>
 						<input type="text" name="<?=$field["CODE"]?>" id="<?=$field["ID"]?$field["ID"]:strtolower($field["CODE"])?>" value="<?=$field["VALUE"]?>" placeholder="<?=$field["PARAMS"]["PLACEHOLDER"]?>" size="<?=$field["PARAMS"]["SIZE"]?>" maxlength="<?=$field["PARAMS"]["MAXLENGTH"]?>" />
-						<input type="button" value="<?echo GetMessage("WEBPROSTOR_CORE_FUNCTIONS_OPEN"); ?>" OnClick="<?=$BtnClickFileEvent?>()">
+						<button type="button" class="ui-btn ui-btn-sm ui-btn-icon-add ui-btn-light-border" value="<?echo GetMessage("WEBPROSTOR_CORE_FUNCTIONS_OPEN"); ?>" OnClick="<?=$BtnClickFileEvent?>()"><?echo GetMessage("WEBPROSTOR_CORE_FUNCTIONS_OPEN"); ?></button>
 						<?
 						CAdminFileDialog::ShowScript(
 							array(
@@ -469,9 +499,9 @@ Class CWebprostorCoreFunctions
 						<?
 						break;
 						case("NOTE"):
-							echo BeginNote();
+							echo CWebprostorCoreFunctions::showAlertBegin($field["PARAMS"]["TYPE"], $field["PARAMS"]["ICON"]);
 							echo $field["VALUE"];
-							echo EndNote();
+							echo CWebprostorCoreFunctions::showAlertEnd();
 						break;
 						default:?>
 						<?=$field["VALUE"]?>
@@ -482,9 +512,10 @@ Class CWebprostorCoreFunctions
 					<?
 					if($field["DESCRIPTION"])
 					{
-					?>
-					<a href="javascript:;" title="<?=$field["DESCRIPTION"]?>">(?)</a>
-					<?
+						//echo ShowJSHint($field["DESCRIPTION"]);
+						?>
+						<span data-hint="<?=$field["DESCRIPTION"]?>"></span>
+						<?
 					} 
 					?>
 				</td>
@@ -496,7 +527,7 @@ Class CWebprostorCoreFunctions
 		} 
 	}
 	
-	public function PrepareProxyList($list = false)
+	public static function PrepareProxyList($list = false)
 	{
 		if(strlen($list)>0)
 		{
@@ -539,10 +570,35 @@ Class CWebprostorCoreFunctions
 		return false;
 	}
 	
-	public function ConvertFileSize($size)
+	public static function ConvertFileSize($size)
 	{
 		$unit = ['b','kb','mb','gb','tb','pb'];
 		return @round($size/pow(1024,($i=floor(log($size,1024)))),2).' '.$unit[$i];
+	}
+	
+	public static function showAlertBegin($type = '', $icon = '')
+	{
+		echo '<div class="ui-alert ui-alert-'.($type?$type:"default").''.($icon?" ui-alert-icon-".$icon:"").'">';
+		echo '<div class="ui-alert-message">';
+	}
+	
+	public static function showAlertEnd()
+	{
+		echo '</div></div>';
+	}
+	
+	public static function showProgressBar($type = 'default', $text_before = '', $text_after = '', $value = 0, $total = 100)
+	{
+		echo '
+			<div class="ui-progressbar ui-progressbar-'.$type.' ui-progressbar-bg ui-progressbar-lg">
+				<div class="ui-progressbar-text-before">
+					<strong>'.$text_before.'</strong>
+				</div>
+				<div class="ui-progressbar-track">
+					<div class="ui-progressbar-bar" style="width:'.$value/($total/100).'%;"></div>
+				</div>
+				<div class="ui-progressbar-text-after">'.$text_after.'</div>
+			</div>';
 	}
 }
 ?>

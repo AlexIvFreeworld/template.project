@@ -1,5 +1,5 @@
 smtp
 Host - mail.r52.ru
-port - 25
-без шифрования
+port - 465
+SSL
 

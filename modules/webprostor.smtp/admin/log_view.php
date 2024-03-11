@@ -18,12 +18,19 @@ $strWarning = "";
 
 $aTabs = array(
 	array("DIV" => "main", "TAB" => GetMessage("ELEMENT_TAB"), "ICON"=>"", "TITLE"=>GetMessage("ELEMENT_TAB_TITLE")),
+	array("DIV" => "source", "TAB" => GetMessage("SOURCE_TAB"), "ICON"=>"", "TITLE"=>GetMessage("SOURCE_TAB_TITLE")),
 );
 
 $tabControl = new CAdminTabControl("tabControl", $aTabs);
 
 $sTableID = "webprostor_smtp_logs";
 $ID = intval($ID);
+
+$MODULES = [
+	'' => GetMessage("WEBPROSTOR_SMTP_MODULE_SENDER_SYSTEM"),
+	'subscribe' => GetMessage("WEBPROSTOR_SMTP_MODULE_SENDER_SUBSCRIBE"),
+	'sender' => GetMessage("WEBPROSTOR_SMTP_MODULE_SENDER_SENDER")
+];
 
 $cData = new CWebprostorSmtpLogs;
 
@@ -51,7 +58,7 @@ $aMenu = array(
 	)
 );
 
-if($ID>0)
+if($ID>0 && $moduleAccessLevel=="W")
 {
 	$aMenu[] = array("SEPARATOR"=>"Y");
 
@@ -104,30 +111,24 @@ if($str_SITE_ID != "")
 	);
 }
 $arFields["MAIN"]["ITEMS"][] = Array(
-	"CODE" => "DATE_CREATE",
+	"CODE" => "MODULE_ID",
 	"TYPE" => "LABEL",
-	"LABEL" => GetMessage("DATE_CREATE"),
-	"VALUE" => $str_DATE_CREATE,
+	"LABEL" => GetMessage("MODULE_ID"),
+	"VALUE" => $MODULES[$str_MODULE_ID],
 );
-if($str_MODULE_ID != '')
-{
-	$arFields["MAIN"]["ITEMS"][] = Array(
-		"CODE" => "MODULE_ID",
-		"TYPE" => "LABEL",
-		"LABEL" => GetMessage("MODULE_ID"),
-		"VALUE" => $str_MODULE_ID,
-	);
-}
 
 $arFields["SERVICE"]["LABEL"] = GetMessage("GROUP_SERVICE");
 
-$arFields["SERVICE"]["ITEMS"][] = Array(
-	"CODE" => "ERROR_TEXT",
-	"TYPE" => "LABEL",
-	"LABEL" => GetMessage("ERROR_TEXT"),
-	"VALUE" => $str_ERROR_TEXT,
-);
-if($str_ERROR_NUMBER)
+if($str_ERROR_TEXT)
+{
+	$arFields["SERVICE"]["ITEMS"][] = Array(
+		"CODE" => "ERROR_TEXT",
+		"TYPE" => "LABEL",
+		"LABEL" => GetMessage("ERROR_TEXT"),
+		"VALUE" => $str_ERROR_TEXT,
+	);
+}
+/*if($str_ERROR_NUMBER)
 {
 	$arFields["SERVICE"]["ITEMS"][] = Array(
 		"CODE" => "ERROR_NUMBER",
@@ -135,7 +136,28 @@ if($str_ERROR_NUMBER)
 		"LABEL" => GetMessage("ERROR_NUMBER"),
 		"VALUE" => $str_ERROR_NUMBER,
 	);
+}*/
+if($str_RECIPIENTS)
+{
+	$arFields["SERVICE"]["ITEMS"][] = Array(
+		"CODE" => "RECIPIENTS",
+		"TYPE" => "LABEL",
+		"LABEL" => GetMessage("RECIPIENTS"),
+		"VALUE" => $str_RECIPIENTS,
+	);
 }
+$arFields["SERVICE"]["ITEMS"][] = Array(
+	"CODE" => "SENDED",
+	"TYPE" => "ACTIVE",
+	"LABEL" => GetMessage("SENDED"),
+	"VALUE" => ($str_SENDED=="Y"?GetMessage("SENDED_Y"):GetMessage("SENDED_N")),
+);
+$arFields["SERVICE"]["ITEMS"][] = Array(
+	"CODE" => "DATE_CREATE",
+	"TYPE" => "LABEL",
+	"LABEL" => GetMessage("DATE_CREATE"),
+	"VALUE" => $str_DATE_CREATE,
+);
 
 if($str_SEND_INFO != "")
 {
@@ -146,6 +168,14 @@ if($str_SEND_INFO != "")
 	{
 		if($value != "")
 		{
+			if($code == "Subject" && (strpos($value, "UTF-8") !== false || strpos($value, "windows-1251") !== false))
+			{
+				$value = str_replace("=?UTF-8?B?", "", $value);
+				$value = str_replace("=?windows-1251?B?", "", $value);
+				$value = str_replace("=?=", "", $value);
+				$value = base64_decode($value);
+			}
+			
 			$arFields["MESSAGE_FIELDS"]["ITEMS"][] = Array(
 				"CODE" => $code,
 				"TYPE" => "LABEL",
@@ -166,6 +196,62 @@ if($str_SEND_INFO != "")
 		"VALUE" => $str_SEND_INFO,
 	);
 }
+
+CWebprostorCoreFunctions::ShowFormFields($arFields);
+
+$tabControl->BeginNextTab();
+
+unset($arFields);
+$arFields["SOURCE"]["ITEMS"][] = Array(
+	"CODE" => "SOURCE_TO",
+	"VALUE" => $str_SOURCE_TO?$str_SOURCE_TO:GetMessage("WEBPROSTOR_SMTP_SOURCE_EMPTY"),
+	"LABEL" => GetMessage("WEBPROSTOR_SMTP_SOURCE_TO"),
+);
+if(strpos($str_SOURCE_SUBJECT, "UTF-8") !== false || strpos($str_SOURCE_SUBJECT, "windows-1251") !== false)
+{
+	$str_SOURCE_SUBJECT = str_replace("=?UTF-8?B?", "", $str_SOURCE_SUBJECT);
+	$str_SOURCE_SUBJECT = str_replace("=?windows-1251?B?", "", $str_SOURCE_SUBJECT);
+	$str_SOURCE_SUBJECT = str_replace("=?=", "", $str_SOURCE_SUBJECT);
+	$str_SOURCE_SUBJECT = base64_decode($str_SOURCE_SUBJECT);
+}
+$arFields["SOURCE"]["ITEMS"][] = Array(
+	"CODE" => "SOURCE_SUBJECT",
+	"VALUE" => $str_SOURCE_SUBJECT?$str_SOURCE_SUBJECT:GetMessage("WEBPROSTOR_SMTP_SOURCE_EMPTY"),
+	"LABEL" => GetMessage("WEBPROSTOR_SMTP_SOURCE_SUBJECT"),
+);
+$arFields["SOURCE"]["ITEMS"][] = Array(
+	"CODE" => "SOURCE_MESSAGE",
+	"TYPE" => "TEXTAREA",
+	"VALUE" => $str_SOURCE_MESSAGE,
+	"LABEL" => GetMessage("WEBPROSTOR_SMTP_SOURCE_MESSAGE"),
+	"PARAMS" => [
+		"COLS" => 100,
+		"ROWS" => 30,
+		"READONLY" => "Y",
+	],
+);
+$arFields["SOURCE"]["ITEMS"][] = Array(
+	"CODE" => "SOURCE_HEADERS",
+	"TYPE" => "TEXTAREA",
+	"VALUE" => $str_SOURCE_HEADERS,
+	"LABEL" => GetMessage("WEBPROSTOR_SMTP_SOURCE_HEADERS"),
+	"PARAMS" => [
+		"COLS" => 100,
+		"ROWS" => 30,
+		"READONLY" => "Y",
+	],
+);
+$arFields["SOURCE"]["ITEMS"][] = Array(
+	"CODE" => "SOURCE_PARAMETERS",
+	"TYPE" => "TEXTAREA",
+	"VALUE" => $str_SOURCE_PARAMETERS,
+	"LABEL" => GetMessage("WEBPROSTOR_SMTP_SOURCE_PARAMETERS"),
+	"PARAMS" => [
+		"COLS" => 100,
+		"ROWS" => 30,
+		"READONLY" => "Y",
+	],
+);
 
 CWebprostorCoreFunctions::ShowFormFields($arFields);
 

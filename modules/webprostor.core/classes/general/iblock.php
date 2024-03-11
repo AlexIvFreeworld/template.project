@@ -1,7 +1,7 @@
 <?
 Class CWebprostorCoreIblock
 {
-	public function GetDefaultProperties($IBLOCK_ID = false, $params = [])
+	public static function GetDefaultProperties($IBLOCK_ID = false, $params = [])
 	{
 		$result = Array();
 		
@@ -44,7 +44,7 @@ Class CWebprostorCoreIblock
 		return $result;
 	}
 	
-	public function GetDefaultElementFields($IBLOCK_ID = false, array &$fields = Array())
+	public static function GetDefaultElementFields($IBLOCK_ID = false, array &$fields = Array())
 	{
 		$iblockParams = CIBlock::GetFields($IBLOCK_ID);
 		
@@ -68,7 +68,7 @@ Class CWebprostorCoreIblock
 		self::CheckFields($fields, $iblockElementParams);
 	}
 	
-	private function CheckFields(&$fields, $params)
+	private static function CheckFields(&$fields, $params)
 	{
 		foreach($params as $code => $param)
 		{
