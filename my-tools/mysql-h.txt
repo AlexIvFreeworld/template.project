@@ -74,6 +74,7 @@ C:\mysql\bin\mysql -u root -p
 
 \. E:\MyEducation\SQL\where.txt //подключение файла со скриптом запроса в консоль
 
+CREATE DATABASE site2;
 SHOW DATABASES; - список баз данных
 SHOW TABLES [FROM db_name]; -  список таблиц в базе 
 SHOW COLUMNS FROM таблица [FROM db_name]; - список столбцов в таблице

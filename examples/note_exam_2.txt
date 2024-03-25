@@ -536,9 +536,175 @@ $APPLICATION->SetTitle(Loc::getMessage("COUNT_PRODUCT_CNT") . $arResult["PRODUCT
 [ex2-71] Разработать простой компонент «Каталог товаров»
 
 bsm_api.chm
-[CBitrixComponent] [CBitrixComponent::StartResultCache]
+[CBitrixComponent] [CBitrixComponent::StartResultCache] в примере $USER->GetGroups() 
 [CBitrixComponent] [CBitrixComponent::AbortResultCache]
-[CUser] $USER->GetGroups() ????
 [CIBlockElement][CIBlockElement::GetList]
+[CBitrixComponent] [CBitrixComponent::setResultCacheKeys]
+[GetMessage][Главный модуль>Функции>Языковые файлы>GetMessage]
 
+В публичной части в разделе "Экзамен2" создаем раздел "Простой компонент-71"
+Создаем local/components/exam2/
+Из материалов в local/components/exam2/ копируем простой компонент simplecomp.exam-materials
+Меняем название компонента на предложенное в задании (simplecomp.exam.71 в примере)
+Вносим правки в файл .description.php
 
+$arComponentDescription = array(
+	"NAME" => GetMessage("SIMPLECOMP_EXAM2_NAME_71"),
+	"CACHE_PATH" => "Y", // отображается кнопка очистки кэша компонента
+	"PATH" => array(
+		"ID" => "ex2simple",
+		"NAME" => GetMessage("EXAM2")
+	),
+);
+
+В публичной части добавляем вызов компонента на страницу
+Добавим требуемые параметры компонента в .parameters.php
+Из стандартного компонента bitrix/components/bitrix/news.list/.parameters.php скопируем параметры кеширования
+
+$arComponentParameters = array(
+	"PARAMETERS" => array(
+		"PRODUCTS_IBLOCK_ID" => array(
+			"NAME" => GetMessage("SIMPLECOMP_EXAM2_CAT_IBLOCK_ID_71"),
+			"PARENT" => "BASE",
+			"TYPE" => "STRING",
+		),
+		"CLASSIF_IBLOCK_ID" => array(
+			"NAME" => GetMessage("SIMPLECOMP_EXAM2_CLASSIF_IBLOCK_ID_71"),
+			"PARENT" => "BASE",
+			"TYPE" => "STRING",
+		),
+		"TEMPLATE" => array(
+			"NAME" => GetMessage("SIMPLECOMP_EXAM2_TEMPLATE_71"),
+			"PARENT" => "BASE",
+			"TYPE" => "STRING",
+		),
+		"PROPERTY_CODE" => array(
+			"NAME" => GetMessage("SIMPLECOMP_EXAM2_PROPERTY_CODE_71"),
+			"PARENT" => "BASE",
+			"TYPE" => "STRING",
+		),
+		"CACHE_TIME"  =>  ["DEFAULT"=>36000000],
+		"CACHE_FILTER" => [
+			"PARENT" => "CACHE_SETTINGS",
+			"NAME" => GetMessage("IBLOCK_CACHE_FILTER_71"),
+			"TYPE" => "CHECKBOX",
+			"DEFAULT" => "N",
+		],
+		"CACHE_GROUPS" => [
+			"PARENT" => "CACHE_SETTINGS",
+			"NAME" => GetMessage("CACHE_GROUPS_71"),
+			"TYPE" => "CHECKBOX",
+			"DEFAULT" => "Y",
+		],
+
+	),
+);
+
+Создаем языковые файлы с соответствующими записями
+Проверяем отображение параметров в настройках компонента в публичной части
+Создадим инфоблок "Фирма производитель" и добавим три элемента (Бренд1,Бренд2,Бренд3)
+В инфоблок "Продукция" добавляем множественное свойство Фирма FIRMA тип привязка к элементам инфоблока "Фирма производитель"
+Зададим четырем элементам инфоблока "Продукция" привязки к элементам инфоблока "Форма производитель"
+В публичной части передадим идентификаторы инфоблоков и код свойства
+
+		"PRODUCTS_IBLOCK_ID" => "2",
+		"CLASSIF_IBLOCK_ID" => "5",
+		"PROPERTY_CODE" => "FIRMA",
+
+Пишем логику компонента в local/components/exam2/simplecomp.exam.71/component.php
+
+if (empty($arParams["CACHE_TIME"])) {
+	$arParams["CACHE_TIME"] = 36000000;
+}
+if (empty($arParams["PRODUCTS_IBLOCK_ID"])) {
+	$arParams["PRODUCTS_IBLOCK_ID"] = 0;
+}
+if (empty($arParams["CLASSIF_IBLOCK_ID"])) {
+	$arParams["CLASSIF_IBLOCK_ID"] = 0;
+}
+$arParams["PROPERTY_CODE"] = trim($arParams["PROPERTY_CODE"]);
+global $USER;
+
+if ($this->StartResultCache(false, array($USER->GetGroups()))) {
+	$arClassif = array();
+	$arClassifId = array();
+	$arResult["COUNT"] = 0;
+
+	$arSelect = array(
+		"ID",
+		"IBLOCK_ID",
+		"NAME",
+	);
+	$arFilter = array(
+		"IBLOCK_ID" => IntVal($arParams["CLASSIF_IBLOCK_ID"]),
+		"CHECK_PERMISSIONS" => $arParams["CACHE_GROUPS"],
+		"ACTIVE" => "Y"
+	);
+	$res = CIBlockElement::GetList(array(), $arFilter, false, false, $arSelect);
+	while ($ob = $res->GetNext()) {
+		$arClassif[$ob["ID"]] = $ob;
+		$arClassifId[] = $ob["ID"];
+	}
+	$arResult["COUNT"] = count($arClassif);
+	$arSelect = array(
+		"ID",
+		"IBLOCK_ID",
+		"IBLOCK_SECTION_ID",
+		"NAME",
+		"DETAIL_PAGE_URL"
+	);
+	$arFilter = array(
+		"IBLOCK_ID" => IntVal($arParams["PRODUCTS_IBLOCK_ID"]),
+		"CHECK_PERMISSIONS" => $arParams["CACHE_GROUPS"],
+		"PROPERTY_" . $arParams["PROPERTY_CODE"] => $arClassifId,
+		"ACTIVE" => "Y"
+	);
+
+	$res = CIBlockElement::GetList(array(), $arFilter, false, false, $arSelect);
+	while ($ob = $res->GetNextElement()) {
+		$arFields = $ob->GetFields();
+		$arFields["PROPERTY"] = $ob->GetProperties();
+		foreach ($arFields["PROPERTY"]["FIRMA"]["VALUE"] as $value) {
+			$arClassif[$value]["ELEMENTS"][] = $arFields;
+		}
+		// $arResult["ELEMENTS"][$arFields["ID"]] = $ob;
+	}
+	$arResult["CLASSIF"] = $arClassif;
+	// echo "<pre>";
+	// print_r($arResult["CLASSIF"]);
+	// echo "</pre>";
+	$this->SetResultCacheKeys(array("COUNT"));
+	$this->includeComponentTemplate();
+} else {
+	$this->AbortResultCache();
+}
+$APPLICATION->SetTitle(GetMessage("COUNT_71") . $arResult["COUNT"]);
+
+Формируем шаблон компонента
+
+<p><b><?= GetMessage("SIMPLECOMP_EXAM2_CAT_TITLE_71") ?></b></p>
+<? if (!empty($arResult["CLASSIF"])) : ?>
+    <ul>
+        <? foreach ($arResult["CLASSIF"] as $arClassif) : ?>
+            <li>
+                <b><?= $arClassif["NAME"] ?></b>
+                <? if (!empty($arClassif["ELEMENTS"])) : ?>
+                    <ul>
+                        <? foreach ($arClassif["ELEMENTS"] as $arEl) : ?>
+                            <?//R52::debug($arEl)?>
+                            <li>
+                                <?= $arEl["NAME"] ?> -
+                                <?= $arEl["PROPERTY"]["PRICE"]["VALUE"] ?> -
+                                <?= $arEl["PROPERTY"]["MATERIAL"]["VALUE"] ?> -
+                                <?= $arEl["PROPERTY"]["ARTNUMBER"]["VALUE"] ?> -
+                                <a href="<?= $arEl["DETAIL_PAGE_URL"] ?>">ссылка на детальный просмотр</a>
+                            </li>
+                        <? endforeach; ?>
+                    </ul>
+                <? endif ?>
+            </li>
+        <? endforeach; ?>
+    </ul>
+<? endif; ?>
+
+Проверяем вывод элементов и заголовка
