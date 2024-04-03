@@ -708,3 +708,410 @@ $APPLICATION->SetTitle(GetMessage("COUNT_71") . $arResult["COUNT"]);
 <? endif; ?>
 
 Проверяем вывод элементов и заголовка
+
+------------------------------------------------------------------------------------------------------------
+
+[ex2-97] Разработать простой компонент «Новости по интересам» 
+bsm_api.chm
+[CUser] [CUser::GetList] 
+[CIBlockElement] [CIBlockElement::GetList]
+[SetResultCacheKeys] (Главный модуль>Классы>CBitrixComponent>setResultCacheKeys)
+[CBitrixComponent] [CBitrixComponent::AbortResultCache]
+[CMain] [CMain::SetTitle]
+[GetMessage][Главный модуль>Функции>Языковые файлы>GetMessage]
+
+В публичной части в разделе "Экзамен2" создаем раздел "Простой компонент-97"
+Создаем local/components/exam2/
+Из материалов в local/components/exam2/ копируем простой компонент simplecomp.exam-materials
+Меняем название компонента на предложенное в задании (simplecomp.exam.97 в примере)
+Вносим правки в файл .description.php
+
+$arComponentDescription = array(
+	"NAME" => GetMessage("SIMPLECOMP_EXAM2_NAME_97"),
+	"CACHE_PATH" => "Y",
+	"PATH" => array(
+		"ID" => "ex2simple",
+		"NAME" => GetMessage("EXAM2")
+	),
+);
+
+В публичной части добавляем вызов компонента на страницу
+Добавим требуемые параметры компонента в .parameters.php
+Из стандартного компонента bitrix/components/bitrix/news.list/.parameters.php скопируем параметры кеширования
+
+$arComponentParameters = array(
+	"PARAMETERS" => array(
+		"NEWS_IBLOCK_ID" => array(
+			"NAME" => GetMessage("SIMPLECOMP_EXAM2_NEWS_IBLOCK_ID"),
+			"PARENT" => "BASE",
+			"TYPE" => "STRING",
+		),
+		"EXAM2_PROPERTY" => array(
+			"NAME" => GetMessage("SIMPLECOMP_EXAM2_PROPERTY"),
+			"PARENT" => "BASE",
+			"TYPE" => "STRING",
+		),
+		"PROPERTY_UF" => array(
+			"NAME" => GetMessage("SIMPLECOMP_EXAM2_PROPERTY_UF"),
+			"PARENT" => "BASE",
+			"TYPE" => "STRING",
+		),
+		"CACHE_TIME"  =>  ["DEFAULT"=>36000000],
+		"CACHE_FILTER" => [
+			"PARENT" => "CACHE_SETTINGS",
+			"NAME" => GetMessage("IBLOCK_CACHE_FILTER"),
+			"TYPE" => "CHECKBOX",
+			"DEFAULT" => "N",
+		],
+		"CACHE_GROUPS" => [
+			"PARENT" => "CACHE_SETTINGS",
+			"NAME" => GetMessage("CP_BNL_CACHE_GROUPS"),
+			"TYPE" => "CHECKBOX",
+			"DEFAULT" => "Y",
+		],
+
+	),
+);
+
+Создаем языковые файлы с соответствующими записями
+Проверяем отображение параметров в настройках компонента в публичной части
+Добавляем пользовательское свойство для пользователей UF_AUTHOR_TYPE в соответствии с заданием
+Создаем трех тестовых пользователей, логины: test1, test2, test3 и устанавливаем свойство "Тип автора" в соответствии с заданием
+В информационном блоке Новости добавляем множественное свойство – Автор, тип - привязка к пользователю
+Добавить три тестовые новости с произвольным контентом и задаем им значение свойства Автор в соответствии с заданием
+
+В публичной части передадим идентификаторы инфоблоков и код свойства
+
+		"NEWS_IBLOCK_ID" => "1",
+		"EXAM2_PROPERTY" => "AUTHOR",
+		"PROPERTY_UF" => "UF_AUTHOR_TYPE",
+
+Пишем логику компонента в local/components/exam2/simplecomp.exam.97/component.php
+
+if (empty($arParams["CACHE_TIME"])) {
+	$arParams["CACHE_TIME"] = 36000000;
+}
+if (empty($arParams["NEWS_IBLOCK_ID"])) {
+	$arParams["NEWS_IBLOCK_ID"] = 0;
+}
+$arParams["EXAM2_PROPERTY"] = trim($arParams["EXAM2_PROPERTY"]);
+$arParams["PROPERTY_UF"] = trim($arParams["PROPERTY_UF"]);
+
+global $USER;
+if ($USER->IsAuthorized()) {
+	$curUserId = $USER->GetID();
+	$curUserType = CUser::GetList(
+		"id",
+		"asc",
+		array("ID" => $curUserId),
+		array("SELECT" => array($arParams["PROPERTY_UF"]))
+	)->Fetch()[$arParams["PROPERTY_UF"]];
+}
+
+if ($this->StartResultCache(false, array($curUserType, $curUserId))) {
+	// user
+	$userList = array();
+	$userListId = array();
+
+	$arOrderUser = array("id");
+	$sortOrder = "asc";
+	$arFilterUser = array(
+		$arParams["PROPERTY_UF"] => $curUserType,
+		"!ID" => $curUserId
+	);
+	$arSelectUser = array("SELECT" => array("LOGIN", "ID"));
+
+	$rsUsers = CUser::GetList($arOrderUser, $sortOrder, $arFilterUser, $arFilterUser); // выбираем пользователей
+	while ($arUser = $rsUsers->GetNext()) {
+		$userList[$arUser["ID"]] = array("LOGIN" => $arUser["LOGIN"]);
+		$userListId[] = $arUser["ID"];
+	}
+
+	$arNewsList = array();
+
+	$arSortElems = array(
+		"NAME" => "ASC"
+	);
+	$arFilterElems = array(
+		"IBLOCK_ID" => $arParams["NEWS_IBLOCK_ID"],
+	);
+	$arSelectElems = array(
+		"ID",
+		"IBLOCK_ID",
+		"NAME",
+		"ACTIVE_FROM",
+		"PROPERTY_" . $arParams["EXAM2_PROPERTY"]
+	);
+
+	$rsElements = CIBlockElement::GetList($arSortElems, $arFilterElems, false, false, $arSelectElems);
+	while ($arElement = $rsElements->GetNext()) {
+		$arNewsAuthor[$arElement["ID"]][] = $arElement["PROPERTY_" . $arParams["EXAM2_PROPERTY"] . "_VALUE"];
+		if (empty($arNewsList[$arElement["ID"]])) {
+			$arNewsList[$arElement["ID"]] = $arElement;
+		}
+		$arNewsList[$arElement["ID"]]["AUTHORS"][] = $arElement["PROPERTY_" . $arParams["EXAM2_PROPERTY"] . "_VALUE"];
+	}
+	$newsIds = array();
+	foreach ($arNewsList as $key => $arIem) {
+		$canAdd = true;
+		foreach ($arIem["AUTHORS"] as $authorId) {
+			if ($authorId == $curUserId) {
+				$canAdd = false;
+			}
+		}
+		foreach ($arIem["AUTHORS"] as $authorId) {
+			if ($canAdd && in_array($authorId, $userListId)) {
+				$userList[$authorId]["NEWS"][] = $arIem;
+				if (!in_array($arIem["ID"], $newsIds)) {
+					$newsIds[] = $arIem["ID"];
+				}
+			}
+		}
+	}
+	$arResult["AUTHORS"] = $userList;
+	$arResult["COUNT"] = count($newsIds);
+
+	$this->SetResultCacheKeys(array("COUNT"));
+	$this->includeComponentTemplate();
+} else {
+	$this->AbortResultCache();
+}
+$APPLICATION->SetTitle(GetMessage("COUNT_97") . $arResult["COUNT"]);
+
+Формируем шаблон компонента
+
+<? if (!empty($arResult["AUTHORS"])) : ?>
+    <? foreach ($arResult["AUTHORS"] as $key => $arAuthor) : ?>
+        <ul>
+            <li>
+                <b> [<?= $key ?>] - <?= $arAuthor["LOGIN"] ?></b>
+                <ul>
+                    <? foreach ($arAuthor["NEWS"] as $arNews) : ?>
+                        <li>
+                            - <?= $arNews["NAME"] ?>
+                        </li>
+                    <? endforeach; ?>
+                </ul>
+            </li>
+        </ul>
+    <? endforeach; ?>
+<? endif; ?>
+
+Проверяем вывод элементов и заголовка
+
+------------------------------------------------------------------------------------------------------------
+
+[ex2-81] Внести доработки в созданный простой компонент «Каталог товаров»
+
+Дорабатывается компонент из задания [ex2-70] Разработать простой компонент «Каталог товаров» 
+В компонент local/components/exam2/simplecomp.exam/component.php добавим сортировку в соответствие с заданием
+для элементов инфоблока "Продукция" 
+
+	$arOrder = array(
+		"NAME" => "ASC",
+		"SORT" => "ASC"
+	);
+
+В публичной части после очистки кэша проверим результаты
+В параметры компонента local/components/exam2/simplecomp.exam/.parameters.php добавляем строковый из задания
+
+		"LINK_TEMPLATE_DETAIL" => array(
+			"NAME" => GetMessage("SIMPLECOMP_EXAM2_LINK_TEMPLATE_DETAIL"),
+			"PARENT" => "BASE",
+			"TYPE" => "STRING",
+			"DEFAULT" => "catalog_exam/#SECTION_ID#/#ELEMENT_CODE#"
+		),
+
+В компонент local/components/exam2/simplecomp.exam/component.php добавим форматирование и добавление ссылки на детальный просмотр
+для элементов инфоблока "Продукция" 
+
+		$ob["DETAIL_PAGE_URL"] = str_replace(
+			array(
+				"#SECTION_ID#",
+				"#ELEMENT_CODE#"
+			),
+			array(
+				$ob["IBLOCK_SECTION_ID"],
+				$ob["CODE"],
+			),
+			$arParams["LINK_TEMPLATE_DETAIL"]
+		);
+
+В шаблон local/components/exam2/simplecomp.exam/templates/.default/template.php добавим условие вывода элементов
+        if (empty($arNews["SECTIONS"])) {
+            continue;
+        }
+что бы исключить ошибки связанные с более поздними заданиями, и добавим вывод ссылки на детальный просмотр
+
+(<?= $arProduct["DETAIL_PAGE_URL"] . ".php" ?>)
+
+Проверим результат в публичной части
+
+------------------------------------------------------------------------------------------------------------
+
+[ex2-49] Добавить дополнительную фильтрацию элементов в созданный простой
+компонент «Каталог товаров»
+
+Дорабатывается компонент из задания [ex2-70] Разработать простой компонент «Каталог товаров» 
+В компонент local/components/exam2/simplecomp.exam/component.php добавим фильтрацию в соответствие с заданием
+
+Перед кешированием проверка на наличие get параметра "F" и выставление соответствующего флага
+$isFilter = false;
+if (isset($_REQUEST["F"])) {
+	$isFilter = true;
+}
+
+Добавление параметра кеширования
+if ($this->StartResultCache(false, array($isFilter)))
+
+Добвление условия фильтрации к имеющемуся фильтру и остановка кеширования
+	if ($isFilter) {
+		$arFilterElements[] = array(
+			array("<=PROPERTY_PRICE" => 1700, "PROPERTY_MATERIAL" => "Дерево, ткань"),
+			array("<PROPERTY_PRICE" => 1500, "PROPERTY_MATERIAL" => "Металл, пластик"),
+			"LOGIC" => "OR"
+		);
+		$this->AbortResultCache();
+	}
+
+Добавить в шаблон local/components/exam2/simplecomp.exam/templates/.default/template.php
+ссылку с get параметром
+
+$url = $APPLICATION->GetCurPage()."?F=Y";
+echo GetMessage("FILTER_TITLE").'<a href="'. $url .'">' . $url.'</a><br>';
+
+Проверить в публичной части работу фильтра и кеша
+
+------------------------------------------------------------------------------------------------------------
+
+[ex2-58] Добавить управление элементами – «Эрмитаж» в созданный простой компонент
+«Каталог товаров»
+
+bsm_api.chm
+[CIBlock] [CIBlock::GetPanelButtons]
+
+Дорабатывается компонент из задания [ex2-70] Разработать простой компонент «Каталог товаров» 
+В компоненте local/components/exam2/simplecomp.exam/component.php формируем управляющие ссылки для каждого элемента
+
+		$arButtons = CIBlock::GetPanelButtons(
+			$arParams["PRODUCTS_IBLOCK_ID"],
+			$ob["ID"],
+			0,
+			array("SECTION_BUTTONS" => false, "SESSID" => false)
+		);
+		$ob["EDIT_LINK"] = $arButtons["edit"]["edit_element"]["ACTION_URL"];
+		$ob["DELETE_LINK"] = $arButtons["edit"]["delete_element"]["ACTION_URL"];
+		$arResult["ADD_LINK"] = $arButtons["edit"]["add_element"]["ACTION_URL"];
+		$arResult["IBLOCK_ID"] = $arParams["PRODUCTS_IBLOCK_ID"];
+
+В шаблоне local/components/exam2/simplecomp.exam/templates/.default/template.php добавим функционал эрмитажа
+в качестве примера возьмем bitrix/components/bitrix/news.list/templates/.default/template.php
+
+<?
+$this->AddEditAction($arNews["ID"] . "_" . $arProduct['ID'], $arProduct['EDIT_LINK'], CIBlock::GetArrayByID($arProduct["IBLOCK_ID"], "ELEMENT_EDIT"));
+$this->AddDeleteAction($arNews["ID"] . "_" . $arProduct['ID'], $arProduct['DELETE_LINK'], CIBlock::GetArrayByID($arProduct["IBLOCK_ID"], "ELEMENT_DELETE"), array("CONFIRM" => GetMessage('CT_BNL_ELEMENT_DELETE_CONFIRM')));
+?>
+<li id="<?= $this->GetEditAreaId($arNews["ID"] . "_" . $arProduct['ID']); ?>">
+
+Для добавления элемента, добавим ссылки в родительский элемент
+<?
+$this->AddEditAction($arNews["ID"], $arResult['ADD_LINK'], CIBlock::GetArrayByID($arResult["IBLOCK_ID"], "ELEMENT_ADD"));
+?>
+<ul id="<?= $this->GetEditAreaId($arNews["ID"]); ?>">
+
+Проверим в публичной части добавление и удаление и изменение элемента
+
+------------------------------------------------------------------------------------------------------------
+
+[ex2-100] Добавить пункт «ИБ в админке» в выпадающем меню компонента.
+
+bsm_api.chm
+[CIBlock] [CIBlock::GetPanelButtons]
+[AddIncludeAreaIcons] [CBitrixComponent::AddIncludeAreaIcons]
+
+Дорабатывается компонент из задания [ex2-70] Разработать простой компонент «Каталог товаров» 
+В компоненте local/components/exam2/simplecomp.exam/component.php проверяем авторизацию пользователя, получаем массив кнопок,
+добавляем новую кнопку в соответствие с заданием, для режима редактирования компонента в публичной части
+
+
+global $USER;
+if ($USER->IsAuthorized()) {
+	$arButtons = CIBlock::GetPanelButtons($arParams["PRODUCTS_IBLOCK_ID"]);
+	$this->AddIncludeAreaIcons(
+		array(
+			array(
+				"ID" => "LinkId",
+				"TITLE" => GetMessage("IB_IN_ADMIN"),
+				"URL" => $arButtons["submenu"]["element_list"]["ACTION_URL"],
+				"IN_PARAMS_MENU" => true
+			)
+		)
+	);
+}
+
+Проверяем результат в публичной части
+
+------------------------------------------------------------------------------------------------------------
+
+[ex2-82] Добавить отображение данных в шаблон сайта
+
+bsm_api.chm
+[CBitrixComponent] [CBitrixComponent::setResultCacheKeys]
+[GetMessage][Главный модуль>Функции>Языковые файлы>GetMessage]
+[AddViewContent] [CMain::AddViewContent]
+[ShowViewContent][CMain::ShowViewContent]
+
+php_enhanced_ru.chm
+[str_replace]
+[min]
+[max]
+
+Дорабатывается компонент из задания [ex2-70] Разработать простой компонент «Каталог товаров» 
+Добавим файл local/components/exam2/simplecomp.exam/templates/.default/result_modifier.php
+Получим массив с ценами товаров, посчитаем min, max подготовим передачу данных в component_epilog
+
+if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
+$arPrice = array();
+foreach ($arResult["NEWS"] as $arNews) {
+    if (!empty($arNews["PRODUCTS"])) {
+        foreach ($arNews["PRODUCTS"] as $arProduct) {
+            $arPrice[] = $arProduct["PROPERTY_PRICE_VALUE"];
+        }
+    }
+}
+$arResult["MIN_PRICE"] = min($arPrice);
+$arResult["MAX_PRICE"] = max($arPrice);
+$this->__component->SetResultCacheKeys(array("MIN_PRICE", "MAX_PRICE"));
+
+Добавим local/components/exam2/simplecomp.exam/templates/.default/component_epilog.php
+Подготовим html для вывода отложенной функцией в шаблон (header), если будут получены данные
+
+if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
+if (isset($arResult["MIN_PRICE"]) && isset($arResult["MAX_PRICE"])) {
+    $infoTemplates = '<div style="color:red; margin: 34px 15px 35px 15px">#TEXT#</div>';
+    $sText = GetMessage("MIN_PRICE") . $arResult["MIN_PRICE"] . "<br>" . GetMessage("MAX_PRICE") . $arResult["MAX_PRICE"];
+    $finalText = str_replace("#TEXT#", $sText, $infoTemplates);
+    $APPLICATION->AddViewContent("prices", $finalText);
+}
+
+В шаблон local/templates/furniture_dark-blue/header.php (левый сайдбар, под поиском) выведем html из эпилога
+
+<?
+$APPLICATION->IncludeComponent("bitrix:search.form", "flat", Array(
+	"PAGE" => "#SITE_DIR#search/",
+),
+	false
+);
+?>
+					</div>
+				</div>
+<?
+$APPLICATION->ShowViewContent("prices");
+?>
+
+Проверим результат в публичной части
+
+------------------------------------------------------------------------------------------------------------
+
+[ex2-60] Добавить постраничную навигацию в созданный простой компонент
+

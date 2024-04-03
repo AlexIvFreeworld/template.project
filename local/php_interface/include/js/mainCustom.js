@@ -61,6 +61,38 @@ var helpR52 = {
         httpRequest.send(data);
 
     },
+    getHtmlAjaxPost: function (url, data, callback) {
+        var httpRequest = false;
+        data = JSON.stringify(data);
+
+        if (window.XMLHttpRequest) { // Mozilla, Safari, ...
+            httpRequest = new XMLHttpRequest();
+            if (httpRequest.overrideMimeType) {
+                httpRequest.overrideMimeType('text/xml');
+                // Читайте ниже об этой строке
+            }
+        } else if (window.ActiveXObject) { // IE
+            try {
+                httpRequest = new ActiveXObject("Msxml2.XMLHTTP");
+            } catch (e) {
+                try {
+                    httpRequest = new ActiveXObject("Microsoft.XMLHTTP");
+                } catch (e) { }
+            }
+        }
+
+        if (!httpRequest) {
+            alert('Не вышло :( Невозможно создать экземпляр класса XMLHTTP ');
+            return false;
+        }
+        httpRequest.onreadystatechange = function () {
+            helpR52.processResponseHtml(httpRequest, callback);
+        };
+        // console.log(data);
+        httpRequest.open("POST", url, true);
+        httpRequest.send(data);
+
+    },
     processResponseJson: function (httpRequest, callback) {
 
         if (httpRequest.readyState == 4) {
