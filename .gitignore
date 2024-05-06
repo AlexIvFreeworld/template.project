@@ -8,3 +8,12 @@
 *.doc
 *.xls
 *.pdf
+*.csv
+*.log
+*.pdf
+*.sql
+*.tar
+*.tar.gz
+*.tgz
+*.xlsx
+*.zip

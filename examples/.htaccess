@@ -26,6 +26,10 @@ RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
   RewriteCond %{QUERY_STRING} !http(s|)://
   RewriteRule .* /$0 [R=301,L]
 
+  RewriteCond %{THE_REQUEST} //
+  RewriteCond %{QUERY_STRING} !http(s|)://
+  RewriteRule .* https://%{HTTP_HOST}/$0 [R=301,L]
+
 	RewriteCond %{REQUEST_URI} !(bitrix)
 	RewriteCond %{REQUEST_URI} ^(.*)/(index|home)\.(html|htm|php)$  
 	RewriteRule ^(.*)$ https://%{HTTP_HOST}/ [R=301,L]
@@ -65,6 +69,11 @@ RewriteCond %{QUERY_STRING} ^oid=38143
 RewriteRule ^(.*)$ https://cluboptica.ru/? [R=301,L]
 
 Redirect 301 /lns/p3/	https://cluboptica.ru/
+
+# 301 --- http://v-hps.ru/?page_id=147 => http://v-hps.r52.ru/
+RewriteCond %{HTTP_HOST} ^v\-hps\.ru$
+RewriteCond %{QUERY_STRING} (?:^|&)page_id\=147(?:$|&)
+RewriteRule ^$ http://v\-hps.r52.ru/? [L,R=301]
 
 </IfModule>
 

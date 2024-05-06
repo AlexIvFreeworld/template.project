@@ -6205,3 +6205,4 @@ exit
   311  iconv -f WINDOWS-1251 -t UTF-8 /home/alex/Projects/ecouniversal-logistik.r52.ru/work/structure.txt -o /home/alex/Projects/ecouniversal-logistik.r52.ru/work/structure5.txt
 488  mkdir -m 775 -p lang/ru
 501  find /var -type d -name 'mail'
+2023  find . type f -name header.php  -exec grep Yandex.Metrika {} +

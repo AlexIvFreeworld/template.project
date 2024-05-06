@@ -1,0 +1,4 @@
+ERR
+Кодировка таблицы "b_location_recent_address" (utf8mb4) отличается от кодировки базы (utf8)
+COMMAND
+ALTER TABLE `b_location_recent_address` CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;

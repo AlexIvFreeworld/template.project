@@ -3,3 +3,4 @@ Host - mail.r52.ru
 port - 465
 SSL
 
+ivanov@r52.ru, alex.testr52@mail.ru, alex.iv.freeworld@gmail.com, volzh-nn@yandex.ru

@@ -243,7 +243,9 @@
             "error_get_last()",
             "\\$str = html_entity_decode(\\$arResult['SECTION']['UF_TOPTEXT']);",
             "\\$arTopText = str_replace('<a','<li><a',\\$str);",
-            "\\$resUrldecode = urldecode(\\$_SERVER[\"HTTP_REFERER\"]);"
+            "\\$resUrldecode = urldecode(\\$_SERVER[\"HTTP_REFERER\"]);",
+            "LocalRedirect(SITE_DIR.\"cabinet\");",
+            "\\$arOption = \\Bitrix\\Main\\Config\\Option::getForModule(\"main\");",
             "//---------------------------------------------------------------",
         ],
         "description": "my_cases"
@@ -351,7 +353,7 @@
         "prefix": "my_bx_check_cur_section",
         "body": [
             "if(CSite::InDir('/raskrytie-informatsii/kommercheskie-uslugi/')) {",
-                "\\$APPLICATION->AddHeadScript('//code.jivo.ru/widget/7xWa7Yk4fa');",	
+            "\\$APPLICATION->AddHeadScript('//code.jivo.ru/widget/7xWa7Yk4fa');",
             "}"
         ],
         "description": "my_bx_check_cur_section"
@@ -374,7 +376,7 @@
             "curl_close(\\$curl);",
             "\\$result = json_decode(\\$result);",
             "debug(\\$result);",
-            ],
+        ],
         "description": "my_curl_get"
     },
     "Print my_debug_bitrix_full": {
@@ -385,7 +387,7 @@
             "echo \"Вы администратор!\";",
             "echo \"<pre>\" . print_r(\\$data, 1) . \"</pre>\";",
             "}",
-            ],
+        ],
         "description": "my_debug_bitrix_full"
     },
     "Print my_uasort": {
@@ -399,8 +401,16 @@
             "return (intval(\\$a[\"SORT\"]) < intval(\\$b[\"SORT\"])) ? -1 : 1;",
             "}",
             "uasort(\\$arResult['CHARACTERISTICS'], \"cmp\");",
-            ],
+        ],
         "description": "my_uasort"
     },
-
+    "Print my_userGetList": {
+        "prefix": "my_userGetList",
+        "body": [
+            "\\$curUserId = \\$USER->GetID();",
+            "\\$curUserType = CUser::GetList(\"id\", \"asc\", array(\"ID\" => \\$curUserId), array(\"SELECT\" => array(\\$arParams[\"PROPERTY_UF\"])))->Fetch();",
+            "R52::debug(\\$curUserType[\\$arParams[\"PROPERTY_UF\"]]);",
+        ],
+        "description": "my_userGetList"
+    },
 }
