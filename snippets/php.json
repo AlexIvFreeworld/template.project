@@ -298,6 +298,7 @@
             "\"NAME\"           => \\$arFields[\"NAME\"],",
             "\"CODE\"           => \\$arFields[\"CODE\"],",
             "\"ACTIVE\"         => \"Y\",",
+            "\"ACTIVE_FROM\" => date(\"d.m.Y\")",
             "'PREVIEW_TEXT' => \\$arFields[\"PREVIEW_TEXT\"],",
             ");",
             "\\$PRODUCT_ID = \\$el->Add(\\$arLoadProductArray);",
