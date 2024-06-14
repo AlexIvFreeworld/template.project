@@ -6206,3 +6206,7 @@ exit
 488  mkdir -m 775 -p lang/ru
 501  find /var -type d -name 'mail'
 2023  find . type f -name header.php  -exec grep Yandex.Metrika {} +
+2024  sudo apt-get autoclean
+2001  du -h --max-depth=1 /var/log/journal
+2003  sudo journalctl --vacuum-time=7d
+1998  sudo du -hs

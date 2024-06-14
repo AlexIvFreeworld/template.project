@@ -1259,3 +1259,292 @@ $resultCacheKeys = array("ID");
 <div>Проблемный компонент bitrix:catalog.section: Запросов: 8</div>
 
 Включить автокеширование компонентов
+
+------------------------------------------------------------------------------------------------------------
+
+[ex2-25] Создание комплексного компонента «Моя фотогалерея»
+
+1 Формирование ссылки в sections_top.php
+Добавить раздел /ex2/complexcomponent
+Скопировать коплексный компонент из материалов в local/components/exam2 переименовать в complexcomp
+В local/components/exam2/complexcomp/.description.php заменить ID
+		"ID" => "ex2simple",
+что бы все компоненты лежали в одном разделе
+В публичной части вывести компонент на страницу ex2/complexcomponent/index.php
+В local/components/exam2/complexcomp/.parameters.php добавим два параметра и страницу
+	"PARAMETERS" => array(
+		"VARIABLE_ALIASES" => Array(
+			"PARAM1" => Array("NAME" => GetMessage("PARAM1")),
+			"PARAM2" => Array("NAME" => GetMessage("PARAM2")),
+		"SEF_MODE" => Array(
+			"exampage" => array(
+					"NAME" => GetMessage("EXAM_PAGE"),
+					"DEFAULT" => "exam/new/#PARAM1#",
+					"VARIABLES" => array("PARAM1")
+			),	
+В local/components/exam2/complexcomp/component.php добавим 
+
+$arDefaultUrlTemplates404 = array(
+  	"exampage" => "exam/new/#PARAM1#",
+
+$arComponentVariables = array(
+	"PARAM1",
+	"PARAM2",
+
+elseif(isset($arVariables["PARAM1"]) && !empty($arVariables["PARAM1"]))
+	$componentPage = "exampage";
+
+В local/components/exam2/complexcomp/templates/.default/sections_top.php добавим
+
+$param1 = 123;
+$param2 = 456;
+$url = "";
+if ($arParams["SEF_MODE"] == "Y") {
+	$url = $arParams["SEF_FOLDER"] . str_replace("#PARAM1#", $param1, $arParams["SEF_URL_TEMPLATES"]["exampage"]) . "?PARAM2=$param2";
+} else {
+	$url = $APPLICATION->GetCurPage() . "?PARAM1=$param1&PARAM2=$param2";
+}
+<?= GetMessage("EXAM_TEXT_LINK_CP_PHOTO") ?> <a href="<?= $url ?>"><?= $url ?></a>
+
+В local/components/exam2/complexcomp/templates/.default/exampage.php добавим
+
+echo "PARAM1 = " . $arResult["VARIABLES"]["PARAM1"] . "<br>";
+echo "PARAM2 = " . $arResult["VARIABLES"]["PARAM2"] . "<br>";
+
+Проверим переход по ссылке с sections_top.php на exampage.php и получение нужных параметров как в режиме чпу, так и без
+
+2 Формирование ссылки в detail.php
+Добавить раздел /ex2/complexcomponent (в примере complexcomponent2)
+Скопировать коплексный компонент из материалов в local/components/exam2 переименовать в complexcomp (в примере complexcomp3)
+В local/components/exam2/complexcomp/.description.php заменить ID
+		"ID" => "ex2simple",
+что бы все компоненты лежали в одном разделе
+В публичной части вывести компонент на страницу ex2/complexcomponent2/index.php
+В local/components/exam2/complexcomp3/.parameters.php добавим
+
+	"PARAMETERS" => array(
+		"VARIABLE_ALIASES" => Array(
+			"PARAM1" => Array("NAME" => GetMessage("PARAM1")),
+			"PARAM2" => Array("NAME" => GetMessage("PARAM2")),
+		"SEF_MODE" => Array(
+			"exampage" => array(
+					"NAME" => GetMessage("EXAM_PAGE"),
+					"DEFAULT" => "exam/new/#SECTION_ID#/#ELEMENT_ID#/#PARAM1#",
+					"VARIABLES" => array("PARAM1","ELEMENT_ID", "SECTION_ID")
+			),	
+
+local/components/exam2/complexcomp3/component.php добавим (заменим)
+
+$arDefaultUrlTemplates404 = array(
+	"exampage" => "exam/new/#SECTION_ID#/#ELEMENT_ID#/#PARAM1#",
+
+$arComponentVariables = array(
+	"PARAM1",
+	"PARAM2",
+
+if (isset($arVariables["PARAM1"]) && !empty($arVariables["PARAM1"]))
+	$componentPage = "exampage";	
+
+В local/components/exam2/complexcomp3/templates/.default/detail.php добавим
+
+$param1 = "edit";
+$param2 = 789;
+$SECTION_ID = $arResult['VARIABLES']['SECTION_ID'];
+$ELEMENT_ID = $arResult['VARIABLES']['ELEMENT_ID'];
+$url = "";
+if ($arParams["SEF_MODE"] == "Y") {
+	$url = $arParams["SEF_FOLDER"] . str_replace(array("#PARAM1#","#SECTION_ID#","#ELEMENT_ID#"), array($param1,$SECTION_ID,$ELEMENT_ID), $arParams["SEF_URL_TEMPLATES"]["exampage"]) . "?PARAM2=$param2";
+} else {
+	$url = $APPLICATION->GetCurPage() . "?PARAM1=$param1&PARAM2=$param2&SECTION_ID=$SECTION_ID&ELEMENT_ID=$ELEMENT_ID";
+}
+
+<?= GetMessage("EXAM_TEXT_LINK_CP_PHOTO") ?> <a href="<?= $url ?>"><?= $url ?></a>
+
+В local/components/exam2/complexcomp3/templates/.default/exampage.php добавим
+
+echo "PARAM1 = " . $arResult["VARIABLES"]["PARAM1"] . "<br>";
+echo "PARAM2 = " . $arResult["VARIABLES"]["PARAM2"] . "<br>";
+echo "SECTION_ID = " . $arResult["VARIABLES"]["SECTION_ID"] . "<br>";
+echo "ELEMENT_ID = " . $arResult["VARIABLES"]["ELEMENT_ID"] . "<br>";
+
+Проверим переход по ссылке с detail.php на exampage.php и получение нужных параметров как в режиме чпу, так и без
+
+------------------------------------------------------------------------------------------------------------
+
+[ex2-54] Подсчет количества зарегистрированных пользователей
+
+Добавим local/php_interface/include/agents.php
+Подключим в local/php_interface/init.php
+if(file_exists($_SERVER["DOCUMENT_ROOT"]."/local/php_interface/include/agents.php")){
+    require_once($_SERVER["DOCUMENT_ROOT"]."/local/php_interface/include/agents.php");
+}
+
+Добавим функцию в local/php_interface/include/agents.php
+
+function CheckUserCount()
+{
+    $date = new DateTime();
+    $date = \Bitrix\Main\Type\DateTime::createFromTimestamp($date->getTimestamp());
+    $lastDate = COption::GetOptionString("main", "Last_date_agent_checkUserCount");
+
+    // $filter = array(
+    //     "DATE_REGISTER_1" => $yesterday_date_from,
+    //     "DATE_REGISTER_2" => $tomorrow_date_to
+    // );
+
+    if ($lastDate) {
+        $arFilter = array("DATE_REGISTER_1" => $lastDate);
+    } else {
+        $arFilter = array();
+    }
+    $arUsers = array();
+
+    $by = "DATE_REGISTER";
+    $order =  "ASC";
+    $rsUser = CUser::GetList($by, $order, $arFilter);
+    while ($user = $rsUser->Fetch()) {
+        $arUsers[] = $user;
+    }
+
+    if (!$lastDate) {
+        $lastDate = $arUsers[0]["DATE_REGISTER"];
+    }
+    $differens = intval(abs(strtotime($lastDate) - strtotime($date->toString())));
+    $days = round($differens / (3600 * 24));
+    $countUsers = count($arUsers);
+
+    $by = "ID";
+    $order =  "ASC";
+    $rsAdmin = CUser::GetList($by, $order, array("GROUPS_ID" => 1));
+    while ($admin = $rsAdmin->Fetch()) {
+        CEvent::Send(
+            "COUNT_REGISTRED_USERS",
+            "s1",
+            array(
+                "EMAIL_TO" => $admin["EMAIL"],
+                "COUNT_USERS" => $countUsers,
+                "COUNT_DAYS" => $days
+            ),
+            "Y",
+            "71"
+        );
+    }
+    COption::SetOptionString("main", "Last_date_agent_checkUserCount", $date->toString());
+
+    return "CheckUserCount();";
+}
+
+В административной части добавим и настроим агента
+
+Дата последнего запуска:	07.05.2024 13:31:18
+Дата и время следующего запуска:	
+08.05.2024 01:00:00
+Активен:	
+Модуль:	
+Функция агента:	
+CheckUserCount();
+ID пользователя:	
+  
+Сортировка:	
+0
+Периодичность выполнения:	через заданный интервал
+точно в указанное время
+Интервал (сек.):	
+86400
+
+Проверим отработку Функции CheckUserCount(); через командную строку php и таблицу b_event
+
+------------------------------------------------------------------------------------------------------------
+
+[ex2-102] Добавить англоязычную версию сайта (один инфоблок).
+
+В публичной части добавить раздел ex2/site2
+Скопировать из материалов щаблон сайта в local/templates/ex2_multilang_template_materials
+В админке добавить второй сайт (id: s2, название: Второй сайт,  папка: /ex2/site2/, язык: en, шаблон: ex2_multilang_template_materials)
+Привязать инфоблок "Новости" к s2, добавить свойства по заданию
+В настройках формы редактирования элементов, располагаем английские поля под их русскими аналогами
+Заполнить у элементов инфоблока "Новости" данные поля по заданию
+Добавить вызов компонента news.list на ex2/site2/index.php, формат даты: "Формат сайта"
+Копируем шаблон компонента в local/templates/ex2_multilang_template_materials/components/bitrix/news.list/template1
+Редактируем шаблон в соответствии с заданием (английские название и анонс)
+Добавим папку ex2/site2/include и копируем туда из задания ex2/site2/include/motto.php
+В local/templates/ex2_multilang_template_materials/header.php выводим контент из этого файла
+
+<td id="banner-slogan">
+	<? $APPLICATION->IncludeFile(
+		SITE_DIR . 'include/motto.php',
+		array(),
+		array(
+			'MODE' => 'html',
+			'NAME' => 'motto',
+		)
+	); ?>
+</td>
+
+В test.php получить вызов компонента переключателя языка, выбрав шаблон "dropdown"
+<?$APPLICATION->IncludeComponent(
+	"bitrix:main.site.selector", 
+	"dropdown", 
+	array(
+		"CACHE_TIME" => "3600",
+		"CACHE_TYPE" => "A",
+		"SITE_LIST" => array(
+			0 => "*all*",
+		),
+		"COMPONENT_TEMPLATE" => "dropdown"
+	),
+	false
+);?>
+
+Дефолтный шаблон в публичной части скопировать в bitrix/templates/.default
+Затем скопировать bitrix/templates/.default в local/templates/.default
+В шаблоне local/templates/.default/components/bitrix/main.site.selector/dropdown1/template.php заменить вывод названия языка на тип языка
+С <?=$arSite["NAME"]?> на <?=$arSite["LANG"]?>  
+
+Добавим копонент переключателя сайта в
+- local/templates/ex2_multilang_template_materials/header.php
+- local/templates/furniture_dark-blue/header.php
+
+<div class="content-block-inner">
+	<h3><?= GetMessage('CFT_LANG_CANGE') ?></h3>
+	<? $APPLICATION->IncludeComponent(
+		"bitrix:main.site.selector",
+		"dropdown1",
+		array(
+			"CACHE_TIME" => "3600",	// Время кеширования (сек.)
+			"CACHE_TYPE" => "A",	// Тип кеширования
+			"SITE_LIST" => "",	// Список сайтов
+			"COMPONENT_TEMPLATE" => "dropdown"
+		),
+		false
+	); ?>
+</div>
+
+Добавить в local/templates/furniture_dark-blue/lang/ru/header.php фразу
+$MESS["CFT_LANG_CANGE"] = "Выберите язык";
+
+Добавить верхнее меню в ex2/site2/.top.menu.php
+
+Array(
+	"Main", 
+	"/ex2/site2/", 
+	Array(), 
+	Array(), 
+	"" 
+),
+Array(
+	"About", 
+	"/ex2/site2/about.php", 
+	Array(), 
+	Array(), 
+	"" 
+)
+
+Копируем из задания ex2/site2/about.php
+
+Проверяем работу в публичной части
+
+------------------------------------------------------------------------------------------------------------
+
+[ex2-104] Сбор жалоб на новости, на AJAX
+

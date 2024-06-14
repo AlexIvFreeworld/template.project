@@ -1,0 +1,1 @@
+download file in infoblock - dbconn.php / define("BX_TEMPORARY_FILES_DIRECTORY", "/home/nat3956010/tmp/");
