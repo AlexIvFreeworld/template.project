@@ -1373,6 +1373,18 @@ echo "ELEMENT_ID = " . $arResult["VARIABLES"]["ELEMENT_ID"] . "<br>";
 
 [ex2-54] Подсчет количества зарегистрированных пользователей
 
+php_enhanced_ru.chm
+[DateTime][DateTime::getTimestamp]
+[strtotime][strtotime]
+api_d7.chm
+[DateTime] [createFromTimestamp] [Пространство имён Bitrix>Главный модуль>Type>DateTime>createFromTimestamp (с версии 15.0.7) ]
+[DateTime] [toString] [Пространство имён Bitrix>Главный модуль>Type>DateTime>toString (с версии 12.0.7)  ]
+bsm_api.chm
+[COption][COption::GetOptionString]
+[CUser][CUser::GetList]
+[CEvent][CEvent::Send]
+[COption][COption::SetOptionString]
+
 Добавим local/php_interface/include/agents.php
 Подключим в local/php_interface/init.php
 if(file_exists($_SERVER["DOCUMENT_ROOT"]."/local/php_interface/include/agents.php")){
@@ -1548,3 +1560,127 @@ Array(
 
 [ex2-104] Сбор жалоб на новости, на AJAX
 
+bsm_api.chm
+[BX] [BX.ready] [JS библиотека>Ядро библиотеки>Обработка событий>BX.ready]
+[BX] [BX.ajax.loadJSON] [JS библиотека>AJAX расширение>BX.ajax.loadJSON]
+[CJSCore] [Введение] [JS библиотека>Введение]
+window.history.pushState - добавляет запись в историю браузера
+[CModule][CModule::IncludeModule] [Главный модуль>Классы>CModule>IncludeModule (с версии 3.0.1) ]
+[USER] [CUser::IsAuthorized] [Главный модуль>Классы>CUser>IsAuthorized (с версии 3.0.6) ]
+[USER] [CUser::GetID] [Главный модуль>Классы>CUser>GetID (с версии 3.0.6)  ]
+[USER] [CUser::GetLogin] [Главный модуль>Классы>CUser>GetLogin (с версии 3.0.6)  ]
+[USER] [CUser::GetFullName] [Главный модуль>Классы>CUser>GetFullName (с версии 3.0.6) ]
+[CIBlockElement][CIBlockElement::Add][Информационные блоки>Классы>CIBlockElement>Add (доступен с 3.0.8) ]
+api_d7.chm
+[DateTime] [DateTime::createFromTimestamp] [Пространство имён Bitrix>Главный модуль>Type>DateTime>createFromTimestamp (с версии 15.0.7) ]
+
+Добавим инфоблок "Жалобы на новость" в соответствии с заданием, вместе с двумя свойствами "Пользователь", "Новость"
+В списке элементов инфоблока "Жалобы на новость" в админке отобразим поля в соответствие с заданием
+(ID,Начало активности,Пользователь,Новость)
+В local/templates/furniture_dark-blue/components/bitrix/news/.default/.parameters.php добавим параметр
+
+	"REPORT_AJAX" => Array(
+		"NAME" => GetMessage("T_IBLOCK_REPORT_AJAX"),
+		"TYPE" => "CHECKBOX",
+		"DEFAULT" =>"",
+	),
+
+В параметры вызова bitrix:news.detail в local/templates/furniture_dark-blue/components/bitrix/news/.default/detail.php
+пробросим новый параметр 		"REPORT_AJAX" => $arParams["REPORT_AJAX"],
+В публичной части проверим появление параметра в настройках компонента
+В шаблоне local/templates/furniture_dark-blue/components/bitrix/news/.default/bitrix/news.detail/.default/template.php
+выведем ссылку в зависимости от режима работы
+
+<? if ($arParams["REPORT_AJAX"] == "Y") : ?>
+	<script>
+		(function(BX) {
+			BX.ready(function() {
+				var ajaxReportBtn = document.getElementById("ajax-report");
+				ajaxReportBtn.onclick = function() {
+					BX.ajax.loadJSON(
+						'<?= $APPLICATION->GetCurPage() ?>', {
+							"TYPE": "REPORT_AJAX",
+							"ID": "<?= $arResult["ID"] ?>"
+						},
+						function(data) {
+							var textElem = document.getElementById("ajax-report-text");
+							textElem.innerText = "Ваше мнение учтено N" + data["ID"];
+						},
+						function(data) {
+							var textElem = document.getElementById("ajax-report-text");
+							textElem.innerText = "Ошибка";
+						},
+					);
+				}
+			})
+		})(BX);
+	</script>
+	<span style="font-size: 13px;">
+		<a id="ajax-report" href="#">Пожаловаться</a>
+		<span id="ajax-report-text"></span>
+	</span>
+<? else : ?>
+	<span style="font-size: 13px;">
+		<a href="<?= $APPLICATION->GetCurPage(); ?>?TYPE=REPORT_GET&ID=<?= $arResult["ID"] ?>">Пожаловаться</a>
+		<span id="ajax-report-text"></span>
+	</span>
+<? endif; ?>
+
+В local/templates/furniture_dark-blue/components/bitrix/news/.default/bitrix/news.detail/.default/component_epilog.php
+формируем обработчик
+
+CJSCore::Init();
+?>
+<? if ($_GET["TYPE"] == "REPORT_RESULT") : ?>
+    <? if (isset($_GET["ID"])) : ?>
+        <script>
+            var textElem = document.getElementById("ajax-report-text");
+            textElem.innerText = "Ваше мнение учтено №" + "<?= $_GET["ID"] ?>";
+            window.history.pushState(null, null, "<?= $APPLICATION->GetCurPage() ?>");
+        </script>
+    <? else : ?>
+        <script>
+            var textElem = document.getElementById("ajax-report-text");
+            textElem.innerText = "Ошибка";
+            window.history.pushState(null, null, "<?= $APPLICATION->GetCurPage() ?>");
+        </script>
+    <? endif; ?>
+<? elseif (isset($_GET["ID"])) : ?>
+    <?
+    $jasonObject = array();
+    if (CModule::IncludeModule("iblock")) {
+        $arUser = "";
+        global $USER;
+        if ($USER->IsAuthorized()) {
+            $arUser = $USER->GetId() . "(" . $USER->GetLogin() . ")" . $USER->GetFullName();
+        } else {
+            $arUser = "Не авторизован";
+        }
+        $arField = array(
+            "IBLOCK_ID" => 6,
+            "NAME" => "Новость " . $_GET["ID"],
+            "ACTIVE_FROM" => \Bitrix\Main\Type\DateTime::createFromTimestamp(time()),
+            "PROPERTY_VALUES" => array(
+                "USER" => $arUser,
+                "NEWS" => $_GET["ID"]
+            )
+        );
+        $element = new CIBlockElement(false);
+        if ($elId = $element->add($arField)) {
+            $jasonObject["ID"] = $elId;
+            if ($_GET["TYPE"] == "REPORT_AJAX") {
+                $APPLICATION->RestartBuffer();
+                echo json_encode($jasonObject);
+                die();
+            } elseif ($_GET["TYPE"] == "REPORT_GET") {
+                LocalRedirect($APPLICATION->GetCurPage() . "?TYPE=REPORT_RESULT&ID=" . $jasonObject["ID"]);
+            }
+        } else {
+            LocalRedirect($APPLICATION->GetCurPage() . "?TYPE=REPORT_RESULT");
+        }
+    }
+
+    ?>
+<? endif; ?>
+
+Проверяем работу в публичной части, в том числе в режиме "инкогнито"

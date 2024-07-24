@@ -2,3 +2,5 @@ polirukom.ru - FormData
 stroibaza-nn.ru - upgrade feed yml (bitrix/php_interface/include/catalog_export/yandex_run.php)
 bgmedia.r52.ru - поиск документов, local/templates/incorp2/components/bitrix/news/docs/search.php
 almi.r52.ru - ajax/json for list elements local/templates/main_almi/components/bitrix/catalog.section/catalog2.json
+/home/alex/Projects/contravt.ru/local/templates/aspro-allcorp3/components/bitrix/news/docs2 - outputting two infoblox
+/home/alex/Projects/autorentaservice.ru/local/php_interface/init.php - manipulating elements property with event

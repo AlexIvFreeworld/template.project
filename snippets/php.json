@@ -405,6 +405,18 @@
         ],
         "description": "my_uasort"
     },
+    "Print my_uasort_anonymous": {
+        "prefix": "my_uasort_anonymous",
+        "body": [
+            "uasort(\\$aMenuLinksExt, function (\\$a, \\$b) {",
+            "if (intval(\\$a[\"SORT\"]) == intval(\\$b[\"SORT\"])) {",
+            "return 0;",
+            "}",
+            "return (intval(\\$a[\"SORT\"]) < intval(\\$b[\"SORT\"])) ? -1 : 1;",
+            "});",
+        ],
+        "description": "my_uasort_anonymous"
+    },
     "Print my_userGetList": {
         "prefix": "my_userGetList",
         "body": [

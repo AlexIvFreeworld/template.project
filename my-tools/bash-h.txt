@@ -6210,3 +6210,7 @@ exit
 2001  du -h --max-depth=1 /var/log/journal
 2003  sudo journalctl --vacuum-time=7d
 1998  sudo du -hs
+2001  df -h
+2004  sudo du -hd 1 .
+389  ps axu | grep bash
+390  kill 11976
