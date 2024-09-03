@@ -1,0 +1,141 @@
+<!--ajax_content-->
+<script type="text/javascript" src="##base##data/js/jquery.form.js"></script>
+<script>
+	$(document).ready(function () {
+		if ($("###frequest_link##").length)
+			$("###frequest_link##").colorbox({
+				inline: true,
+				width: "##fwidth##px",
+				onClosed: resetForm
+			});
+
+		// $('#form_unique_##sid##').ajaxForm({
+		// 	dataType: 'json',
+		// 	success: processJson,
+		// 	beforeSubmit: function (formData, jqForm, options) {
+		// 		// console.log(formData);
+		// 		console.log(jqForm);
+		// 		// console.log(options);
+		// 		grecaptcha.execute('6LffryAqAAAAAC_hg3Z1rHjhlroUc4L1g-MCBZ2M', { action: 'submit' }).then(function (token) {
+		// 			// Add your logic to submit to your backend server here.
+		// 		});
+		// 		$('#image-loader').show();
+		// 	},
+		// 	error: function () {
+		// 		alert('Ошибка отправки формы');
+		// 	}
+		// });
+		$('#form_unique_##sid##').submit(function () {
+			// inside event callbacks 'this' is the DOM element so we first 
+			// wrap it in a jQuery object and then invoke ajaxSubmit 
+			// var tokenIn = "";
+			grecaptcha.execute('6LffryAqAAAAAC_hg3Z1rHjhlroUc4L1g-MCBZ2M', { action: 'submit' }).then(function (token) {
+				// Add your logic to submit to your backend server here.
+				// tokenIn = token;
+				$('#form_unique_##sid##').ajaxSubmit({
+					dataType: 'json',
+					data: { token: token },
+					success: processJson,
+					beforeSubmit: function () {
+						$('#image-loader').show();
+					},
+					error: function () {
+						alert('Ошибка отправки формы');
+					}
+				});
+			});
+			// !!! Important !!! 
+			// always return false to prevent standard browser submit and page navigation 
+			return false;
+		});
+	});
+
+</script>
+<!--ajax_gritter-->
+<link rel="stylesheet" type="text/css" href="##base##data/js/gritter/css/jquery.gritter.css" />
+<script type="text/javascript" src="##base##data/js/gritter/js/jquery.gritter.min.js"></script>
+<script>
+	if ($.gritter) $.extend($.gritter.options, { position: 'top-left' });
+</script>
+<!--/ajax_gritter-->
+
+<script>
+	function processJson(data) {
+		// console.log(data);
+		var sid = data['sid'];
+
+		if (data['anti']) {
+			$('#antispam' + sid).attr('src', data['anti']);
+		}
+		if (data['status'] == 'ok') {
+			//yaCounter37637669.reachGoal('klik');
+			if (data['sid'] == "37") {
+				ym(13962568, 'reachGoal', 'Zapis');
+			}
+			var link = data['link'];
+			var fwidth = data['fwidth'] + 'px';
+			var sname = data['sname'];
+			var target = data['target'];
+			if (data['alert'] == '0') {
+
+				if (target == 0) {
+					//$('#form_message_'+sid).addClass("cms_systemalert");
+					$('#form_message_' + sid).html('<div id="message-success" style="display:block;"><i class="fa fa-check"></i>' + data['message'] + '<br></div>');
+					resetForm(sid, link);
+					if (data['show'] == '0') $('#form_unique_' + sid).hide();
+				} else {
+					window.location.href = data['url'];
+				}
+			} else {
+				if (data['show'] == '0') $('#form_unique_' + sid).hide();
+				if ($.gritter) {
+					if ($('#' + link).length) $('#' + link).colorbox.close();
+					$.gritter.add({
+						title: sname,
+						text: data['message']
+					});
+					resetForm(sid, link);
+
+				} else {
+					if ($('#' + link).length) {
+						$('#form_message_' + sid).addClass("cms_systemalert");
+						$('#form_message_' + sid).html(data['message']);
+						$('#' + link).colorbox.resize({ width: "##fresultwidth##px" });
+					} else {
+						var mess = '<div class="cms_systemalert">' + data['message'] + '</div>';
+						$('#form_message_' + sid).colorbox({
+							open: true,
+							width: fwidth,
+							onClosed: resetForm(sid, link),
+							html: mess
+						});
+					}
+				}
+			}
+		} else {
+			if ($.gritter) {
+				dj_alert("Ошибка отправки формы", data['message']);
+				$('#anti-input').focus();
+			} else {
+				//$('#form_message_'+sid).addClass("cms_systemalert");
+				$('#form_message_' + sid).html('<div id="message-warning" style="display:block;"> ' + data['message'] + '</div>');
+				if ($('#' + link).length) $('#' + link).colorbox.resize();
+			}
+		}
+		$('#image-loader').hide();
+		$('.remodal-overlay').hide();
+	}
+
+	function resetForm(sid, link) {
+		//$('#form_message_'+sid).html('');
+		//$('#form_message_'+sid).removeClass("cms_systemalert");
+		$('#form_unique_' + sid).show();
+		$('#form_unique_' + sid).parent().hide();
+		$('#overlay').hide();
+
+		$('#form_unique_' + sid + ' input').not('input[type=button], input[type=submit], input[type=hidden], input[type=reset]').val('');
+		$('#form_unique_' + sid + ' textarea').val('');
+		if ($("#" + link).length) $("#" + link).colorbox.resize();
+	}
+</script>
+<!--/ajax_content-->

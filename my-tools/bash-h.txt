@@ -6214,3 +6214,4 @@ exit
 2004  sudo du -hd 1 .
 389  ps axu | grep bash
 390  kill 11976
+517  man telegram-desktop

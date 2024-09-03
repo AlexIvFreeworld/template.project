@@ -81,7 +81,7 @@ SHOW COLUMNS FROM таблица [FROM db_name]; - список столбцов
 SHOW CREATE TABLE table_name; - показать структуру таблицы в формате "CREATE TABLE" //показывает инф об ограничениях
 SHOW INDEX FROM tbl_name; - список индексов
 SHOW GRANTS FOR user [FROM db_name]; - привилегии для пользователя.
-
+DROP DATABASE [IF EXISTS] имя_базы_даных; - пытается удалить базу данных, если на сервере имеется бд с таким именем.
 
 SHOW VARIABLES; - значения системных переменных
 SHOW [FULL] PROCESSLIST; - статистика по mysqld процессам

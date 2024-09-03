@@ -1,4 +1,6 @@
 <?
+namespace AI;
+
 class R52
 {
     public static function test()

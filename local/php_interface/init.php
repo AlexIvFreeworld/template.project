@@ -2,8 +2,8 @@
 CModule::AddAutoloadClasses(
     '',
     array(
-        'R52' => '/local/php_interface/include/classes/r52.php',
-        'SimpleXLS' => '/local/php_interface/include/classes/SimpleXLS.php',
+        'AI\R52' => '/local/php_interface/include/classes/r52.php',
+        'Shuchkin\SimpleXLS' => '/local/php_interface/include/classes/SimpleXLS.php',
     )
 );
 $arJsConfig = array( 

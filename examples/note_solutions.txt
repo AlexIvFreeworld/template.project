@@ -4,3 +4,4 @@ bgmedia.r52.ru - поиск документов, local/templates/incorp2/compon
 almi.r52.ru - ajax/json for list elements local/templates/main_almi/components/bitrix/catalog.section/catalog2.json
 /home/alex/Projects/contravt.ru/local/templates/aspro-allcorp3/components/bitrix/news/docs2 - outputting two infoblox
 /home/alex/Projects/autorentaservice.ru/local/php_interface/init.php - manipulating elements property with event
+/home/alex/Projects/edlw.pro/local/templates/active/custom.js - send ajax with fetch, and validating phone
