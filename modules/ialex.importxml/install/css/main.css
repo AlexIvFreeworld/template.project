@@ -1,0 +1,25 @@
+.ialex-table-xml {
+    width: 40%;
+}
+
+.ialex-table-xml th,
+.ialex-table-xml td {
+    width: 50%;
+    text-align: left;
+    font-weight: normal;
+}
+
+.ialex-table-xml input {
+    width: 100%;
+}
+
+.form__label {
+    display: block;
+    width: 50%;
+}
+.ialex-adm .popup__footer{
+    margin-top: 20px;
+}
+.ialex-hide{
+    display: none;
+}
