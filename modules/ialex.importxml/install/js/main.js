@@ -31,6 +31,9 @@ function callback(result) {
     }
     document.querySelector(".container_result").innerHTML = ``;
 };
+function removeRow(el) {
+    el.parentNode.parentNode.remove();
+}
 window.addEventListener("load", function () {
     // console.log("ready");
     document.querySelector("#request_block_id").addEventListener("change", function (event) {

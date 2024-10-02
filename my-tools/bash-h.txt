@@ -6215,3 +6215,4 @@ exit
 389  ps axu | grep bash
 390  kill 11976
 517  man telegram-desktop
+1963  stat local/templates/aspro-priority/components/bitrix/news.detail/catalog3/template.php

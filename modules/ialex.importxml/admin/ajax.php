@@ -36,13 +36,15 @@ if ($RIGHT >= "R" && isset($body->type) && $body->type == "sections") {
         if ($isBlock) {
             $arLists = CIBlockSection::GetList(
                 array('SORT' => 'ASC'),
-                array('IBLOCK_ID' => $body->iblockId),
-                false,
-                array('NAME', 'CODE', 'ID')
+                array('IBLOCK_ID' => $body->iblockId, "CNT_ACTIVE" => "Y"),
+                true,
+                array('NAME', 'CODE', 'ID', 'CNT_ACTIVE')
             );
             while ($arList = $arLists->GetNext()) {
-                // debug($arList);
-                $arSectionsIds[] = $arList["ID"];
+                // \Bitrix\Main\Diag\Debug::dumpToFile(array('$arList' => $arList), "", "log.txt");
+                if (intval($arList["ELEMENT_CNT"]) > 0) {
+                    $arSectionsIds[] = array("ID" => $arList["ID"], "NAME" => $arList["NAME"]);
+                }
             }
             if (empty($arSectionsIds)) {
                 $arErr[] = "В инфоблоке нет активных разделов";
@@ -55,19 +57,28 @@ if ($RIGHT >= "R" && isset($body->type) && $body->type == "sections") {
 ?>
 <? $APPLICATION->RestartBuffer(); ?>
 <? if (empty($arErr)): ?>
-    <h3>Сопоставление разделов сайта с внешним ресурсом</h3>
+    <h3>Сопоставление разделов сайта с рубриками elec_market</h3>
     <table class="ialex-table-xml">
         <tr>
+            <th>Название раздела</th>
             <th>ИД Раздела инфоблока на сайте</th>
             <th>ИД Рубрики на elec_market</th>
+            <th></th>
         </tr>
-        <? foreach ($arSectionsIds as $key => $sectioId): ?>
+        <? foreach ($arSectionsIds as $key => $arSect): ?>
             <tr>
-                <td>
-                    <input type="text" name="sec_in_<?= ($key + 1) ?>" value="<?= $sectioId ?>" class="form__field" required>
+                <td class="sec-in-name">
+                    <span><?= $arSect["NAME"] ?></span>
                 </td>
-                <td>
-                    <input type="text" name="sec_out_<?= ($key + 1) ?>" class="form__field" required>
+                <td class="sec-in-id">
+                    <span><?= $arSect["ID"] ?></span>
+                    <input type="hidden" name="sec_in_<?= ($key + 1) ?>" value="<?= $arSect["ID"] ?>">
+                </td>
+                <td class="sec-out-id">
+                    <input type="text" name="sec_out_<?= ($key + 1) ?>" required>
+                </td>
+                <td class="sec-delete">
+                    <div onclick="removeRow(this)">Удалить</div>
                 </td>
             </tr>
         <? endforeach; ?>

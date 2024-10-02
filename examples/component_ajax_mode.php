@@ -1,3 +1,6 @@
+<?php 
+CJSCore::Init(array( 'Bx'));
+?>
 <?
 // template
 $bxajaxid = CAjax::GetComponentID($component->__name, $component->__template->__name, '');

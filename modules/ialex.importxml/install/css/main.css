@@ -4,7 +4,7 @@
 
 .ialex-table-xml th,
 .ialex-table-xml td {
-    width: 50%;
+    padding: 5px 10px 5px 10px;
     text-align: left;
     font-weight: normal;
 }
@@ -17,9 +17,36 @@
     display: block;
     width: 50%;
 }
-.ialex-adm .popup__footer{
+
+.ialex-adm .popup__footer {
     margin-top: 20px;
 }
-.ialex-hide{
+
+.ialex-hide {
     display: none;
+}
+
+.sec-in-id,
+.sec-out-id {
+    width: 5%;
+}
+
+.sec-in-name {
+    width: 70%;
+}
+
+.sec-delete {
+    width: 20%;
+}
+
+.sec-delete div {
+    cursor: pointer;
+    border: solid 1px #b3a1a1;
+    color: #fff;
+    background-color: #bd2424;
+    padding: 5px;
+}
+
+.container_result {
+    margin-top: 30px;
 }

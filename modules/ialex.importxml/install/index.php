@@ -13,7 +13,7 @@ Loc::loadMessages(__FILE__);
 class ialex_importxml extends CModule
 {
   const partnerName = 'ialex';
-  const solutionName	= 'importxml';
+  const solutionName  = 'importxml';
 
   public function __construct()
   {
@@ -42,7 +42,7 @@ class ialex_importxml extends CModule
   {
     ModuleManager::registerModule($this->MODULE_ID);
     $this->InstallFiles();
-    // $this->installDB();
+    $this->InstallDB();
   }
   //вызываем метод удаления таблицы и удаляем модуль из регистра
   public function doUninstall()
@@ -50,6 +50,9 @@ class ialex_importxml extends CModule
     // $this->uninstallDB();
     ModuleManager::unRegisterModule($this->MODULE_ID);
     $this->UnInstallFiles();
+    $this->UnInstallDB(array(
+      "savedata" => $_REQUEST["savedata"],
+    ));
   }
   //вызываем метод создания таблицы из выше подключенного класса
   // public function installDB()
@@ -69,25 +72,69 @@ class ialex_importxml extends CModule
   //         }
   //     }
   // }
-  function InstallFiles(){
-		CopyDirFiles(__DIR__.'/admin/', $_SERVER['DOCUMENT_ROOT'].'/bitrix/admin', true);
-		CopyDirFiles(__DIR__.'/css/', $_SERVER['DOCUMENT_ROOT'].'/bitrix/css/'.self::partnerName.'.'.self::solutionName, true, true);
-		CopyDirFiles(__DIR__.'/js/', $_SERVER['DOCUMENT_ROOT'].'/bitrix/js/'.self::partnerName.'.'.self::solutionName, true, true);
-		// CopyDirFiles(__DIR__.'/tools/', $_SERVER['DOCUMENT_ROOT'].'/bitrix/tools/'.self::partnerName.'.'.self::solutionName, true, true);
-		CopyDirFiles(__DIR__.'/images/', $_SERVER['DOCUMENT_ROOT'].'/bitrix/images/'.self::partnerName.'.'.self::solutionName, true, true);
-		// CopyDirFiles(__DIR__.'/components/', $_SERVER['DOCUMENT_ROOT'].'/bitrix/components', true, true);
-		// CopyDirFiles(__DIR__.'/wizards/', $_SERVER['DOCUMENT_ROOT'].'/bitrix/wizards', true, true);
+  function InstallDB()
+  {
+    global $APPLICATION, $DB, $errors;
 
-		return true;
-	}
-  function UnInstallFiles(){
-		DeleteDirFiles(__DIR__.'/admin/', $_SERVER['DOCUMENT_ROOT'].'/bitrix/admin');
-		DeleteDirFilesEx('/bitrix/css/'.self::partnerName.'.'.self::solutionName.'/');
-		DeleteDirFilesEx('/bitrix/js/'.self::partnerName.'.'.self::solutionName.'/');
-		// DeleteDirFilesEx('/bitrix/tools/'.self::partnerName.'.'.self::solutionName.'/');
-		DeleteDirFilesEx('/bitrix/images/'.self::partnerName.'.'.self::solutionName.'/');
-		// DeleteDirFilesEx('/bitrix/wizards/'.self::partnerName.'/'.self::solutionName.'/');
+    if (!$DB->Query("SELECT 'x' FROM ialex_elec_categories", true)) {
+      $EMPTY = "Y";
+    } else {
+      $EMPTY = "N";
+    }
 
-		return true;
-	}
+    $errors = false;
+
+    if ($EMPTY == "Y") {
+      $errors = $DB->RunSQLBatch($_SERVER["DOCUMENT_ROOT"] . "/local/modules/ialex.importxml/install/db/install.sql");
+    }
+
+    if (!empty($errors)) {
+      $APPLICATION->ThrowException(implode("", $errors));
+      return false;
+    }
+
+    return true;
+  }
+
+  function UnInstallDB($arParams = array())
+  {
+    global $APPLICATION, $DB, $errors;
+
+    if (!array_key_exists("savedata", $arParams) || $arParams["savedata"] != "Y") {
+      $errors = false;
+      // delete whole base
+      $errors = $DB->RunSQLBatch($_SERVER["DOCUMENT_ROOT"] . "/local/modules/ialex.importxml/install/db/uninstall.sql");
+
+      if (!empty($errors)) {
+        $APPLICATION->ThrowException(implode("", $errors));
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  function InstallFiles()
+  {
+    CopyDirFiles(__DIR__ . '/admin/', $_SERVER['DOCUMENT_ROOT'] . '/bitrix/admin', true);
+    CopyDirFiles(__DIR__ . '/css/', $_SERVER['DOCUMENT_ROOT'] . '/bitrix/css/' . self::partnerName . '.' . self::solutionName, true, true);
+    CopyDirFiles(__DIR__ . '/js/', $_SERVER['DOCUMENT_ROOT'] . '/bitrix/js/' . self::partnerName . '.' . self::solutionName, true, true);
+    // CopyDirFiles(__DIR__.'/tools/', $_SERVER['DOCUMENT_ROOT'].'/bitrix/tools/'.self::partnerName.'.'.self::solutionName, true, true);
+    CopyDirFiles(__DIR__ . '/images/', $_SERVER['DOCUMENT_ROOT'] . '/bitrix/images/' . self::partnerName . '.' . self::solutionName, true, true);
+    // CopyDirFiles(__DIR__.'/components/', $_SERVER['DOCUMENT_ROOT'].'/bitrix/components', true, true);
+    // CopyDirFiles(__DIR__.'/wizards/', $_SERVER['DOCUMENT_ROOT'].'/bitrix/wizards', true, true);
+
+    return true;
+  }
+  function UnInstallFiles()
+  {
+    DeleteDirFiles(__DIR__ . '/admin/', $_SERVER['DOCUMENT_ROOT'] . '/bitrix/admin');
+    DeleteDirFilesEx('/bitrix/css/' . self::partnerName . '.' . self::solutionName . '/');
+    DeleteDirFilesEx('/bitrix/js/' . self::partnerName . '.' . self::solutionName . '/');
+    // DeleteDirFilesEx('/bitrix/tools/'.self::partnerName.'.'.self::solutionName.'/');
+    DeleteDirFilesEx('/bitrix/images/' . self::partnerName . '.' . self::solutionName . '/');
+    // DeleteDirFilesEx('/bitrix/wizards/'.self::partnerName.'/'.self::solutionName.'/');
+
+    return true;
+  }
 }
