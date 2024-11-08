@@ -4,6 +4,17 @@ ErrorDocument 404 /404.php
 <IfModule mod_rewrite.c>
 	Options +FollowSymLinks
 	RewriteEngine On
+# all to new domen	
+RewriteRule (.*) https://globus52.ru/$1 [R=301,L]
+RewriteCond %{HTTP_HOST} ^sartoros.ru [NC]
+RewriteRule ^(.*)$ https://itc-sartorius.ru/$1 [R=301,L]
+RewriteCond %{HTTP_HOST} ^www.sartoros.ru
+RewriteRule (.*) https://itc-sartorius.ru/$1 [R=301,L]
+RewriteCond %{HTTP_HOST} ^itc-moscow.ru [NC]
+RewriteRule ^(.*)$ https://itc-sartorius.ru/$1 [R=301,L]
+RewriteCond %{HTTP_HOST} ^www.itc-moscow.ru
+RewriteRule (.*) https://itc-sartorius.ru/$1 [R=301,L]
+#/ all to new domen
 
 RewriteRule ^news/(.*)$ /articles/$1 [R=301,NC,L]
 
