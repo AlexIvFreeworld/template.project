@@ -1,0 +1,52 @@
+<?php
+$MESS['DATE_TIME_DAYS_1'] = 'Пн';
+$MESS['DATE_TIME_DAYS_2'] = 'Вт';
+$MESS['DATE_TIME_DAYS_3'] = 'Ср';
+$MESS['DATE_TIME_DAYS_4'] = 'Чт';
+$MESS['DATE_TIME_DAYS_5'] = 'Пт';
+$MESS['DATE_TIME_DAYS_6'] = 'Сб';
+$MESS['DATE_TIME_DAYS_7'] = 'Вс';
+
+$MESS['DATE_TIME_DAYS_FULL_1'] = 'Понедельник';
+$MESS['DATE_TIME_DAYS_FULL_2'] = 'Вторник';
+$MESS['DATE_TIME_DAYS_FULL_3'] = 'Среда';
+$MESS['DATE_TIME_DAYS_FULL_4'] = 'Четверг';
+$MESS['DATE_TIME_DAYS_FULL_5'] = 'Пятница';
+$MESS['DATE_TIME_DAYS_FULL_6'] = 'Суббота';
+$MESS['DATE_TIME_DAYS_FULL_7'] = 'Воскресенье';
+
+$MESS['DATE_TIME_DAYS_SHORT_1'] = 'Пнд';
+$MESS['DATE_TIME_DAYS_SHORT_2'] = 'Втр';
+$MESS['DATE_TIME_DAYS_SHORT_3'] = 'Срд';
+$MESS['DATE_TIME_DAYS_SHORT_4'] = 'Чтв';
+$MESS['DATE_TIME_DAYS_SHORT_5'] = 'Птн';
+$MESS['DATE_TIME_DAYS_SHORT_6'] = 'Суб';
+$MESS['DATE_TIME_DAYS_SHORT_7'] = 'Вск';
+
+$MESS['DATE_TIME_MOUNTH_1'] = 'Январь';
+$MESS['DATE_TIME_MOUNTH_2'] = 'Февраль';
+$MESS['DATE_TIME_MOUNTH_3'] = 'Март';
+$MESS['DATE_TIME_MOUNTH_4'] = 'Апрель';
+$MESS['DATE_TIME_MOUNTH_5'] = 'Май';
+$MESS['DATE_TIME_MOUNTH_6'] = 'Июнь';
+$MESS['DATE_TIME_MOUNTH_7'] = 'Июль';
+$MESS['DATE_TIME_MOUNTH_8'] = 'Август';
+$MESS['DATE_TIME_MOUNTH_9'] = 'Сентябрь';
+$MESS['DATE_TIME_MOUNTH_10'] = 'Октябрь';
+$MESS['DATE_TIME_MOUNTH_11'] = 'Ноябрь';
+$MESS['DATE_TIME_MOUNTH_12'] = 'Декабрь';
+
+$MESS['DATE_TIME_MOUNTH_SHORT_1'] = 'Янв';
+$MESS['DATE_TIME_MOUNTH_SHORT_2'] = 'Фев';
+$MESS['DATE_TIME_MOUNTH_SHORT_3'] = 'Мар';
+$MESS['DATE_TIME_MOUNTH_SHORT_4'] = 'Апр';
+$MESS['DATE_TIME_MOUNTH_SHORT_5'] = 'Май';
+$MESS['DATE_TIME_MOUNTH_SHORT_6'] = 'Июн';
+$MESS['DATE_TIME_MOUNTH_SHORT_7'] = 'Июл';
+$MESS['DATE_TIME_MOUNTH_SHORT_8'] = 'Авг';
+$MESS['DATE_TIME_MOUNTH_SHORT_9'] = 'Сен';
+$MESS['DATE_TIME_MOUNTH_SHORT_10'] = 'Окт';
+$MESS['DATE_TIME_MOUNTH_SHORT_11'] = 'Ноя';
+$MESS['DATE_TIME_MOUNTH_SHORT_12'] = 'Дек';
+
+$MESS['DATE_TIME_TODAY'] = 'Сегодня';

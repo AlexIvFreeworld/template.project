@@ -1,0 +1,6 @@
+<?
+$MESS["ALLCORP3MEDC_CONTROL_CENTER_TITLE"] = "Control center";
+$MESS["ALLCORP3MEDC_MODULE_CONTROL_CENTER_ERROR"] = "Failed to get solution installation information";
+$MESS["ALLCORP3MEDC_MODULE_NOT_INCLUDED"] = "Failed to connect module Aspro: Medical Center 3.0";
+$MESS["ALLCORP3MEDC_NO_RIGHTS_FOR_VIEWING"] = "Access is closed";
+?>

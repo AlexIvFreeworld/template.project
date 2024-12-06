@@ -29,3 +29,8 @@
     $smtp_pass = "CniRTibVy#WOtbJe";
   }
 
+  define("cms_system_mail","noreply@mailer.r52.ru");
+  define("SMTP_HOST", "cpanel13.d.fozzy.ru");
+  define("SMTP_PORT", "25");
+  define("SMTP_USER", "noreply@mailer.r52.ru");
+  define("SMTP_PASS", "CniRTibVy#WOtbJe");

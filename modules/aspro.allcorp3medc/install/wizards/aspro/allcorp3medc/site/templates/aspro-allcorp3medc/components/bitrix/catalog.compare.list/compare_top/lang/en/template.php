@@ -1,0 +1,5 @@
+<?
+$MESS ['CATALOG_COMPARE_ELEMENTS'] = "Comparison";
+$MESS ['CATALOG_COMPARE_ELEMENTS_ALL'] = "List of Compared Elements";
+$MESS ['CATALOG_COMPARE_ELEMENTS_COUNT'] = "empty";
+?>

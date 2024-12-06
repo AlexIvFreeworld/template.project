@@ -1,0 +1,52 @@
+<?
+CModule::AddAutoloadClasses(
+	'aspro.allcorp3medc',
+	array(
+		'allcorp3medc' => 'install/index.php',
+		'CAllcorp3Medc' => 'classes/general/CAllcorp3Medc.php',
+		'CAllcorp3MedcCache' => 'classes/general/CAllcorp3MedcCache.php',
+		'CAllcorp3MedcTools' => 'classes/general/CAllcorp3MedcTools.php',
+		'CAllcorp3MedcEvents' => 'classes/general/CAllcorp3MedcEvents.php',
+		'CAllcorp3MedcCondition' => 'classes/general/CAllcorp3MedcCondition.php',
+		'CInstargramAllcorp3Medc' => 'classes/general/CInstargramAllcorp3Medc.php',
+		'CVKAllcorp3Medc' => 'classes/general/CVKAllcorp3Medc.php',
+		'CAllcorp3MedcRegionality' => 'classes/general/CAllcorp3MedcRegionality.php',
+		'CAllcorp3MedcChartTable' => 'classes/general/CAllcorp3MedcChartTable.php',
+		'Aspro\Solution\CAsproMarketing' => 'classes/general/CAsproMarketing.php',
+		'Aspro\Functions\CAsproAllcorp3Medc' => 'lib/functions/CAsproAllcorp3Medc.php',
+		'Aspro\Functions\CAsproAllcorp3MedcAdmin' => 'lib/functions/CAsproAllcorp3MedcAdmin.php',
+		'Aspro\Functions\CAsproAllcorp3MedcSwitcher' => 'lib/functions/CAsproAllcorp3MedcSwitcher.php',
+		'Aspro\Functions\CAsproAllcorp3MedcCRM' => 'lib/functions/CAsproAllcorp3MedcCRM.php',
+		'Aspro\Functions\CAsproAllcorp3MedcCustom' => 'lib/functions/CAsproAllcorp3MedcCustom.php',
+		'Aspro\Functions\CAsproAllcorp3MedcReCaptcha' => 'lib/functions/CAsproAllcorp3MedcReCaptcha.php',
+		'Aspro\Allcorp3Medc\GS' => 'lib/gs.php',
+		'Aspro\Allcorp3Medc\CrossSales' => 'lib/crosssales.php',
+		'Aspro\Allcorp3Medc\MarketingPopup' => 'lib/marketingpopup.php',
+		'Aspro\Allcorp3Medc\Eyed' => 'lib/eyed.php',
+		'Aspro\Allcorp3Medc\Property\ListUsersGroups' => 'lib/property/listusersgroups.php',
+		'Aspro\Allcorp3Medc\Property\ListWebForms' => 'lib/property/listwebforms.php',
+		'Aspro\Allcorp3Medc\Property\CustomFilter' => 'lib/property/customfilter.php',
+		'Aspro\Allcorp3Medc\Property\CustomFilter\CondCtrl' => 'lib/property/customfilter/condctrl.php',
+		'Aspro\Allcorp3Medc\Property\CustomFilter\CCatalogCondCtrlGroup' => 'lib/property/customfilter/condctrl.php',
+		'Aspro\Allcorp3Medc\Property\ConditionType' => 'lib/property/conditiontype.php',
+		'Aspro\Allcorp3Medc\Property\ModalConditions' => 'lib/property/modalconditions.php',
+		'Aspro\Allcorp3Medc\Property\ModalConditions\CondCtrl' => 'lib/property/modalconditions/condctrl.php',
+		'Aspro\Allcorp3Medc\Property\ModalConditions\CCatalogCondCtrlGroup' => 'lib/property/modalconditions/condctrl.php',
+		'Aspro\Allcorp3Medc\Functions\ExtComponentParameter' => 'lib/functions/ExtComponentParameter.php',
+		'Aspro\Allcorp3Medc\Functions\CSKU' => 'lib/functions/CSKU.php',
+		'Aspro\Allcorp3Medc\Functions\CSKUTemplate' => 'lib/functions/CSKUTemplate.php',
+		'Aspro\Allcorp3Medc\Functions\Extensions' => 'lib/functions/Extensions.php',
+	)
+);
+
+if(!CJSCore::IsExtRegistered('aspro_core_condtree')){
+	CJSCore::RegisterExt(
+		'aspro_core_condtree',
+		array(
+			'js' => '/bitrix/js/aspro.allcorp3medc/core_tree.js',
+			'css' => '/bitrix/css/aspro.allcorp3medc/catalog_cond.css',
+			'lang' => '/bitrix/modules/aspro.allcorp3medc/lang/'.LANGUAGE_ID.'/lib/js_core_tree.php',
+			'rel' => array('core', 'date', 'window')
+		)
+	);
+}

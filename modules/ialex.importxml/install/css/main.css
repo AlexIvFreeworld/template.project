@@ -50,3 +50,8 @@
 .container_result {
     margin-top: 30px;
 }
+
+.container_help {
+    display: flex;
+    flex-direction: column;
+}

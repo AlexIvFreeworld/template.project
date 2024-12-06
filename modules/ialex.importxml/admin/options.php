@@ -12,14 +12,14 @@ IncludeModuleLangFile(__FILE__);
 $moduleID = "ialex.importxml";
 \Bitrix\Main\Loader::includeModule($moduleID);
 $RIGHT = $APPLICATION->GetGroupRight($moduleID);
-if ($RIGHT >= "R") {
+if ($RIGHT >= "R" && false) {
     $arErr = array();
     $context = \Bitrix\Main\Application::getInstance()->getContext();
     $request = $context->getRequest();
     $arPost = $request->getPostList()->toArray();
     $arPost = $APPLICATION->ConvertCharsetArray($arPost, 'UTF-8', LANG_CHARSET);
-    \Bitrix\Main\Diag\Debug::dumpToFile(array('date("d-m-Y H:i:s")' => date("d-m-Y H:i:s")), "", "/log.txt");
-    \Bitrix\Main\Diag\Debug::dumpToFile(array('$arPost' => $arPost), "", "/log.txt");
+    //\Bitrix\Main\Diag\Debug::dumpToFile(array('date("d-m-Y H:i:s")' => date("d-m-Y H:i:s")), "", "/log.txt");
+    //\Bitrix\Main\Diag\Debug::dumpToFile(array('$arPost' => $arPost), "", "/log.txt");
 
     if (isset($arPost["type"]) && $arPost["type"] == "xml") {
         $arCategoryCorrespondence = array(
@@ -120,10 +120,23 @@ if ($RIGHT >= "R") {
         $root->appendChild($offers_node);
         $dom->appendChild($root);
         $res = $dom->save($xml_file_name);
-        \Bitrix\Main\Diag\Debug::dumpToFile(array('res : ' => $res), "", "/log.txt");
+        //\Bitrix\Main\Diag\Debug::dumpToFile(array('res : ' => $res), "", "/log.txt");
     }
     $response = json_encode($arErr);
     $APPLICATION->RestartBuffer();
     echo $response;
     die();
+}
+if ($RIGHT >= "R") {
+    $APPLICATION->RestartBuffer();
+    $newXml = new IAlex\IhelpXML($_SERVER["DOCUMENT_ROOT"] . "/products.xml");
+    if (isset($newXml->arPost["type"]) && $newXml->arPost["type"] == "xml") {
+        $newXml->setRoot();
+        $newXml->setCurrencies();
+        $newXml->setCategories();
+        $newXml->setOffers();
+        $res = $newXml->saveXmlFile();
+        echo $res;
+        die();
+    }
 }

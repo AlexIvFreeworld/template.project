@@ -1,0 +1,606 @@
+<?require_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_admin_before.php');
+
+use \Bitrix\Main\Config\Option,
+	CAllcorp3Medc as Solution;
+
+$moduleClass = "CAllcorp3Medc";
+$moduleID = Solution::moduleID;
+
+global  $APPLICATION, $bRegular, $arFilter;
+
+CModule::IncludeModule($moduleID);
+IncludeModuleLangFile(__FILE__);
+
+$GLOBALS['APPLICATION']->SetAdditionalCss("/bitrix/css/".Solution::partnerName.".".Solution::solutionName."/chart.css");
+
+$error = false;
+
+if( !isset($_REQUEST['serviceID']) ) {
+	print_r(GetMessage('NO_SERVICE_ID'));
+	$error = true;
+}
+
+if( !isset($_REQUEST['site_id']) ) {
+	print_r(GetMessage('NO_SITE_ID'));
+	$error = true;
+}
+
+if( !isset($_REQUEST['mid']) && $error ) {
+	LocalRedirect('/bitrix/admin/'.$moduleID.'_chart.php?mid=main', true);
+}
+
+$RIGHT = $APPLICATION->GetGroupRight($moduleID);
+if($RIGHT >= "R" && !$error){
+	CAllcorp3MedcChartTable::$siteID = $_REQUEST['site_id'];
+	$bRegular = CAllcorp3MedcChartTable::viewMode() == 'REGULAR';
+	$arFilter = array();
+
+	$sTableID = CAllcorp3MedcChartTable::getTableName();
+	$bNewList = class_exists('CAdminUIList');
+	if( $bNewList ) {
+		$oSort = new CAdminUISorting($sTableID, "STAFF", "asc");
+		$lAdmin = new CAdminUIList($sTableID, $oSort);
+
+		// create filter
+		$filterFields = array(
+			array(
+				"id" => "STAFF",
+				"name" => GetMessage("STAFF_TITLE"),
+				'default' => true,
+			),
+			array(
+				"id" => "DATE",
+				"name" => GetMessage("DATE_TITLE"),
+				"type" => "date",
+				'default' => true,
+			),
+		);
+
+		$lAdmin->AddFilter($filterFields, $arFilter);
+	} else {
+		$oSort = new CAdminSorting($sTableID, "STAFF", "asc");
+		$lAdmin = new CAdminList($sTableID, $oSort);
+	}
+
+	CJSCore::Init(array("jquery"));
+	CAjax::Init();
+	$APPLICATION->AddHeadScript('/bitrix/js/'.$moduleID.'/jquery.inputmask.bundle.min.js', true);
+
+	$lAdmin->bMultipart = true;
+
+	if($_REQUEST['apply_filter']) {
+		unset($_REQUEST['datefrom']);
+		unset($_REQUEST['dateto']);
+	}
+
+	function getPeriod($getFilter = true) {
+		global $arFilter, $bRegular;
+		$result = array();
+
+		if( !$bRegular ) {
+			if( isset($_REQUEST['datefrom']) && $_REQUEST['datefrom'] ) {
+				$result['start']['date'] = DateTime::createFromFormat( 'U', $_REQUEST['datefrom'] );
+				unset($_SESSION['main.ui.filter']);
+			} else {
+				if( isset($arFilter['>=DATE']) && $getFilter ) {
+					$result['start']['date'] = new \DateTime($arFilter['>=DATE']);
+				} else {
+					$result['start']['date'] = new \DateTime('monday this week', new DateTimeZone('UTC'));
+				}
+			}
+			$result['start']['str'] = $result['start']['date']->format( 'd.m.Y' );
+
+			if( isset($_REQUEST['dateto']) && $_REQUEST['dateto'] ) {
+				$result['end']['date'] = DateTime::createFromFormat( 'U', $_REQUEST['dateto'] );
+				unset($_SESSION['main.ui.filter']);
+			} else {
+				if( isset($arFilter['<=DATE']) && $getFilter ) {
+					$result['end']['date'] = new \DateTime($arFilter['<=DATE']);
+				} else {
+					$result['end']['date'] = new \DateTime('sunday this week', new DateTimeZone('UTC'));
+				}
+			}
+			$result['end']['str'] = $result['end']['date']->format( 'd.m.Y' );
+		}
+
+		return $result;
+	}
+
+	// save action
+	if(
+		$_SERVER["REQUEST_METHOD"] == "POST" &&
+		!empty($_REQUEST["action_button_".$lAdmin->table_id]) &&
+		is_array($_POST["FIELDS"]) &&
+		check_bitrix_sessid()
+	)
+	{
+		foreach($_POST['FIELDS'] as $ID=>$arFields)
+		{
+			if(!$lAdmin->IsUpdated($ID))
+				continue;
+
+			foreach ($arFields as $key => $arValue) {
+				$arCurrentValues = array();
+
+				foreach ($arValue as $value) {
+					$pattern = '/^\d*/';
+					preg_match($pattern, $value['name'], $matches);
+					$intKey = $matches[0];
+					$value['name'] = preg_replace($pattern, '', $value['name']);
+
+					if($intKey) {
+						$arCurrentValues[$intKey][ $value['name'] ] = $value['value'];
+					}
+				}
+
+				if($arCurrentValues) {
+					foreach ($arCurrentValues as $curValue) {
+						if( isset($curValue['BD_ID']) && $curValue['BD_ID']) {
+							if( $curValue['BD_ID'] == 'new' ) {
+								if( isset($curValue['WORK_TIME']) && $curValue['WORK_TIME'] ) {
+									if( isset($curValue['DATE']) ) {
+										if(!$bRegular) {
+											$curValue['DATE'] = new DateTime($curValue['DATE']);
+											$curValue['DATE'] = \Bitrix\Main\Type\Date::createFromPhp($curValue['DATE']);
+										}
+										CAllcorp3MedcChartTable::add($curValue);
+									}
+								}
+							} else {
+								if( isset($curValue['DATE']) ) {
+									if(!$bRegular) {
+										$curValue['DATE'] = new DateTime($curValue['DATE']);
+										$curValue['DATE'] = \Bitrix\Main\Type\Date::createFromPhp($curValue['DATE']);
+									}
+
+									if( isset($curValue['WORK_TIME']) && $curValue['WORK_TIME'] ) {
+										CAllcorp3MedcChartTable::update($curValue['BD_ID'], $curValue);
+									} else {
+										CAllcorp3MedcChartTable::delete($curValue['BD_ID']);
+									}
+								}
+							}
+						}
+					}
+				}
+
+			}
+			
+		}
+	}
+
+	global $by, $order;
+	if (!isset($by))
+		$by = 'STAFF';
+	if (!isset($order))
+		$order = 'asc';
+
+
+
+	// create table columns
+	$lAdmin->AddHeaders(
+		array(
+			array(  
+				"id"    =>"STAFF",
+				"content"  =>GetMessage("STAFF_TITLE"),
+				"sort"    =>"STAFF",
+				"default"  =>true,
+			),
+		)
+	);
+
+	if($bRegular) {
+		$arWeeks = array(
+			'MONDAY',
+			'TUESDAY',
+			'WEDNESDAY',
+			'THURSDAY',
+			'FRIDAY',
+			'SATURDAY',
+			'SUNDAY',
+		);
+
+		foreach ($arWeeks as $value) {
+			$lAdmin->AddHeaders(
+				array(
+					array(  
+						"id"   => $value,
+						"content"  => GetMessage($value),
+						"sort"   => $value,
+						"default"  =>true,
+					),
+				)
+			);
+		}
+	} else {
+		$arDates = getPeriod();
+		$counter = 1;
+		for($start = $arDates['start']['date'];$start <= $arDates['end']['date'];$start->add( new DateInterval("P1D") ) ) {
+			$lAdmin->AddHeaders(
+				array(
+					array(  
+						"id"   => $start->format( 'd.m.Y' ),
+						"content"  => $start->format( 'd.m.Y' ),
+						"sort"   => $start->format( 'd.m.Y' ),
+						"default"  =>true,
+					),
+				)
+			);
+			$counter++;
+		}
+	}
+
+	$lAdmin->AddVisibleHeaderColumn('STAFF');
+
+	if(!$bRegular) {
+		$arDatesPrev = getPeriod(false);
+		$arDatesNext = getPeriod(false);
+
+		$strToPrevWeek = $_SERVER['REQUEST_URI'];
+		$strToNextvWeek = $_SERVER['REQUEST_URI'];
+
+		if( isset($_GET['datefrom']) ) {
+			$strToPrevWeek = str_replace('datefrom='.$_GET['datefrom'], 'datefrom='.$arDatesPrev['start']['date']->sub( new DateInterval('P1W') )->getTimestamp(), $strToPrevWeek);
+			$strToNextvWeek = str_replace('datefrom='.$_GET['datefrom'], 'datefrom='.$arDatesNext['start']['date']->add( new DateInterval('P1W') )->getTimestamp(), $strToNextvWeek);
+		}
+		if( isset($_GET['dateto']) ) {
+			$strToPrevWeek = str_replace('dateto='.$_GET['dateto'], 'dateto='.$arDatesPrev['end']['date']->sub( new DateInterval('P1W') )->getTimestamp(), $strToPrevWeek);
+			$strToNextvWeek = str_replace('dateto='.$_GET['dateto'], 'dateto='.$arDatesNext['end']['date']->add( new DateInterval('P1W') )->getTimestamp(), $strToNextvWeek);
+		}
+
+		if( !isset($_GET['datefrom']) && !isset($_GET['dateto']) ) {
+			$strToPrevWeek .= '&datefrom='.$arDatesPrev['start']['date']->sub( new DateInterval('P1W') )->getTimestamp().'&dateto='.$arDatesPrev['end']['date']->sub( new DateInterval('P1W') )->getTimestamp();
+			$strToNextvWeek .= '&datefrom='.$arDatesNext['start']['date']->add( new DateInterval('P1W') )->getTimestamp().'&dateto='.$arDatesNext['end']['date']->add( new DateInterval('P1W') )->getTimestamp();
+		}
+		$lAdmin->BeginPrologContent();
+		?>
+		<div class="chart calendar_wrapper">
+
+			<div class="top_block_wrapper">
+				<a class="adm-nav-page adm-nav-page-prev" href="<?=$strToPrevWeek?>" class="arrow_left"></a>
+				<div class="period_title">
+					<?=$arDatesPrev['start']['str'].' - '.$arDatesPrev['end']['str'];?>
+				</div>
+				<a class="adm-nav-page adm-nav-page-next" href="<?=$strToNextvWeek?>" class="arrow_right"></a>
+			</div>
+
+		</div>
+		<?$lAdmin->EndPrologContent();
+	}
+
+	$serviceIblock = Option::get($moduleID, 'SERVICES_IBLOCK_ID', CAllcorp3MedcCache::$arIBlocks[ $_REQUEST['site_id'] ]['aspro_allcorp3medc_content']['aspro_allcorp3medc_services'][0], $_REQUEST['site_id']);
+	$arServicesFilter = array(
+		'IBLOCK_ID' => $serviceIblock,
+		'ID' => $_REQUEST['serviceID'],
+		'ACTIVE' => 'Y',
+	);
+	$bFilterStaff = isset($arFilter['STAFF']) && $arFilter['STAFF'];
+	if( $bFilterStaff ) {
+		$arServicesFilter['%PROPERTY_LINK_STAFF.NAME'] = $arFilter['STAFF'];
+	}
+
+	$arServicesSelect = array(
+		'ID',
+		'NAME',
+		'PROPERTY_LINK_STAFF',
+		'PROPERTY_LINK_STAFF.NAME',
+	);
+	$service = CAllcorp3MedcCache::CIblockElement_GetList(array("CACHE" => array("MULTI" => 'N', "TAG" => CAllcorp3MedcCache::GetIBlockCacheTag($serviceIblock))), $arServicesFilter, false, false, $arServicesSelect);
+	$APPLICATION->SetTitle($service['NAME']);
+
+	$arResult = array();
+	if( $service['PROPERTY_LINK_STAFF_VALUE'] ) {
+		if( is_array($service['PROPERTY_LINK_STAFF_VALUE']) ) {
+			foreach ($service['PROPERTY_LINK_STAFF_VALUE'] as $key => $staffID) {
+				$arResult[$staffID]['STAFF'] = $service['PROPERTY_LINK_STAFF_NAME'][$key];
+			}
+		} else {
+			$arResult[ $service['PROPERTY_LINK_STAFF_VALUE'] ]['STAFF'] = $service['PROPERTY_LINK_STAFF_NAME'];
+		}
+	}
+
+
+	$contactIblock = Option::get($moduleID, 'CONTACT_IBLOCK_ID', CAllcorp3MedcCache::$arIBlocks[ $_REQUEST['site_id'] ]['aspro_allcorp3medc_content']['aspro_allcorp3medc_contact'][0], $_REQUEST['site_id']);
+	$arContactsFilter = array(
+		'IBLOCK_ID' => $contactIblock,
+		'ACTIVE' => 'Y',
+	);
+	$arContactsSelect = array(
+		'ID',
+		'NAME',
+		'PROPERTY_ADDRESS',
+	);
+	$contacts = CAllcorp3MedcCache::CIblockElement_GetList(array("CACHE" => array("TAG" => CAllcorp3MedcCache::GetIBlockCacheTag($contactIblock), 'GROUP' => 'ID')), $arContactsFilter, false, false, $arContactsSelect);
+
+	/* useful link
+	https://dev.1c-bitrix.ru/community/blogs/vad/orm.php
+	*/
+	if( $arResult ) {
+		if($bRegular) {
+			$params = array(
+				'select' => array(
+	                '*',
+	            ),
+	            'filter' => array(
+	            	'SITE_ID' => $_REQUEST['site_id'],
+	            	'SERVICE_ID' => $_REQUEST['serviceID'],
+	            ),
+			);
+		} else {
+			$arDates = getPeriod();
+			$params = array(
+	            'filter' => array(
+	            	'SITE_ID' => $_REQUEST['site_id'],
+	            	'SERVICE_ID' => $_REQUEST['serviceID'],
+	            	'>=DATE' => \Bitrix\Main\Type\Date::createFromPhp($arDates['start']['date']),
+	            	'<=DATE' => \Bitrix\Main\Type\Date::createFromPhp($arDates['end']['date']),
+	            ),
+			);
+		}
+		$res = CAllcorp3MedcChartTable::getList($params);
+		while($staff = $res->Fetch()) {
+			if( isset($staff['DATE']) && $staff['DATE'] && isset($arResult[$staff['STAFF_ID']]) ) {
+				if(!$bRegular) {
+					$staff['DATE'] = $staff['DATE']->format('d.m.Y');
+				}
+				$arResult[$staff['STAFF_ID']][$staff['DATE']][] = array(
+					'ID' => $staff['ID'],
+					'WORK_TIME' => $staff['WORK_TIME'],
+					'SHOP_ID' => $staff['SHOP_ID'],
+				);
+			}
+		}
+	}
+
+	function columnSort($a, $b) {
+		global $by, $order;
+		if( $by == 'STAFF' ) {
+			if( $order == 'asc' ) {
+				return $a['STAFF'] > $b['STAFF'];
+			} else {
+				return $b['STAFF'] > $a['STAFF'];
+			}
+		} else {
+			if( $order == 'asc' ) {
+				return isset( $a[$by] );
+			} else {
+				return isset( $b[$by] );
+			}
+		}
+	}
+	uasort( $arResult, 'columnSort' );
+
+	$rs = new CDBResult;
+	$rs->InitFromArray($arResult);
+
+	$rsData = new CAdminUiResult($rs, $sTableID);
+	$rsData->NavStart();
+
+	foreach ($arResult as $staffID => $row) {
+		$currentRow = $lAdmin->AddRow($staffID, $row);
+		
+		if($bRegular) {
+			$beginValue = 0;
+			$endValue = 6;
+		} else {
+			$arDates = getPeriod();
+			$beginValue = $arDates['start']['date'];
+			$endValue = $arDates['end']['date'];
+		}
+
+		for(;$beginValue <= $endValue;) {
+
+			if($bRegular) {
+				$currentValue = $arWeeks[$beginValue];
+			} else {
+				$currentValue = $beginValue->format('d.m.Y');
+			}
+
+			$viewSTR = ' ';
+			if( $row[ $currentValue ] ) {
+				$viewSTR .= '<div class="work_time_wrapper">';
+					foreach ($row[ $currentValue ] as $value) {
+						$viewSTR .= '<div class="work_time">';
+
+							$viewSTR .= '<div class="work_time--text">';
+								$viewSTR .= $value['WORK_TIME'];
+							$viewSTR .= '</div>';
+
+							if($contacts[ $value['SHOP_ID'] ]['NAME']){
+								$viewSTR .= '<div class="work_shop--text">';
+								$viewSTR .= trim($contacts[ $value['SHOP_ID'] ]['NAME'].(strlen($contacts[ $value['SHOP_ID'] ]['PROPERTY_ADDRESS_VALUE']) ? ', '.$contacts[ $value['SHOP_ID'] ]['PROPERTY_ADDRESS_VALUE'] : ''));
+								$viewSTR .= '</div>';
+							}
+
+						$viewSTR .= '</div>';
+					}
+				$viewSTR .= '</div>';
+			}
+			$currentRow->AddViewField( $currentValue , $viewSTR);
+
+			$editSTR = '';
+			$editSTR .= '<div class="work_time_wrapper">';
+			if( $row[ $currentValue ] ) {
+				foreach ($row[ $currentValue ] as $key => $value) {
+					$editSTR .= '<div class="work_time" data-key="'.($key+1).'">';
+
+						$editSTR .= '<input type="hidden" value="'.$value['ID'].'" name="'.($key+1).'BD_ID" class="work_time--hidden">';
+						$editSTR .= '<input type="hidden" value="'. $currentValue .'" name="'.($key+1).'DATE" class="work_time--hidden">';
+
+						$editSTR .= '<div class="work_time--title">';
+							$editSTR .= GetMessage('WORK_TIME_TITLE').':';
+						$editSTR .= '</div>';
+
+						$editSTR .= '<input value="'.$value['WORK_TIME'].'" name="'.($key+1).'WORK_TIME" class="work_time--text">';
+
+						$editSTR .= '<div class="work_shop--title">';
+							$editSTR .= GetMessage('WORK_SHOP_TITLE').':';
+						$editSTR .= '</div>';
+
+						if($contacts){
+							$editSTR .= '<select value="'.$value['SHOP_ID'].'" name="'.($key+1).'SHOP_ID" class="work_shop--text">';
+								foreach ($contacts as $contact) {
+									$editSTR .= '<option '.($contact['ID'] == $value['SHOP_ID'] ? 'selected' : '').' value="'.$contact['ID'].'">'.trim($contact['NAME'].(strlen($contact['PROPERTY_ADDRESS_VALUE']) ? ', '.$contact['PROPERTY_ADDRESS_VALUE'] : '')).'</option>';
+								}
+							$editSTR .= '</select>';
+						}
+
+					$editSTR .= '</div>';
+				}
+			} else {
+				$editSTR .= '<div class="work_time" data-key="1">';
+
+					$editSTR .= '<input type="hidden" value="new" name="1BD_ID" class="work_time--hidden">';
+					$editSTR .= '<input type="hidden" value="'.$_REQUEST['serviceID'].'" name="1SERVICE_ID" class="work_time--hidden">';
+					$editSTR .= '<input type="hidden" value="'.$staffID.'" name="1STAFF_ID" class="work_time--hidden">';
+					$editSTR .= '<input type="hidden" value="'. $currentValue .'" name="1DATE" class="work_time--hidden">';
+					$editSTR .= '<input type="hidden" value="'.$_REQUEST['site_id'].'" name="1SITE_ID" class="work_time--hidden">';
+
+					$editSTR .= '<div class="work_time--title">';
+						$editSTR .= GetMessage('WORK_TIME_TITLE').':';
+					$editSTR .= '</div>';
+
+					$editSTR .= '<input value="" name="1WORK_TIME" class="work_time--text">';
+
+					$editSTR .= '<div class="work_shop--title">';
+						$editSTR .= GetMessage('WORK_SHOP_TITLE').':';
+					$editSTR .= '</div>';
+
+					if($contacts){
+						$editSTR .= '<select name="1SHOP_ID" class="work_shop--text">';
+							foreach ($contacts as $contact) {
+								$editSTR .= '<option value="'.$contact['ID'].'">'.trim($contact['NAME'].(strlen($contact['PROPERTY_ADDRESS_VALUE']) ? ', '.$contact['PROPERTY_ADDRESS_VALUE'] : '')).'</option>';
+							}
+						$editSTR .= '</select>';
+					}
+
+				$editSTR .= '</div>';
+			}
+			$editSTR .= '<div class="work_time new">';
+
+				$editSTR .= '<input type="hidden" value="new" name="0BD_ID" class="work_time--hidden">';
+				$editSTR .= '<input type="hidden" value="'.$_REQUEST['serviceID'].'" name="0SERVICE_ID" class="work_time--hidden">';
+				$editSTR .= '<input type="hidden" value="'.$staffID.'" name="0STAFF_ID" class="work_time--hidden">';
+				$editSTR .= '<input type="hidden" value="'. $currentValue .'" name="0DATE" class="work_time--hidden">';
+				$editSTR .= '<input type="hidden" value="'.$_REQUEST['site_id'].'" name="0SITE_ID" class="work_time--hidden">';
+
+				$editSTR .= '<div class="work_time--title">';
+					$editSTR .= GetMessage('WORK_TIME_TITLE').':';
+				$editSTR .= '</div>';
+
+				$editSTR .= '<input value="" name="0WORK_TIME" class="work_time--text">';
+
+				$editSTR .= '<div class="work_shop--title">';
+					$editSTR .= GetMessage('WORK_SHOP_TITLE').':';
+				$editSTR .= '</div>';
+
+				if($contacts){
+					$editSTR .= '<select name="0SHOP_ID" class="work_shop--text">';
+						foreach ($contacts as $contact) {
+							$editSTR .= '<option value="'.$contact['ID'].'">'.trim($contact['NAME'].(strlen($contact['PROPERTY_ADDRESS_VALUE']) ? ', '.$contact['PROPERTY_ADDRESS_VALUE'] : '')).'</option>';
+						}
+					$editSTR .= '</select>';
+				}
+
+			$editSTR .= '</div>';
+			$editSTR .= '<input type="button" value="'.GetMessage('ADD_BUTTON').'" onclick="addRow(this)">';
+			$editSTR .= '</div>';
+			$currentRow->AddEditField( $currentValue , $editSTR);
+
+			if($bRegular) {
+				$beginValue++;
+			} else {
+				$beginValue->add( new DateInterval("P1D") );
+			}
+
+		}
+	}
+
+	$arActions = array(
+		'edit' => GetMessage('EDIT_BUTTON'),
+	);
+	$lAdmin->AddGroupActionTable($arActions);
+	
+	$chain = $lAdmin->CreateChain();
+	$chain->AddItem(
+		array(
+			"TEXT" => $service['NAME'],
+		)
+	);
+	$lAdmin->ShowChain($chain);
+
+	if(!$bNewList) {
+		$lAdmin->CheckListMode();
+	}
+	require($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_admin_after.php');
+	?>
+	<?
+	if( $bNewList ) {
+		$lAdmin->DisplayFilter($filterFields);
+	}
+	
+	$lAdmin->DisplayList();
+
+	?>
+	<script>
+		var mask = '0|1|29:0|1|2|3|4|59-0|1|29:0|1|2|3|4|59';
+
+		$(document).on('click', '#grid_edit_button_control', function() {
+			setTimeout(function() {
+				$('input.work_time--text').inputmask("mask", { 
+					"mask": mask, 
+					'showMaskOnHover': false, 
+					'removemaskonsubmit': true, 
+					'onincomplete': function() {
+						checkComplete();
+					},
+					'oncomplete': function() {
+						checkComplete();
+					},
+				});
+			}, 1);
+		});
+
+		function addRow(el) {
+			var form = $(el).siblings('.work_time.new');
+			var last_index = $(el).siblings('.work_time:not(.new)').last().data('key');
+			if(form.length) {
+				formClone = $(form[0]).clone();
+				formClone.removeClass('new');
+				formClone.attr('data-key', last_index+1);
+
+				formClone.find('[name]').each(function(i, el) {
+					var _el = $(el);
+					var newName = _el.attr('name').replace(/^0/, last_index+1);
+					_el.attr('name', newName);
+				});
+
+				$(form).before(formClone);
+				formClone.find('input.work_time--text').inputmask("mask", { "mask": mask, 'showMaskOnHover': false, 'removemaskonsubmit': true });
+				delete(formClone);
+			}
+		}
+
+		function checkComplete() {
+			var saveButton = $('button.main-grid-buttons.save');
+			var disable = false;
+
+			$('.work_time:not(.new) input.work_time--text').each(function(i, el) {
+				var _el = $(el);
+
+				if( !_el.inputmask("isComplete") && _el.val() ) {
+					disable = true;
+				}
+			});
+
+			if(disable) {
+				saveButton.attr('disabled', true);
+			} else {
+				saveButton.removeAttr( 'disabled' );
+			}
+		}
+	</script>
+	<?
+}
+
+require($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/epilog_admin.php');?>

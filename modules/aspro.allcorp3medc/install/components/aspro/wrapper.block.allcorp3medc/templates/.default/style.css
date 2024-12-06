@@ -1,0 +1,7 @@
+@media (min-width: 768px) {
+  .map-container {
+    position: absolute;
+    top: 32px;
+    right: 32px;
+  }
+}

@@ -1,0 +1,13 @@
+.map-items__item {
+  padding: 21px 90px 21px 31px;
+}
+@media (min-width: 768px) {
+  .map-container {
+    position: absolute;
+    top: 0px;
+    left: 32px;
+    height: 522px;
+    width: calc(50% - 31px);
+    z-index: 1;
+  }
+}

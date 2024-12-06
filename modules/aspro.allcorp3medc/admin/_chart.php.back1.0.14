@@ -1,0 +1,88 @@
+<?require_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_admin_before.php');
+require($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_admin_after.php');
+
+use \Bitrix\Main\Config\Option,
+	CAllcorp3Medc as Solution,
+	CAllcorp3MedcCache as Cache;
+
+$moduleClass = "CAllcorp3Medc";
+$moduleID = Solution::moduleID;
+global  $APPLICATION;
+
+CModule::IncludeModule($moduleID);
+IncludeModuleLangFile(__FILE__);
+
+$GLOBALS['APPLICATION']->SetAdditionalCss("/bitrix/css/".Solution::partnerName.".".Solution::solutionName."/chart.css");
+
+$RIGHT = $APPLICATION->GetGroupRight($moduleID);
+if($RIGHT >= "R"){
+	$APPLICATION->SetTitle(GetMessage('SERVICES_LIST_TITLE'));
+
+	$by = "id";
+	$sort = "asc";
+
+	$arSites = array();
+	$db_res = CSite::GetList($by, $sort, array("ACTIVE"=>"Y"));
+	while($res = $db_res->Fetch()){
+		$arSites[] = $res;
+	}
+
+	$arTabs = array();
+	foreach($arSites as $key => $arSite){
+		$arTabs[] = array(
+			"DIV" => "edit".($key+1),
+			"TAB" => GetMessage("MAIN_OPTIONS_SITE_TITLE", array("#SITE_NAME#" => $arSite["NAME"], "#SITE_ID#" => $arSite["ID"])),
+			"ICON" => "settings",
+			"TITLE" => GetMessage("MAIN_OPTIONS_TITLE"),
+			"PAGE_TYPE" => "site_settings",
+			"SITE_ID" => $arSite["ID"],
+			"SITE_DIR" => $arSite["DIR"],
+		);
+	}
+
+	$tabControl = new CAdminTabControl("tabControl", $arTabs);
+
+	CJSCore::Init(array("jquery"));
+	CAjax::Init();
+	$tabControl->Begin();
+
+	foreach($arTabs as $key => $arTab){
+		$tabControl->BeginNextTab();
+		
+		$serviceIblock = Option::get($moduleID, 'SERVICES_IBLOCK_ID', Cache::$arIBlocks[ $arTab['SITE_ID'] ]['aspro_allcorp3medc_content']['aspro_allcorp3medc_services'][0], $arTab['SITE_ID']);
+		$arServicesFilter = array(
+			'IBLOCK_ID' => $serviceIblock,
+			'ACTIVE' => 'Y',
+			'!PROPERTY_LINK_STAFF' => false,
+		);
+		$arServicesSelect = array(
+			'ID',
+			'NAME',
+			'PROPERTY_LINK_STAFF',
+		);
+
+		$services = Cache::CIblockElement_GetList(array('NAME' => 'ASC', "CACHE" => array("TAG" => Cache::GetIBlockCacheTag($serviceIblock))), $arServicesFilter, false, false, $arServicesSelect);
+
+		?>
+		<div class="adm-detail-title"><?=GetMessage('SERVICES_LIST_SUBTITLE')?></div>
+		<?
+		
+		if($services) {?>
+			<div class="services_wrapper chart">
+				<?foreach ($services as $service):?>
+					<div class="service_wrapper">
+						<a href="/bitrix/admin/<?=$moduleID;?>_chart_staff_list.php?mid=main&site_id=<?=$arTab['SITE_ID']?>&serviceID=<?=$service['ID']?>&tab=<?=$arTab['DIV']?>" class="service_link">
+							<span class="service_name"><?=$service['NAME']?></span>
+						</a>
+					</div>
+				<?endforeach;?>
+			</div>
+		<?}
+		?>
+	<?
+	}
+	$tabControl->Buttons();
+	$tabControl->End();
+}
+
+require($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/epilog_admin.php');?>

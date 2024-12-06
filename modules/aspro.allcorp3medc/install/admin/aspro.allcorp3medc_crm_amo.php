@@ -1,0 +1,1 @@
+<?require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/aspro.allcorp3medc/admin/crm_amo.php");?>

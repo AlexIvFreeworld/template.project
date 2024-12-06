@@ -1,6 +1,8 @@
 <?
 require_once($_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_before.php');
 
+use AI\R52;
+use Bitrix\Main\Config\Option;
 use Bitrix\Main\Loader;
 use Bitrix\Main\Localization\Loc;
 use IAlex\IhelpXML;
@@ -32,6 +34,8 @@ if (CModule::IncludeModule('iblock')) {
 		$arBlocks[] = $ar_res;
 	}
 }
+$options = Option::getForModule($module_id);
+// R52::debug($options);
 ?>
 <? //IhelpXML::seyText("hello")
 ?>
@@ -65,6 +69,10 @@ if (CModule::IncludeModule('iblock')) {
 			<button type="submit" class="btn form__submit">Сформировать XML</button>
 		</div>
 	</form>
+	<div class="container_help">
+		<a target="_blank" href="<?=$options["link_elec_cat"]?>">Ссылка на рубрикатор elec.ru</a>
+		<a target="_blank" href="<?=$options["link_elec_price"]?>">Ссылка на пример XML прайс–лист elec.ru</a>
+	</div>
 	<div class="container_result"></div>
 </div>
 <?

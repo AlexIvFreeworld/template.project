@@ -1,0 +1,3 @@
+<?
+$MESS['THEMATIC_UNIVERSAL_TITLE'] = 'Медицинский центр';
+$MESS['THEMATIC_UNIVERSAL_DESCRIPTION'] = '';
